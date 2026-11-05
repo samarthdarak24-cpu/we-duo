@@ -55,6 +55,10 @@
     "precedent",
     "deploy",
     "test-results",
-    "playwright-report"
+    "playwright-report",
+    "vitest.config.ts",
+    "tests/**/*",
+    "e2e/**/*",
+    "playwright.config.ts"
   ]
 }
