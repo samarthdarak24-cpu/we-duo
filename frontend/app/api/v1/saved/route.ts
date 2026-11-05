@@ -1,5 +1,5 @@
 import { getSavedVehicles } from "@/lib/server/data";
-import { bumpActivity, createSaved, deleteSaved, getListing, getListingByVehicle, getSavedRow } from "@/lib/server/db";
+import { bumpActivity, createSaved, deleteSaved, getListing, getListingByVehicle, getSavedRow, getVehicle } from "@/lib/server/db";
 import { created, fail, ok, requireRole } from "@/lib/server/http";
 
 export const runtime = "nodejs";
@@ -30,12 +30,13 @@ export async function POST(req: Request) {
   if (existing) return ok({ saved: true, alreadySaved: true });
 
   const listing = getListing(listingId);
+  const vehicle = listing ? getVehicle(listing.vehicle_id) : (vehicleId ? getVehicle(vehicleId) : null);
   const now = new Date().toISOString();
   createSaved({
     id: `sv-${Date.now()}`,
     buyer_id: guard.user.sub,
     listing_id: listingId,
-    price_at_save: listing?.asking_price ?? 0,
+    price_at_save: vehicle?.asking_price ?? 0,
     list_name: "All",
     created_at: now,
   });
