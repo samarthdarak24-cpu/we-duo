@@ -14,6 +14,7 @@ node_modules/
 .next_probe
 .next_incomplete
 .next_qa*
+.next_live/
 .next_static
 *.jar
 .td-shots
