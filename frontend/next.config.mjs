@@ -38,6 +38,10 @@ const nextConfig = {
       { protocol: 'https', hostname: '**' },
     ],
   },
+  webpack(config) {
+    config.resolve.alias['@'] = process.cwd();
+    return config;
+  },
 };
 
 export default nextConfig;
