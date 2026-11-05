@@ -17,7 +17,7 @@ from fastapi.testclient import TestClient
 from app import security
 from app.main import app
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 PUBLIC_FALLBACK_SECRET = "trustdrive-dev-secret-change-in-prod"
 SERVICE_TOKEN = "qa-test-service-token"
 
@@ -40,8 +40,8 @@ def _forge(secret: str, sub: str, role: str, *, exp: int | None = None,
 def test_no_hardcoded_jwt_secret_in_either_runtime():
     """The publicly known fallback must be gone from all signing code."""
     files = [
-        REPO_ROOT / "lib" / "server" / "auth.ts",
-        REPO_ROOT / "services" / "intelligence" / "app" / "security.py",
+        REPO_ROOT / "frontend" / "lib" / "server" / "auth.ts",
+        REPO_ROOT / "backend" / "app" / "security.py",
     ]
     for path in files:
         assert PUBLIC_FALLBACK_SECRET not in path.read_text(encoding="utf-8"), path

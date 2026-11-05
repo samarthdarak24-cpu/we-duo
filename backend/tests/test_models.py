@@ -118,7 +118,7 @@ def test_paddleocr_backend_reads_rendered_text(tmp_path: Path):
 def test_repo_root_points_to_the_repository_root():
     from app.config import REPO_ROOT
     assert (REPO_ROOT / "package.json").is_file()
-    assert (REPO_ROOT / "models").is_dir()
+    assert (REPO_ROOT / "ai-services" / "shared" / "models").is_dir() or (REPO_ROOT / "models").is_dir()
 
 
 def test_xgboost_adapter_reports_real_status():

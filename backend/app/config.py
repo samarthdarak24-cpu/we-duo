@@ -13,12 +13,14 @@ DEFAULT_UPLOAD_DIR = REPO_ROOT / ".data" / "uploads"
 DEFAULT_MODEL_DIR = REPO_ROOT / "ai-services" / "shared" / "models"
 
 
-def _abs(value: str, default: Path) -> Path:/n    """Resolve a relative env path against the repository root."""
+def _abs(value: str, default: Path) -> Path:
+    """Resolve a relative env path against the repository root."""
     path = Path(value)
     return path if path.is_absolute() else (REPO_ROOT / path)
 
 
-def _db_url() -> str:/n    raw = os.getenv("TD_DB_URL")
+def _db_url() -> str:
+    raw = os.getenv("TD_DB_URL")
     return raw or f"sqlite+pysqlite:///{DEFAULT_DB_FILE.as_posix()}"
 
 

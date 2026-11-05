@@ -19,19 +19,62 @@ Two roles share **one backend, one vehicle database and one verification engine*
 Requirements: **Node 22.5+** (`node:sqlite` is built-in), Python 3.12+, npm.
 
 ```bash
+# 1. Frontend (Next.js — lives in frontend/)
+cd frontend
 npm ci
 npm run seed:reset                 # 13 demo vehicles + 3 required negative examples
 npm run dev                        # http://localhost:3000
 
-# optional second terminal — the additive Python intelligence service
-python -m pip install -r services/intelligence/requirements.txt
-npm run intel:migrate
-npm run intel:serve                 # http://127.0.0.1:8000/docs
-npm run intel:worker                # DB-backed background jobs
+# 2. Backend (FastAPI — lives in backend/), optional second terminal
+cd ../backend
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cd ..
+npm run intel:migrate              # Alembic baseline for the Python-owned tables
+npm run intel:serve                # http://127.0.0.1:8000/docs
+npm run intel:worker               # DB-backed background jobs
 ```
+
+The repository **root is a thin workspace wrapper**: `npm run dev`, `npm run build`,
+`npm run intel:*` and `npm run test:e2e` all delegate into `frontend/` or `backend/`.
+You can also `cd` straight into either folder and run the commands there.
 
 The web app runs fine without the Python service; every integration degrades
 with an explicit status rather than a fake result.
+
+---
+
+## Repository layout
+
+```
+trustdrive/
+├── frontend/          # Next.js 14 App Router — system of record, UI, REST API
+│   ├── app/           # routes + app/api/v1 REST endpoints
+│   ├── components/    # React + React-Three-Fiber components
+│   ├── lib/           # server domain/data layer, auth, RBAC
+│   ├── public/        # static assets incl. 3D GLB models
+│   ├── e2e/           # Playwright end-to-end specs
+│   ├── scripts/       # seed, schema dump, build helpers
+│   └── package.json   # frontend deps + scripts
+├── backend/           # FastAPI intelligence service + DB-backed worker
+│   ├── app/           # routers, detectors, investigator agent, worker
+│   ├── alembic/       # additive-only migrations
+│   ├── scripts/       # eval_llm, fetch_models, training helpers
+│   └── requirements*.txt
+├── ai-services/       # shared ML assets (kept out of both code trees)
+│   └── shared/
+│       ├── models/    # car_damage.pt, mileage_xgb.json, MODEL_REGISTER.json
+│       └── data/      # datasets, eval logs
+├── infrastructure/    # deploy glue (start-render.sh supervisor)
+├── docs/              # detailed design, API, RBAC, ERD, deployment docs
+├── docker-compose.yml # local: web + api + worker (+ optional Postgres/Redis)
+├── Dockerfile.render  # combined Render image (Next + FastAPI + worker)
+├── render.yaml        # Render Blueprint (one web service, 10 GB disk)
+└── package.json       # root workspace wrapper (delegates to frontend/backend)
+```
+
+Both runtimes share one SQLite file at `.data/trustdrive.db` and one `.env` at
+the repository root, so the web app and the Python service never drift apart.
 
 ### Demo logins (password `demo1234` for all)
 
@@ -51,7 +94,7 @@ Next.js 14 App Router (51 pages, 102 REST routes)   <- system of record
   lib/server/data.ts  domain layer over the shared DB
   .data/trustdrive.db node:sqlite, SCHEMA_VERSION 3, 51 tables
         ^ shared file, two runtimes, no removed feature
-Python FastAPI backend (services/intelligence/)
+Python FastAPI backend (backend/)
   /api/backend/*       auth, users, vehicles, documents, history, mileage,
                        verification, AI, damage, listings, search, saved,
                        compare, inquiries, reports (real PDF), QR, notifications,
@@ -100,7 +143,7 @@ business logic. See `design.md` and `newdesign (3).md`.
 ## Verification commands
 
 ```bash
-npx tsc --noEmit        # TypeScript
+npm run typecheck       # TypeScript (cd frontend && tsc --noEmit)
 npm test                # Vitest: engine, chain, DB intelligence, validation, RTL component
 npm run build           # Next.js production build
 npm run intel:test      # Pytest: FastAPI, detectors, agent, worker, 18-step workflow

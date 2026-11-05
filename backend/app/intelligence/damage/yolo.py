@@ -13,7 +13,8 @@ from pathlib import Path
 
 from ...config import REPO_ROOT
 
-MODEL_DIR = Path(os.getenv("TD_MODEL_DIR", str(REPO_ROOT / "ai-services" / "shared" / "models")))
+_raw_model_dir = os.getenv("TD_MODEL_DIR", "ai-services/shared/models")
+MODEL_DIR = Path(_raw_model_dir) if Path(_raw_model_dir).is_absolute() else (REPO_ROOT / _raw_model_dir)
 MODEL_VERSION = "yolo-damage-adapter-1.0.0"
 DEFAULT_CLASSES = ["damage"]
 
