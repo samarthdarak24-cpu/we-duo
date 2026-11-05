@@ -19,6 +19,16 @@ function logTest(featureNum, name, status, details = '') {
   results.push({ featureNum, name, status, details });
 }
 
+async function loginAs(page, roleName) {
+  await page.goto(`${BASE_URL}/login`, { waitUntil: 'load' });
+  await page.waitForTimeout(1000);
+  await page.click(`button:has-text("${roleName}")`);
+  await page.waitForTimeout(500);
+  await page.click('button[type="submit"]');
+  const targetPath = roleName === 'Seller' ? 'seller' : 'buyer';
+  await page.waitForURL(`**/${targetPath}**`, { timeout: 15000 });
+}
+
 async function runAllTests() {
   console.log('================================================================');
   console.log('🚀 TRUSTDRIVE — LIVE END-TO-END BROWSER CRUD SUITE (21 FEATURES)');
@@ -34,13 +44,7 @@ async function runAllTests() {
     console.log('>>> AUTHENTICATING SELLER SESSION (samarth@trustdrive.dev)...');
     const sellerContext = await browser.newContext();
     const sellerPage = await sellerContext.newPage();
-    
-    await sellerPage.goto(`${BASE_URL}/login`, { waitUntil: 'domcontentloaded' });
-    const sellerDemoBtn = sellerPage.locator('button', { hasText: 'Seller' }).first();
-    await sellerDemoBtn.click();
-    await sellerPage.waitForTimeout(300);
-    await sellerPage.click('button[type="submit"]');
-    await sellerPage.waitForURL('**/seller**', { timeout: 15000 });
+    await loginAs(sellerPage, 'Seller');
     console.log('Seller authenticated successfully!\n');
 
     // -------------------------------------------------------------
@@ -413,16 +417,10 @@ async function runAllTests() {
     // =============================================================
     // BUYER SESSION SETUP
     // =============================================================
-    console.log('\n>>> AUTHENTICATING BUYER SESSION (rohan@trustdrive.dev)...');
+    console.log('\n>>> AUTHENTICATING BUYER SESSION (aditya@trustdrive.dev)...');
     const buyerContext = await browser.newContext();
     const buyerPage = await buyerContext.newPage();
-    
-    await buyerPage.goto(`${BASE_URL}/login`, { waitUntil: 'domcontentloaded' });
-    const buyerDemoBtn = buyerPage.locator('button', { hasText: 'Buyer' }).first();
-    await buyerDemoBtn.click();
-    await buyerPage.waitForTimeout(300);
-    await buyerPage.click('button[type="submit"]');
-    await buyerPage.waitForURL('**/buyer**', { timeout: 15000 });
+    await loginAs(buyerPage, 'Buyer');
     console.log('Buyer authenticated successfully!\n');
 
     // -------------------------------------------------------------

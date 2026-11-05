@@ -51,7 +51,7 @@ export default async function run({ H, rec, page, ctx, net }) {
     await page.waitForURL(/\/login/, { timeout: 15000 }).catch(() => {});
     rec.check("D", "UI redirects to /login after sign out", /\/login/.test(page.url()), page.url());
     const cookies = await ctx.cookies();
-    rec.check("D", "session cookie cleared", !cookies.some((c) => c.name === "td_session" && c.value), JSON.stringify(cookies.map((c) => c.name + "=" + (c.value ? "set" : "empty"))));
+    rec.check("D", "session cookie cleared", !cookies.some((c) => c.name === "td_token" && c.value), JSON.stringify(cookies.map((c) => c.name + "=" + (c.value ? "set" : "empty"))));
     if (sessionId) {
       const row = H.sqlOne("SELECT * FROM sessions WHERE id = ?", sessionId);
       rec.check("D", "session row revoked in DB", !!row?.revoked_at, JSON.stringify(row));

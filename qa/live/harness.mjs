@@ -54,12 +54,41 @@ export async function launchBrowser() {
 
 export async function newContext(opts = {}) {
   const browser = await launchBrowser();
-  return browser.newContext({
+  const context = await browser.newContext({
     baseURL: BASE,
     viewport: { width: 1440, height: 900 },
     ignoreHTTPSErrors: true,
     ...opts,
   });
+  // Keep a copy of every same-origin API payload the app's own fetch() received.
+  // Playwright drops a response body when the page navigates immediately after it.
+  await context.addInitScript(() => {
+    window.__tdApiCapture = [];
+    const orig = window.fetch;
+    window.fetch = async function (...args) {
+      const res = await orig.apply(this, args);
+      try {
+        const url = typeof args[0] === "string" ? args[0] : String(args[0]?.url || "");
+        if (url.includes("/api/")) {
+          const text = await res.clone().text();
+          window.__tdApiCapture.push({ url, status: res.status, text, method: (args[1]?.method || "GET").toUpperCase() });
+          try { sessionStorage.setItem("__tdApiCapture", JSON.stringify(window.__tdApiCapture)); } catch { /* storage disabled */ }
+        }
+      } catch { /* ignore capture failures */ }
+      return res;
+    };
+  });
+  return context;
+}
+
+export async function capturedApi(page, urlPart) {
+  const list = await page.evaluate(() => {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem("__tdApiCapture") || "[]");
+      return saved.length ? saved : (window.__tdApiCapture || []);
+    } catch { return window.__tdApiCapture || []; }
+  });
+  return list.filter((x) => x.url.includes(urlPart));
 }
 
 /** Wait until React has hydrated a node, so clicks hit real handlers (not native form GET). */
@@ -89,11 +118,10 @@ export async function loginViaUI(page, role = "seller") {
   );
   await page.locator('form button[type="submit"]').click();
   const loginResponse = await responsePromise;
-  // Read the body BEFORE following the redirect; navigation disposes the response.
-  const raw = await loginResponse.text().catch(() => "");
-  let body = null;
-  try { body = JSON.parse(raw); } catch { /* keep null */ }
   await page.waitForURL(acc.home, { timeout: 20000 }).catch(() => {});
+  const captured = await capturedApi(page, "/api/v1/auth/login");
+  let body = null;
+  try { body = JSON.parse(captured[0]?.text || "null"); } catch { /* keep null */ }
   return {
     status: loginResponse.status(),
     body,
