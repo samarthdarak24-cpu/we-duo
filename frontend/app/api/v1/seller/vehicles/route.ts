@@ -24,7 +24,13 @@ export async function POST(req: Request) {
   if (!guard.ok) return guard.response;
   const b = (await req.json().catch(() => null)) as Parameters<typeof createVehicleDraft>[1] | null;
   if (!b) return fail(400, "VALIDATION_FAILED", "A JSON body is required.");
-  const result = createVehicleDraft(guard.user.sub, b);
+  let result;
+  try {
+    result = createVehicleDraft(guard.user.sub, b);
+  } catch (e) {
+    console.error("[seller/vehicles POST] unexpected error:", e);
+    return fail(500, "INTERNAL_ERROR", process.env.NODE_ENV === "production" ? "Internal error." : String(e instanceof Error ? e.message + "\n" + e.stack : e));
+  }
   if (!result.ok) {
     const status = result.code.startsWith("DUPLICATE") ? 409 : 400;
     return fail(status, result.code, result.message, "existingId" in result ? { existingId: result.existingId } : undefined);

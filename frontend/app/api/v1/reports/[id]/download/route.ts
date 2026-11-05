@@ -44,7 +44,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       model: data.vehicle.model,
       year: data.vehicle.year,
       regNo: data.vehicle.reg_no,
-      vin: data.vehicle.vin,
+      vin: data.vehicle.vin || "",
       km: data.vehicle.km_claimed,
       fuel: data.vehicle.fuel,
       transmission: data.vehicle.transmission,

@@ -76,7 +76,7 @@ export async function POST(req: Request) {
 
   try {
     createVehicle(row);
-    return created({ id, ...row });
+    return created(row);
   } catch (err: any) {
     if (err.message?.includes("UNIQUE constraint failed")) {
       return fail(409, "DUPLICATE_VEHICLE", "A vehicle with this registration number or VIN already exists.");

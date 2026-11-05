@@ -29,8 +29,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   const body = (await req.json().catch(() => null)) as { date?: string; km?: number; source?: string; documentId?: string } | null;
   if (!body) return fail(400, "VALIDATION_FAILED", "A JSON body is required.");
   const result = addMileageForVehicle(guard.user.sub, params.id, {
-    date: body.date ?? "",
-    km: Number(body.km),
+    date: body.date ?? (body as any).readingDate ?? new Date().toISOString(),
+    km: Number(body.km ?? (body as any).reading ?? 0),
     source: body.source,
     documentId: body.documentId,
   });

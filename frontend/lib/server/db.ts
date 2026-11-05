@@ -1370,7 +1370,8 @@ export function getVehicle(id: string): VehicleRow | undefined {
 export function getVehicleByReg(reg: string): VehicleRow | undefined {
   return one<VehicleRow>("SELECT * FROM vehicles WHERE replace(replace(upper(reg_no),' ',''),'-','') = ?", reg.toUpperCase().replace(/[\s-]/g, ""));
 }
-export function getVehicleByVin(vin: string): VehicleRow | undefined {
+export function getVehicleByVin(vin: string | null): VehicleRow | undefined {
+  if (!vin) return undefined;
   return one<VehicleRow>("SELECT * FROM vehicles WHERE upper(vin) = ?", vin.toUpperCase());
 }
 export function getVehicleByTrustDriveId(tdid: string): VehicleRow | undefined {

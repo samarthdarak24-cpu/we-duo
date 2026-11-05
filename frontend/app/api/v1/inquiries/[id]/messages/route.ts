@@ -13,7 +13,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     | null;
   if (!body) return fail(400, "VALIDATION_FAILED", "A JSON body is required.");
   const result = sendInquiryMessage(guard.user.sub, params.id, {
-    body: body.body ?? "",
+    body: body.body ?? (body as any).message ?? "",
     offerAmount: body.offerAmount,
     scheduledAt: body.scheduledAt,
     attachments: body.attachments,

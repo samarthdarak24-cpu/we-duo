@@ -11,13 +11,15 @@ export function isValidReg(value: string): boolean {
   return /^[A-Z]{2}[0-9]{2}[A-Z]{1,3}[0-9]{4}$/.test(normalizeReg(value));
 }
 
-export function normalizeVin(value: string): string {
-  return value.toUpperCase().replace(/[\s-]/g, "");
+export function normalizeVin(value: string): string | null {
+  const v = (value ?? "").toUpperCase().replace(/[\s-]/g, "");
+  return v ? v : null;
 }
 
-export function isValidVin(value: string): boolean {
+export function isValidVin(value: string | null | undefined): boolean {
+  if (!value) return false;
   const vin = normalizeVin(value);
-  return /^[A-HJ-NPR-Z0-9]{17}$/.test(vin);
+  return vin ? /^[A-HJ-NPR-Z0-9]{17}$/.test(vin) : false;
 }
 
 export function maskReg(reg: string): string {

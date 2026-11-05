@@ -1,4 +1,5 @@
 import { createInquiryForBuyer, getInquiriesForBuyer, getInquiriesForSeller } from "@/lib/server/data";
+import { getListingByVehicle } from "@/lib/server/db";
 import { created, fail, ok, requireRole } from "@/lib/server/http";
 
 export const runtime = "nodejs";
@@ -20,12 +21,13 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const guard = requireRole(req, "buyer");
   if (!guard.ok) return guard.response;
-  const body = (await req.json().catch(() => null)) as { listingId?: string; message?: string; type?: string } | null;
-  if (!body?.listingId) return fail(400, "VALIDATION_FAILED", "listingId is required");
+  const body = (await req.json().catch(() => null)) as { listingId?: string; vehicleId?: string; message?: string; type?: string } | null;
+  const resolvedListingId = body?.listingId ?? (body?.vehicleId ? getListingByVehicle(body.vehicleId)?.id : undefined);
+  if (!resolvedListingId) return fail(400, "VALIDATION_FAILED", "listingId or valid vehicleId is required");
   const result = createInquiryForBuyer(guard.user.sub, {
-    listingId: body.listingId,
-    message: body.message ?? "",
-    type: body.type,
+    listingId: resolvedListingId,
+    message: body?.message ?? "",
+    type: body?.type,
   });
   if (!result.ok) return fail(result.code === "NOT_FOUND" ? 404 : 400, result.code, result.message);
   return created(result);
