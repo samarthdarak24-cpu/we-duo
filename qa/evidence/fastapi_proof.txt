@@ -1,0 +1,18 @@
+======================================================================
+TRUSTDRIVE LIVE API PROOF (FastAPI) — corrected
+======================================================================
+[PASS] Seller login 200 + bearer token  -> id=u-seller
+[PASS] Buyer login 200 + bearer token  -> id=u-buyer2
+[PASS] Seller /vehicles/mine -> 200  -> status=200
+[PASS] Seller API vehicle count == SQL owner count  -> api=17 sql=17
+[PASS] Vehicle detail matches DB row  -> api=(Tata,Nexon) db=(Tata,Nexon)
+[PASS] Trust score endpoint numeric  -> score=70
+[FAIL] Trust score matches a SQL trust_scores row  -> sql_score=none
+[PASS] Buyer marketplace -> 200  -> status=200
+[PASS] Buyer marketplace count == SQL published count  -> api=12 sql=12
+[PASS] Buyer /vehicles/mine does not leak seller's unpublished vehicles  -> leaked=0 (buyer sees 0 published)
+[PASS] Unauthenticated protected route -> 401  -> status=401
+[PASS] Buyer POST /vehicles -> 403 (role enforced)  -> status=403
+----------------------------------------------------------------------
+TOTAL: 12  PASS: 11  FAIL: 1
+======================================================================

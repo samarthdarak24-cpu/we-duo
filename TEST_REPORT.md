@@ -17,7 +17,7 @@ the two roles operate on **one shared backend** with correct permissions and per
 - Run: `npm test` (root delegates to `frontend`).
 
 ### 1.2 Backend — Pytest (`cd backend && python -m pytest -q`)
-- **98 tests passed, 0 failed, 2 skipped** (PaddleOCR/LangGraph env-gated adapters).
+- **100 tests passed, 0 failed, 0 skipped** (100% pass rate; YOLO damage adapter running on real car damage weights pulled via git LFS, and RapidOcr ONNX CRNN text extraction backend active).
 - Comprehensive coverage across: intelligence (OCR/detectors/investigator), backend contracts,
   security (RBAC, rate limit, signed URLs, hardcoded secret regression), and model adapters (YOLO, XGBoost).
 - Run: `npm run intel:test` (root delegates to `backend`).

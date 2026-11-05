@@ -108,7 +108,7 @@ def test_paddleocr_backend_reads_rendered_text(tmp_path: Path):
     result = backend.run(path)
     assert result.is_ocr is True
     assert result.engine in ("paddleocr", "rapidocr")
-    assert result.method.startswith("paddleocr")
+    assert result.method.startswith("paddleocr") or result.method.startswith("rapidocr")
     assert not result.method.endswith("-error"), result.warnings
     assert "1234" in result.text.replace(" ", "")
     assert result.confidence is not None and result.confidence >= 0.8

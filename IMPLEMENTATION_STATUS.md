@@ -62,16 +62,40 @@ Legend: ✅ done & verified · 🟡 partial / honest gap · ⚙️ env-gated ada
 - Generated QR/verify links currently hardcode `localhost:3000`; the public app origin must be
   configured for deployed links.
 
-## Verification baseline
+## New gaps found in the 2026-11-05 independent re-audit
+- **Test suites bind to the REAL `.data/trustdrive.db`** (`vitest.config.*` resolves `TD_DB_FILE` to the
+  repo-root DB, not an isolated one). Running tests can mutate/leave artifacts in the seed database —
+  against the rule "never run destructive tests against production data." Fix: point tests at a temp
+  copy in CI.
+- **Trust score is computed live** for vehicles without a stored `trust_scores` snapshot; persistence
+  occurs on an explicit recompute job. Acceptable (deterministic, versioned) but "score history" may be
+  empty for some vehicles.
+- **Next.js dev/start server not resident in this sandbox** and **Playwright browsers not installed**
+  → live UI/HTTP and visual automation were not executed (environment blockers, documented in
+  VISUAL_REGRESSION_REPORT / CROSS_ROLE_E2E_REPORT).
+- Prior docs claimed Pytest "88 passed" and tsc "0 errors" without noting the stale-cache caveat; the
+  independent re-run is **100 passed, 0 failed, 0 skipped** (with YOLO damage weights pulled via git LFS and RapidOCR active) and tsc is clean only after clearing the cached
+  `.tsbuildinfo`.
+
+## Verification baseline (re-verified independently 2026-11-05)
 | Check | Result |
 | --- | --- |
-| `npx tsc --noEmit` | run in verification pass (see `TEST_REPORT.md`) |
-| `npm test` (Vitest) | engine, chain, DB intelligence, validation, RTL component suites |
-| `npm run intel:test` (Pytest) | 88 passed (intelligence, backend contract, security, adapters) |
-| Page smoke | 48/48 pages 200 for correct role |
-| API smoke | 40+ calls, correct 200/400/401/403/405/409/422 |
-| Live DB cross-role proof | ✅ 12 shared published listings; RBAC 403 on non-owner |
-| GLB asset | ✅ `public/models/vehicles/trustdrive-sedan.glb` (CC BY 4.0) |
+| `npx tsc --noEmit` | **0 errors** (a stale committed `tsconfig.tsbuildinfo` caused 2 spurious errors; cleared → clean) |
+| `npm test` (Vitest) | **84 passed** (11 files), incl. 15-step seller→buyer workflow + RTL component tests |
+| `npm run intel:test` (Pytest) | **100 passed, 0 failed, 0 skipped** (100% pass rate; YOLO car damage inference on real weights + RapidOCR active) |
+| Live FastAPI HTTP proof | **11/12** functional checks (seller vehicles 17==SQL, marketplace 12==SQL, RBAC 401/403, no leakage) |
+| Live `/health` engine inventory | OCR (PaddleOCR/RapidOCR/PyMuPDF/OpenCV) **available**; YOLO `car_damage.pt` **Ready**; XGBoost model present (synthetic); LangGraph orchestrator + 12 nodes; db-backed worker |
+| Live DB cross-role proof | ✅ 12 shared published listings; RBAC 403 on non-owner (Next data layer) |
+| GLB asset | ✅ `public/models/vehicles/trustdrive-sedan.glb` (11.7 MB, 85 named meshes); `car.glb` fallback only; **no primitive placeholder** |
+| Demo logins | `admin@`, `samarth@`/`aditya@` (seller), `rohan@`/`priya@`/`arjun@` (buyer) — all usable |
+
+### Blocker note (environment, not code)
+- The **Next.js server could not be kept resident** in this sandbox (`next dev` exits; `next start`
+  has no production build), so a live *browser* walk-through of the UI was not run. The Next data layer
+  is proven via Vitest; route→function wiring was read from source; the backend HTTP layer is proven
+  live via FastAPI.
+- **Playwright browsers are not installed**, so UI/visual/regression automation and the 35-step browser
+  E2E were not executed. The spec + CI job exist.
 
 ## Demo logins (password `demo1234`)
 `admin@trustdrive.dev` · `samarth@trustdrive.dev`, `aditya@trustdrive.dev` (seller) ·
