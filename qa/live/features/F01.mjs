@@ -12,7 +12,7 @@ export default async function run({ H, rec, page, ctx, net }) {
 
     rec.check("C", "login POST /api/v1/auth/login returns 200", login.status === 200, `status=${login.status}`);
     rec.check("C", "login response carries seller role", login.body?.data?.user?.role === "seller", JSON.stringify(login.body?.data?.user));
-    rec.check("C", "session cookie is httpOnly and set", login.cookies.some((c) => c.name === "td_session" && c.httpOnly), JSON.stringify(login.cookies.map((c) => c.name)));
+    rec.check("C", "session cookie is httpOnly and set", login.cookies.some((c) => c.name === "td_token" && c.httpOnly && c.value), JSON.stringify(login.cookies.map((c) => `${c.name}:${c.httpOnly}`)));
     rec.check("C", "UI redirects to seller workspace", /\/seller/.test(login.url), login.url);
     rec.check("C", "sessions table gained one real row", after === before + 1, `before=${before} after=${after}`);
     if (sessionId) {
@@ -41,6 +41,7 @@ export default async function run({ H, rec, page, ctx, net }) {
 
   await H.step(rec, "D", "logout via Topbar user menu", async () => {
     await page.goto(`${H.BASE}/seller`, { waitUntil: "domcontentloaded" });
+    await H.waitForHydration(page, "details summary");
     const summary = page.locator("details summary").first();
     await summary.click();
     const logoutPromise = page.waitForResponse((r) => r.url().includes("/api/v1/auth/logout") && r.request().method() === "POST");

@@ -12,16 +12,23 @@ async function main() {
     }
   });
 
-  await page.goto('http://127.0.0.1:3000/login', { waitUntil: 'domcontentloaded' });
-  await page.fill('#login-email', 'samarth@trustdrive.dev');
-  await page.fill('#login-password', 'demo1234');
-  console.log('Filled email & password');
+  await page.goto('http://127.0.0.1:3000/login', { waitUntil: 'load' });
+  // Wait for React hydration
+  await page.waitForTimeout(1000);
 
+  console.log('Clicking demo seller button...');
+  await page.click('button:has-text("Seller")');
+  await page.waitForTimeout(500);
+
+  const email = await page.inputValue('#login-email');
+  const pass = await page.inputValue('#login-password');
+  console.log('Inputs after demo click -> email:', email, 'pass:', pass ? '***' : '(empty)');
+
+  console.log('Clicking submit...');
   await page.click('button[type="submit"]');
-  console.log('Clicked submit');
 
   await page.waitForTimeout(3000);
-  console.log('Current URL after 3s:', page.url());
+  console.log('Current URL after submit:', page.url());
   await browser.close();
 }
 main();
