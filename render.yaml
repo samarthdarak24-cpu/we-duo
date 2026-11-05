@@ -15,14 +15,10 @@ services:
     name: trustdrive
     runtime: docker
     dockerfilePath: ./Dockerfile.render
-    plan: standard
+    plan: free
     region: singapore
     healthCheckPath: /api/v1/health/ready
     autoDeploy: true
-    disk:
-      name: trustdrive-data
-      mountPath: /data
-      sizeGB: 10
     envVars:
       - key: NODE_ENV
         value: production
@@ -31,13 +27,13 @@ services:
       - key: PORT
         value: "10000"
       - key: TD_DATA_DIR
-        value: /data
+        value: /tmp/trustdrive
       - key: TD_DB_FILE
-        value: /data/trustdrive.db
+        value: /tmp/trustdrive/trustdrive.db
       - key: TD_DB_URL
-        value: sqlite+pysqlite:////data/trustdrive.db
+        value: sqlite+pysqlite:////tmp/trustdrive/trustdrive.db
       - key: TD_UPLOAD_DIR
-        value: /data/uploads
+        value: /tmp/trustdrive/uploads
       - key: TD_INTELLIGENCE_URL
         value: http://127.0.0.1:8000
       - key: TD_SEED_DEMO
