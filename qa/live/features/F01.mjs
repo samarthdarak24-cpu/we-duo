@@ -48,7 +48,7 @@ export default async function run({ H, rec, page, ctx, net }) {
     await page.getByRole("button", { name: /sign out/i }).first().click();
     const logout = await logoutPromise;
     rec.check("D", "logout POST returns 200", logout.status() === 200, `status=${logout.status()}`);
-    await page.waitForURL(/\/login/, { timeout: 15000 }).catch(() => {});
+    for (let i = 0; i < 40 && !/\/login/.test(page.url()); i++) await page.waitForTimeout(250);
     rec.check("D", "UI redirects to /login after sign out", /\/login/.test(page.url()), page.url());
     const cookies = await ctx.cookies();
     rec.check("D", "session cookie cleared", !cookies.some((c) => c.name === "td_token" && c.value), JSON.stringify(cookies.map((c) => c.name + "=" + (c.value ? "set" : "empty"))));
