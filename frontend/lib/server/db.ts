@@ -747,7 +747,9 @@ function seed(conn: DatabaseSync) {
     ["u-buyer4", "Arjun Nair", "buyer", "arjun@trustdrive.dev", pw, "AN", "+91 98200 66006", "Hyderabad", null, null, "verified", "{}", null, 1, 0, null, iso(4), iso(90)],
     ["u-seller2", "WeDuo Motors", "seller", "weduo@trustdrive.dev", pw, "WM", "+91 98200 77007", "Pune", "dealer", "WeDuo Motors Pvt Ltd", "verified", "{}", null, 1, 0, null, iso(1), iso(200)],
   ];
-  const iu = conn.prepare("INSERT INTO users VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+  const iu = conn.prepare(
+    "INSERT INTO users (id, name, role, email, password_hash, initials, phone, city, seller_type, business_name, kyc_status, preferences, avatar_url, email_verified, twofa_enabled, kyc_doc_key, last_login_at, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+  );
   users.forEach((u) => iu.run(...u));
 
   type V = [string, string, string, string, string, number, string, string, string, string, string, string, number, string, number, number, number, string, number, number, string, string, string, string, string, string];
@@ -795,7 +797,9 @@ function seed(conn: DatabaseSync) {
     ownership: { owners: "2", lastTransfer: "2022-08-01" },
     inspection: { inspector: "AutoAssure", date: "2023-06-01", odometerKm: "42000", result: "Passed" },
   };
-  const idoc = conn.prepare("INSERT INTO documents VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+  const idoc = conn.prepare(
+    "INSERT INTO documents (id, vehicle_id, type, file_name, mime, size_bytes, status, status_reason, sha256, consent, version, supersedes_id, extracted, verified_at, uploaded_at, file_key) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+  );
   for (const v of vehicles) {
     const vid = v[0];
     docTypes.forEach((t, idx) => {
