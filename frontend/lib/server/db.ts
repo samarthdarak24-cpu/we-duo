@@ -1354,7 +1354,7 @@ export function createUser(u: {
 }
 export function updateUser(id: string, fields: Partial<UserRow>) {
   const allowed = ["name", "phone", "city", "seller_type", "business_name", "kyc_status", "preferences", "avatar_url", "email_verified", "twofa_enabled", "kyc_doc_key", "last_login_at"];
-  const entries = Object.entries(fields).filter(([k]) => allowed.includes(k));
+  const entries = Object.entries(fields).filter(([k, v]) => allowed.includes(k) && v !== undefined);
   if (!entries.length) return;
   const sets = entries.map(([k]) => `${k} = ?`).join(", ");
   run(`UPDATE users SET ${sets} WHERE id = ?`, ...entries.map(([, v]) => v as string | number | null), id);
@@ -1397,7 +1397,7 @@ export function updateVehicle(id: string, fields: Partial<VehicleRow>) {
     "ownership_count", "location", "km_claimed", "last_verified_km", "asking_price", "status", "base_value",
     "condition_score", "description", "condition",
   ];
-  const entries = Object.entries(fields).filter(([k]) => allowed.includes(k));
+  const entries = Object.entries(fields).filter(([k, v]) => allowed.includes(k) && v !== undefined);
   if (!entries.length) return;
   const sets = entries.map(([k]) => `${k} = ?`).join(", ");
   run(`UPDATE vehicles SET ${sets}, updated_at = ? WHERE id = ?`, ...entries.map(([, v]) => v as string | number | null), new Date().toISOString(), id);
@@ -1434,7 +1434,7 @@ export function createDocument(d: DocumentRow) {
 }
 export function updateDocument(id: string, fields: Partial<DocumentRow>) {
   const allowed = ["status", "status_reason", "consent", "version", "supersedes_id", "extracted", "verified_at", "file_name"];
-  const entries = Object.entries(fields).filter(([k]) => allowed.includes(k));
+  const entries = Object.entries(fields).filter(([k, v]) => allowed.includes(k) && v !== undefined);
   if (!entries.length) return;
   const sets = entries.map(([k]) => `${k} = ?`).join(", ");
   run(`UPDATE documents SET ${sets} WHERE id = ?`, ...entries.map(([, v]) => v as string | number | null), id);
@@ -1461,7 +1461,7 @@ export function createFinding(f: FindingRow) {
 }
 export function updateFinding(id: string, fields: Partial<FindingRow>) {
   const allowed = ["status", "explanation", "recommendation"];
-  const entries = Object.entries(fields).filter(([k]) => allowed.includes(k));
+  const entries = Object.entries(fields).filter(([k, v]) => allowed.includes(k) && v !== undefined);
   if (!entries.length) return;
   const sets = entries.map(([k]) => `${k} = ?`).join(", ");
   run(`UPDATE findings SET ${sets} WHERE id = ?`, ...entries.map(([, v]) => v as string | null), id);
@@ -1505,7 +1505,7 @@ export function createListing(l: ListingRow) {
 }
 export function updateListing(id: string, fields: Partial<ListingRow>) {
   const allowed = ["status", "headline", "description", "condition", "location", "views", "saves", "inquiries", "cover_image", "published_at"];
-  const entries = Object.entries(fields).filter(([k]) => allowed.includes(k));
+  const entries = Object.entries(fields).filter(([k, v]) => allowed.includes(k) && v !== undefined);
   if (!entries.length) return;
   const sets = entries.map(([k]) => `${k} = ?`).join(", ");
   run(`UPDATE listings SET ${sets}, updated_at = ? WHERE id = ?`, ...entries.map(([, v]) => v as string | number | null), new Date().toISOString(), id);
@@ -1559,7 +1559,7 @@ export function createInquiry(q: InquiryRow) {
 }
 export function updateInquiry(id: string, fields: Partial<InquiryRow>) {
   const allowed = ["status", "last_activity_at", "message"];
-  const entries = Object.entries(fields).filter(([k]) => allowed.includes(k));
+  const entries = Object.entries(fields).filter(([k, v]) => allowed.includes(k) && v !== undefined);
   if (!entries.length) return;
   const sets = entries.map(([k]) => `${k} = ?`).join(", ");
   run(`UPDATE inquiries SET ${sets} WHERE id = ?`, ...entries.map(([, v]) => v as string | null), id);
@@ -1728,7 +1728,7 @@ export function createReport(r: ReportRow) {
 }
 export function updateReport(id: string, fields: Partial<ReportRow>) {
   const allowed = ["status", "file_key", "generated_at", "pdf_hash", "snapshot", "version"];
-  const entries = Object.entries(fields).filter(([k]) => allowed.includes(k));
+  const entries = Object.entries(fields).filter(([k, v]) => allowed.includes(k) && v !== undefined);
   if (!entries.length) return;
   const sets = entries.map(([k]) => `${k} = ?`).join(", ");
   run(`UPDATE reports SET ${sets} WHERE id = ?`, ...entries.map(([, v]) => v as string | number | null), id);
@@ -1751,7 +1751,7 @@ export function createDispute(d: DisputeRow) {
 }
 export function updateDispute(id: string, fields: Partial<DisputeRow>) {
   const allowed = ["status", "reviewed_by", "review_note"];
-  const entries = Object.entries(fields).filter(([k]) => allowed.includes(k));
+  const entries = Object.entries(fields).filter(([k, v]) => allowed.includes(k) && v !== undefined);
   if (!entries.length) return;
   const sets = entries.map(([k]) => `${k} = ?`).join(", ");
   run(`UPDATE disputes SET ${sets} WHERE id = ?`, ...entries.map(([, v]) => v as string | null), id);

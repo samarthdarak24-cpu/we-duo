@@ -3,7 +3,7 @@
 export default async function run({ H, rec, page }) {
   let createdId = null;
   let originalName = null;
-  const reg = `MH02QA${Date.now().toString().slice(-6)}`;
+  const reg = `MH02QA${Date.now().toString().slice(-4)}`;
 
   await H.loginViaUI(page, "seller");
 
@@ -91,6 +91,7 @@ export default async function run({ H, rec, page }) {
     if (createdId) {
       H.sqlExec("DELETE FROM listings WHERE vehicle_id = ?", createdId);
       H.sqlExec("DELETE FROM chain_records WHERE vehicle_id = ?", createdId);
+      H.sqlExec("DELETE FROM audit_logs WHERE entity_type = 'vehicle' AND entity_id = ?", createdId);
       H.sqlExec("DELETE FROM vehicles WHERE id = ?", createdId);
     }
     rec.check("Z", "test vehicle fully removed from DB", !H.sqlOne("SELECT id FROM vehicles WHERE id = ?", createdId || ""), `id=${createdId}`);

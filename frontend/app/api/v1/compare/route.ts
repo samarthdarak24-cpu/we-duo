@@ -8,8 +8,8 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   const guard = requireRole(req, "buyer");
   if (!guard.ok) return guard.response;
-  const body = (await req.json().catch(() => null)) as { listingIds?: string[]; ids?: string[] } | null;
-  const ids = body?.listingIds ?? body?.ids ?? [];
+  const body = (await req.json().catch(() => null)) as { listingIds?: string[]; ids?: string[]; vehicleIds?: string[] } | null;
+  const ids = body?.listingIds ?? body?.ids ?? body?.vehicleIds ?? [];
   if (!Array.isArray(ids) || ids.length < 2 || ids.length > 4) {
     return fail(400, "VALIDATION_FAILED", "Select 2 to 4 vehicles to compare.");
   }

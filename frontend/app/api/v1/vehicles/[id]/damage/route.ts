@@ -22,7 +22,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     | null;
   if (!body) return fail(400, "VALIDATION_FAILED", "A JSON body is required.");
   const result = addDamageForVehicle(guard.user.sub, params.id, {
-    zoneId: body.zoneId ?? "",
+    zoneId: body.zoneId ?? (body as any).componentId ?? "",
     description: body.description ?? "",
     severity: body.severity ?? "Minor",
     repairStatus: body.repairStatus ?? "Not repaired",

@@ -27,9 +27,9 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   const body = (await req.json().catch(() => null)) as { category?: string; date?: string; km?: number; title?: string; description?: string } | null;
   if (!body) return fail(400, "VALIDATION_FAILED", "A JSON body is required.");
   const result = addHistoryForVehicle(guard.user.sub, params.id, {
-    category: body.category ?? "service",
-    date: body.date ?? "",
-    km: body.km,
+    category: body.category ?? (body as any).eventType ?? "service",
+    date: body.date ?? (body as any).eventDate ?? "",
+    km: body.km ?? (body as any).mileage,
     title: body.title ?? "",
     description: body.description,
   });
