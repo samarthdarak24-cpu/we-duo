@@ -7,7 +7,7 @@ import { LIMITS, enforceRateLimit } from "@/lib/server/ratelimit";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const actions = ["publish", "pause", "unpublish", "sold", "pending_review", "generate-description"] as const;
+const actions = ["publish", "pause", "resume", "unpublish", "sold", "mark-sold", "pending_review", "generate-description"] as const;
 type Action = (typeof actions)[number];
 
 /**
@@ -30,7 +30,9 @@ export async function POST(req: Request, { params }: { params: { id: string; act
     return ok(result);
   }
 
-  const result = transitionListingForActor(guard.user.sub, params.id, action);
+  const effectiveAction =
+    action === "mark-sold" ? "sold" : action === "resume" ? "publish" : action;
+  const result = transitionListingForActor(guard.user.sub, params.id, effectiveAction as "publish" | "pause" | "unpublish" | "sold" | "pending_review");
   if (!result.ok) {
     const status =
       result.code === "NOT_FOUND"

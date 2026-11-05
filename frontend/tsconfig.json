@@ -44,7 +44,8 @@
     ".next_verify11/types/**/*.ts",
     ".next_verify12/types/**/*.ts",
     ".next_verify13/types/**/*.ts",
-    ".next_qa_dev/types/**/*.ts"
+    ".next_qa_dev/types/**/*.ts",
+    ".next_verify_build/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

@@ -13,9 +13,14 @@ import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypt
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
-const DATA_DIR = process.env.TD_DATA_DIR
-  ? process.env.TD_DATA_DIR
-  : join(process.cwd(), ".data");
+const DATA_DIR = (() => {
+  const raw = process.env.TD_DATA_DIR || ".data";
+  const abs = join(process.cwd(), raw);
+  if (!existsSync(abs) && existsSync(join(process.cwd(), "..", raw))) {
+    return join(process.cwd(), "..", raw);
+  }
+  return abs;
+})();
 const SECRET_FILE = join(DATA_DIR, "jwt-secret");
 
 function resolveSecret(): string {

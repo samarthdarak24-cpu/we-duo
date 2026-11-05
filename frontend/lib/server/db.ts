@@ -1285,9 +1285,11 @@ export function getDb(): DatabaseSync {
   if (g.__tdDb) return g.__tdDb;
   // TD_DB_FILE lets a container/Render disk own the database path. The default
   // stays `.data/trustdrive.db` for local development.
-  const dbFile = process.env.TD_DB_FILE
-    ? path.resolve(process.env.TD_DB_FILE)
-    : path.join(process.cwd(), ".data", "trustdrive.db");
+  const rawDb = process.env.TD_DB_FILE || ".data/trustdrive.db";
+  let dbFile = path.resolve(rawDb);
+  if (!fs.existsSync(dbFile) && fs.existsSync(path.resolve("..", rawDb))) {
+    dbFile = path.resolve("..", rawDb);
+  }
   fs.mkdirSync(path.dirname(dbFile), { recursive: true });
   const conn = new DatabaseSync(dbFile);
   // foreign_keys is a per-connection pragma, and migrate() short-circuits once
@@ -1426,7 +1428,7 @@ export function getDocumentByFileKey(fileKey: string): DocumentRow | undefined {
   return one<DocumentRow>("SELECT * FROM documents WHERE file_key = ? AND deleted_at IS NULL ORDER BY uploaded_at DESC LIMIT 1", fileKey);
 }
 export function createDocument(d: DocumentRow) {
-  run("INSERT INTO documents VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+  run("INSERT INTO documents (id, vehicle_id, type, file_name, mime, size_bytes, status, status_reason, sha256, consent, version, supersedes_id, extracted, verified_at, uploaded_at, file_key) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
     d.id, d.vehicle_id, d.type, d.file_name, d.mime, d.size_bytes, d.status, d.status_reason,
     d.sha256, d.consent, d.version, d.supersedes_id, d.extracted, d.verified_at, d.uploaded_at, d.file_key);
 }

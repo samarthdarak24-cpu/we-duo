@@ -91,6 +91,7 @@ import {
   computeCompleteness,
   computeTrustScore,
   coverageLabel,
+  estimatePrice,
   keyDifferences,
   publishGate,
   recommendedAction,
@@ -576,7 +577,19 @@ export function getVehicleReport(vehicleId: string, viewerId?: string) {
       ? { id: seller.id, name: seller.name, type: seller.seller_type, businessName: seller.business_name, verified: seller.kyc_status === "verified" }
       : null,
     trust: computeVehicleTrust(vehicleId),
-    pricing: getPricing(vehicleId),
+    pricing:
+      getPricing(vehicleId) ?? {
+        vehicle_id: vehicleId,
+        ...estimatePrice({
+          base: v.base_value || 1000000,
+          ageYears: new Date().getFullYear() - v.year,
+          km: v.km_claimed,
+          conditionScore: v.condition_score,
+        }),
+        comparables: 0,
+        method: "deterministic_depreciation",
+        computed_at: new Date().toISOString(),
+      },
     insights: getInsights(vehicleId),
     documents: visibleDocs.map((d) => ({ ...d, consent: !!d.consent })),
     documentCount: docs.length,

@@ -10,9 +10,15 @@ import { createHash, randomUUID } from "node:crypto";
 export const MAX_DOC_BYTES = 10 * 1024 * 1024;
 export const MAX_IMAGE_BYTES = 6 * 1024 * 1024;
 
-const ROOT = process.env.TD_UPLOAD_DIR
-  ? path.resolve(process.env.TD_UPLOAD_DIR)
-  : path.join(process.cwd(), ".data", "uploads");
+function resolveUploadRoot(): string {
+  const raw = process.env.TD_UPLOAD_DIR || ".data/uploads";
+  let r = path.resolve(raw);
+  if (!fs.existsSync(r) && fs.existsSync(path.resolve("..", raw))) {
+    r = path.resolve("..", raw);
+  }
+  return r;
+}
+const ROOT = resolveUploadRoot();
 
 const SIGNATURES: { mime: string; ext: string; test: (b: Buffer) => boolean }[] = [
   { mime: "application/pdf", ext: "pdf", test: (b) => b.subarray(0, 5).toString("latin1") === "%PDF-" },
