@@ -1611,7 +1611,7 @@ export function createVehicleDraft(ownerId: string, input: VehicleInput) {
     variant: input.variant?.trim() ?? "",
     year,
     reg_no: reg,
-    vin,
+    vin: vin ?? "",
     fuel: input.fuel || "Petrol",
     transmission: input.transmission || "Manual",
     category: input.category || "Sedan",
@@ -1677,7 +1677,7 @@ export function updateVehicleForOwner(ownerId: string, vehicleId: string, fields
   }
   if (fields.vin) {
     const vin = normalizeVin(fields.vin);
-    if (!isValidVin(vin)) return { ok: false as const, code: "VALIDATION_FAILED", message: "Invalid VIN." };
+    if (!vin || !isValidVin(vin)) return { ok: false as const, code: "VALIDATION_FAILED", message: "Invalid VIN." };
     const existing = getVehicleByVin(vin);
     if (existing && existing.id !== vehicleId) return { ok: false as const, code: "DUPLICATE_VIN", message: "VIN already exists.", existingId: existing.id };
     fields.vin = vin;
