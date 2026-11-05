@@ -62,11 +62,26 @@ export async function newContext(opts = {}) {
   });
 }
 
+/** Wait until React has hydrated a node, so clicks hit real handlers (not native form GET). */
+export async function waitForHydration(page, selector = "#login-email") {
+  const el = page.locator(selector).first();
+  await el.waitFor({ state: "visible", timeout: 30000 });
+  await page.waitForFunction(
+    (sel) => {
+      const n = document.querySelector(sel);
+      return !!n && Object.keys(n).some((k) => k.startsWith("__reactFiber$") || k.startsWith("__reactProps$"));
+    },
+    selector,
+    { timeout: 30000 }
+  ).catch(() => {});
+}
+
 /** Sign in through the REAL login form (not by injecting a cookie). */
 export async function loginViaUI(page, role = "seller") {
   const acc = ACCOUNTS[role];
   if (!acc) throw new Error(`unknown role ${role}`);
   await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });
+  await waitForHydration(page, "#login-email");
   await page.locator("#login-email").fill(acc.email);
   await page.locator("#login-password").fill(acc.password);
   const responsePromise = page.waitForResponse(
@@ -74,10 +89,14 @@ export async function loginViaUI(page, role = "seller") {
   );
   await page.locator('form button[type="submit"]').click();
   const loginResponse = await responsePromise;
+  // Read the body BEFORE following the redirect; navigation disposes the response.
+  const raw = await loginResponse.text().catch(() => "");
+  let body = null;
+  try { body = JSON.parse(raw); } catch { /* keep null */ }
   await page.waitForURL(acc.home, { timeout: 20000 }).catch(() => {});
   return {
     status: loginResponse.status(),
-    body: await loginResponse.json().catch(() => null),
+    body,
     url: page.url(),
     cookies: await page.context().cookies(),
   };

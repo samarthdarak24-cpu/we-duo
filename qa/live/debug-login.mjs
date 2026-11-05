@@ -1,0 +1,23 @@
+import * as H from "./harness.mjs";
+const ctx = await H.newContext();
+const page = await ctx.newPage();
+page.on("request", (r) => { if (r.url().includes("/api/")) console.log("REQ ", r.method(), r.url().replace(H.BASE, "")); });
+page.on("response", async (r) => {
+  if (r.url().includes("/api/")) console.log("RES ", r.status(), r.request().method(), r.url().replace(H.BASE, ""), (await r.text().catch(() => "")).slice(0, 300));
+});
+page.on("console", (m) => console.log("CONSOLE", m.type(), m.text().slice(0, 300)));
+page.on("pageerror", (e) => console.log("PAGEERROR", e.message.slice(0, 300)));
+await page.goto(`${H.BASE}/login`, { waitUntil: "domcontentloaded" });
+await H.waitForHydration(page, "#login-email");
+console.log("URL", page.url());
+console.log("email inputs", await page.locator("input").count());
+console.log("submit buttons", await page.locator('form button[type="submit"]').count());
+await page.locator("#login-email").fill("samarth@trustdrive.dev");
+await page.locator("#login-password").fill("demo1234");
+await page.locator('form button[type="submit"]').click();
+await page.waitForTimeout(6000);
+console.log("AFTER URL", page.url());
+console.log("BODY", (await page.locator("body").innerText()).slice(0, 900).replace(/\n/g, " | "));
+console.log("COOKIES", (await ctx.cookies()).map((c) => `${c.name}=${c.value.slice(0, 12)}`));
+await H.shot(page, "debug-login");
+await H.closeAll();
