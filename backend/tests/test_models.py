@@ -74,7 +74,8 @@ def test_damage_adapter_is_active_with_licensed_weights():
 
 def test_damage_adapter_detects_on_a_real_sample():
     pytest.importorskip("ultralytics")
-    sample = Path(__file__).resolve().parents[3] / "data" / "yolo_sample.png"
+    from app.config import REPO_ROOT
+    sample = REPO_ROOT / "ai-services" / "shared" / "data" / "yolo_sample.png"
     if not sample.is_file() or not yolo.status()["available"]:
         pytest.skip("sample image or weights unavailable")
     out = yolo.detect(sample, conf=0.2)
