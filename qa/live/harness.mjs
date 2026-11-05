@@ -40,6 +40,17 @@ export function sqlOne(query, ...params) {
   return sql(query, ...params)[0] ?? null;
 }
 
+/** Cleanup-only: remove rows created by the live test so seed data stays pristine. */
+export function sqlExec(query, ...params) {
+  const db = new DatabaseSync(DB_FILE);
+  try {
+    db.exec("PRAGMA busy_timeout = 10000");
+    return db.prepare(query).run(...params);
+  } finally {
+    db.close();
+  }
+}
+
 let browserInstance;
 
 export async function launchBrowser() {
