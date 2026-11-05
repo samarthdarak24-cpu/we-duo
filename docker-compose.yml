@@ -1,0 +1,101 @@
+# TrustDrive — one shared database, two runtimes.
+#
+# Local default (no daemon required): SQLite file + DB-backed worker.
+#   openssl rand -hex 32   -> put the value in .env as JWT_SECRET=...
+#   docker compose up --build
+# Postgres + Redis are production targets behind the "production" profile:
+#   docker compose --profile production up --build
+# In that case set TD_DB_URL / TD_BROKER_URL in .env (see .env.example).
+#
+# SECURITY: JWT_SECRET is mandatory here. The web and api containers have
+# separate filesystems, so the dev-only random-secret file cannot be shared
+# between them; an explicit shared secret is required for tokens to validate
+# in both runtimes. TD_SERVICE_TOKEN is optional: when unset the web server
+# sends a short-lived signed service JWT instead.
+
+services:
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      TD_DB_FILE: /app/.data/trustdrive.db
+      TD_UPLOAD_DIR: /app/.data/uploads
+      TD_INTELLIGENCE_URL: http://api:8000
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env (openssl rand -hex 32)}
+      TD_SERVICE_TOKEN: ${TD_SERVICE_TOKEN:-}
+      TD_ENV: ${TD_ENV:-production}
+    volumes:
+      - td-data:/app/.data
+    depends_on:
+      api:
+        condition: service_started
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      TD_DB_URL: ${TD_DB_URL:-sqlite+pysqlite:////srv/data/trustdrive.db}
+      TD_UPLOAD_DIR: /srv/data/uploads
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env (openssl rand -hex 32)}
+      TD_SERVICE_TOKEN: ${TD_SERVICE_TOKEN:-}
+      TD_ENV: ${TD_ENV:-production}
+      TD_LLM_PROVIDER: ${TD_LLM_PROVIDER:-none}
+      TD_LLM_BASE_URL: ${TD_LLM_BASE_URL:-}
+      TD_LLM_API_KEY: ${TD_LLM_API_KEY:-}
+      TD_BROKER_URL: ${TD_BROKER_URL:-}
+    volumes:
+      - td-data:/srv/data
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: ["python", "-m", "app.worker"]
+    environment:
+      TD_DB_URL: ${TD_DB_URL:-sqlite+pysqlite:////srv/data/trustdrive.db}
+      TD_UPLOAD_DIR: /srv/data/uploads
+      TD_BROKER_URL: ${TD_BROKER_URL:-}
+    volumes:
+      - td-data:/srv/data
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    profiles: ["production"]
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-trustdrive}
+      POSTGRES_USER: ${POSTGRES_USER:-trustdrive}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-trustdrive}"]
+      interval: 10s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    profiles: ["production"]
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+
+volumes:
+  td-data:
+  pg-data:
+  redis-data:

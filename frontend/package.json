@@ -1,0 +1,49 @@
+{
+  "name": "trustdrive",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest run --pool=forks --no-file-parallelism",
+    "test:e2e": "playwright test",
+    "intel:serve": "python -m uvicorn app.main:app --app-dir ../backend --host 127.0.0.1 --port 8000",
+    "intel:worker": "cd ../backend && python -m app.worker",
+    "intel:test": "cd ../backend && python -m pytest -q",
+    "intel:migrate": "cd ../backend && alembic upgrade head",
+    "schema:dump": "node scripts/dump-schema.mjs",
+    "seed:reset": "node scripts/reset-seed.mjs"
+  },
+  "dependencies": {
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.18.0",
+    "clsx": "^2.1.1",
+    "gsap": "^3.15.1",
+    "lucide-react": "^1.68.0",
+    "next": "14.2.35",
+    "qrcode": "^1.5.4",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-is": "^19.3.1",
+    "recharts": "^3.10.1",
+    "three": "^0.169.0",
+    "zod": "^4.6.7",
+    "zustand": "^5.0.16"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.2",
+    "@testing-library/react": "^16.1.0",
+    "@types/node": "^20",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/three": "^0.187.0",
+    "jsdom": "^25.0.1",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5",
+    "vitest": "^1.6.0"
+  }
+}

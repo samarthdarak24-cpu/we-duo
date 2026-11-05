@@ -1,0 +1,342 @@
+/* ==========================================================================
+   TRUSTDRIVE — NIGHT MODE  (premium blue & white)
+   --------------------------------------------------------------------------
+   Day Mode is the untouched original black / champagne-gold UI: no rule in
+   this file applies unless <html data-theme="night"> is present.
+
+   Night Mode layout contract:
+     * Every NAVIGATION bar (.theme-nav) is BLUE with white text.
+     * Every CONTENT / overview / feature surface is WHITE (pale blue tints)
+       with navy ink, royal-blue accents and multicolour status chips.
+     * Photographic / video / 3D surfaces (.theme-cinematic) stay deep
+       sapphire so the hero frames, car video and 3D model remain legible.
+
+   Semantic CSS variables drive all `bg-*`/`text-*`/`border-*` tokens from
+   tailwind.config.ts. Hardcoded Tailwind hex utilities are remapped by the
+   companion generated stylesheet `theme-night.generated.css`.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Smooth transitions — active only during the switch
+   -------------------------------------------------------------------------- */
+html.theme-transitioning body,
+html.theme-transitioning body * {
+  transition-property: background-color, border-color, color, fill, stroke,
+    box-shadow, outline-color, text-decoration-color !important;
+  transition-duration: 420ms !important;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.theme-transitioning body,
+  html.theme-transitioning body * {
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   2. CONTENT semantic tokens — white / pale blue / navy ink / royal blue
+   -------------------------------------------------------------------------- */
+html[data-theme="night"] {
+  color-scheme: light;
+
+  --bg: #f6f9ff; /* near-white app canvas */
+  --surface: #ffffff; /* white cards */
+  --surface-tint: #eaf2ff; /* pale blue raised surface */
+  --primary: #1d4ed8; /* royal blue accent */
+  --primary-600: #3b82f6; /* accent hover */
+  --navy-900: #102a52;
+  --text: #102a52; /* deep navy ink */
+  --muted: #5c7194; /* slate secondary text */
+  --border: #d8e5f8; /* pale blue hairline */
+  --success: #16a34a;
+  --success-bg: #ecfdf3;
+  --warning: #d97706;
+  --warning-bg: #fffbeb;
+  --danger: #dc2626;
+  --danger-bg: #fef2f2;
+  --info: #1d4ed8;
+  --info-bg: #e8f1ff;
+  --on-primary: #ffffff;
+  --cinema-canvas: #061329;
+}
+
+html[data-theme="night"] ::selection {
+  background: rgba(29, 78, 216, 0.2);
+  color: #102a52;
+}
+
+html[data-theme="night"] ::placeholder {
+  color: #8ba0c0;
+}
+
+html[data-theme="night"] input,
+html[data-theme="night"] select,
+html[data-theme="night"] textarea {
+  color-scheme: light;
+}
+
+/* Scrollbars */
+html[data-theme="night"] ::-webkit-scrollbar-track {
+  background: #f6f9ff;
+}
+html[data-theme="night"] ::-webkit-scrollbar-thumb {
+  background: #b9cdea;
+  border-color: #f6f9ff;
+}
+html[data-theme="night"] ::-webkit-scrollbar-thumb:hover {
+  background: #93b8f5;
+}
+
+/* --------------------------------------------------------------------------
+   3. Portal content canvas (buyer / seller / admin dashboards & features)
+   -------------------------------------------------------------------------- */
+[data-theme="night"] .portal-canvas {
+  --bg: #f6f9ff;
+  --surface: #ffffff;
+  --surface-tint: #eaf2ff;
+  --primary: #1d4ed8;
+  --primary-600: #3b82f6;
+  --text: #102a52;
+  --muted: #5c7194;
+  --border: #d8e5f8;
+  --success: #16a34a;
+  --success-bg: #ecfdf3;
+  --warning: #d97706;
+  --warning-bg: #fffbeb;
+  --danger: #dc2626;
+  --danger-bg: #fef2f2;
+  --info: #1d4ed8;
+  --info-bg: #e8f1ff;
+  --on-primary: #ffffff;
+
+  background: var(--bg);
+  color: var(--text);
+}
+
+[data-theme="night"] .portal-canvas .card {
+  box-shadow: 0 1px 2px rgba(16, 42, 82, 0.05), 0 10px 30px rgba(29, 78, 216, 0.06);
+}
+
+[data-theme="night"] .portal-canvas ::-webkit-scrollbar-track {
+  background: #f6f9ff;
+}
+[data-theme="night"] .portal-canvas ::-webkit-scrollbar-thumb {
+  background: #b9cdea;
+  border-color: #f6f9ff;
+}
+[data-theme="night"] .portal-canvas ::-webkit-scrollbar-thumb:hover {
+  background: #93b8f5;
+}
+
+/* --------------------------------------------------------------------------
+   4. BLUE NAVIGATION CHROME
+   Public navbar, dashboard top bar, sidebar and mobile tab bar.
+   -------------------------------------------------------------------------- */
+[data-theme="night"] .theme-nav {
+  --bg: #0b3d91;
+  --surface: rgba(255, 255, 255, 0.1);
+  --surface-tint: rgba(255, 255, 255, 0.16);
+  --primary: #9cc4ff;
+  --primary-600: #c7dcff;
+  --text: #ffffff;
+  --muted: #c7dcff;
+  --border: rgba(255, 255, 255, 0.18);
+  --info: #9cc4ff;
+  --info-bg: rgba(255, 255, 255, 0.12);
+  --on-primary: #061329;
+
+  background: linear-gradient(100deg, #082f78 0%, #0b46ad 52%, #1663d6 100%) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff;
+  box-shadow: 0 6px 26px rgba(8, 47, 120, 0.22);
+}
+
+[data-theme="night"] .theme-nav.portal-glass,
+[data-theme="night"] .theme-nav.glass-nav,
+[data-theme="night"] .theme-nav.mobile-nav {
+  background: linear-gradient(100deg, #082f78 0%, #0b46ad 52%, #1663d6 100%) !important;
+}
+
+/* --------------------------------------------------------------------------
+   5. CINEMATIC MEDIA SURFACES — deep sapphire, white text
+   Hero video, 291-frame scrollytelling, 3D viewers, auth photograph.
+   -------------------------------------------------------------------------- */
+[data-theme="night"] .theme-nav :where(input, select, textarea),
+[data-theme="night"] .theme-cinematic :where(input, select, textarea) {
+  color-scheme: dark;
+}
+
+[data-theme="night"] .theme-nav ::placeholder,
+[data-theme="night"] .theme-cinematic ::placeholder {
+  color: #9ab4dc;
+}
+
+[data-theme="night"] .theme-cinematic {
+  --bg: #061329;
+  --surface: #0c2145;
+  --surface-tint: #143265;
+  --primary: #7fb0ff;
+  --primary-600: #a8caff;
+  --text: #f7faff;
+  --muted: #a8c3ec;
+  --border: #2a4f8c;
+  --info: #7fb0ff;
+  --info-bg: #102c55;
+  --success-bg: #0b2e33;
+  --warning-bg: #2a2440;
+  --danger-bg: #331c36;
+  --on-primary: #061329;
+
+  background-color: #061329 !important;
+  color: #f7faff;
+}
+
+/* --------------------------------------------------------------------------
+   6. Framework colour classes without a hex (text-white, bg-primary, ...)
+   -------------------------------------------------------------------------- */
+[data-theme="night"] [class~="text-white"],
+[data-theme="night"] [class~="hover:text-white"]:hover,
+[data-theme="night"] [class~="selection:text-white"]::selection,
+[data-theme="night"] .group:hover [class~="group-hover:text-white"] {
+  color: #102a52 !important;
+}
+[data-theme="night"] .theme-nav [class~="text-white"],
+[data-theme="night"] .theme-nav [class~="hover:text-white"]:hover,
+[data-theme="night"] .theme-nav .group:hover [class~="group-hover:text-white"],
+[data-theme="night"] .theme-cinematic [class~="text-white"],
+[data-theme="night"] .theme-cinematic [class~="hover:text-white"]:hover,
+[data-theme="night"] .theme-cinematic .group:hover [class~="group-hover:text-white"] {
+  color: #ffffff !important;
+}
+
+/* Text painted on blue-filled buttons must stay white. */
+[data-theme="night"] .bg-primary,
+[data-theme="night"] [class~="bg-[#C5A46D]"],
+[data-theme="night"] [class~="bg-[#B8923E]"] {
+  color: #ffffff !important;
+}
+[data-theme="night"] .theme-nav .bg-primary,
+[data-theme="night"] .theme-nav [class~="bg-[#C5A46D]"],
+[data-theme="night"] .theme-cinematic [class~="bg-[#C5A46D]"] {
+  color: #061329 !important;
+}
+
+[data-theme="night"] [class~="bg-white"] {
+  background-color: #f2f7ff;
+}
+[data-theme="night"] .theme-nav [class~="bg-white"],
+[data-theme="night"] .theme-cinematic [class~="bg-white"] {
+  background-color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   7. Component classes from globals.css
+   -------------------------------------------------------------------------- */
+[data-theme="night"] .app-shell {
+  background:
+    radial-gradient(1100px 620px at 82% -12%, rgba(29, 78, 216, 0.08), transparent 62%),
+    radial-gradient(900px 700px at 4% 100%, rgba(59, 130, 246, 0.06), transparent 60%),
+    var(--bg);
+}
+
+[data-theme="night"] .card-hover:hover {
+  border-color: rgba(29, 78, 216, 0.38);
+  box-shadow: 0 18px 44px rgba(16, 42, 82, 0.12), 0 0 0 1px rgba(29, 78, 216, 0.08);
+}
+
+[data-theme="night"] .pill {
+  border-color: rgba(16, 42, 82, 0.1);
+}
+
+[data-theme="night"] .portal-glass {
+  background: rgba(11, 70, 173, 0.94);
+}
+
+[data-theme="night"] .glass-nav {
+  background: rgba(8, 47, 120, 0.94);
+  border-bottom-color: rgba(255, 255, 255, 0.16);
+}
+
+[data-theme="night"] .cinema-card {
+  background: #ffffff;
+  border-color: #d8e5f8;
+}
+[data-theme="night"] .cinema-card:hover {
+  border-color: rgba(29, 78, 216, 0.45);
+  box-shadow: 0 12px 32px rgba(16, 42, 82, 0.12);
+}
+
+[data-theme="night"] .text-gold-gradient {
+  background: linear-gradient(135deg, #102a52 16%, #1d4ed8 84%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+[data-theme="night"] .text-silver-gradient {
+  background: linear-gradient(135deg, #102a52 0%, #3b6bb5 60%, #5c7194 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+[data-theme="night"] .border-cinema-gold {
+  border-color: rgba(29, 78, 216, 0.36);
+}
+
+[data-theme="night"] .skeleton {
+  background: linear-gradient(90deg, #eaf2ff 25%, #d8e5f8 37%, #eaf2ff 63%);
+  background-size: 400% 100%;
+}
+
+[data-theme="night"] :where(button, a, input, [tabindex]):focus-visible {
+  outline-color: var(--primary);
+}
+
+/* --------------------------------------------------------------------------
+   8. Decorative gold glows written as rgba() / inline styles / SVG attrs
+   -------------------------------------------------------------------------- */
+[data-theme="night"] [class*="rgba(197,164,109"],
+[data-theme="night"] [class*="rgba(197, 164, 109"] {
+  box-shadow: 0 0 22px rgba(29, 78, 216, 0.16);
+}
+
+[data-theme="night"] [style*="197,164,109"],
+[data-theme="night"] [style*="197, 164, 109"] {
+  background-image:
+    radial-gradient(900px 320px at 12% -20%, rgba(29, 78, 216, 0.14), transparent 65%),
+    linear-gradient(120deg, #ffffff 0%, #f6f9ff 100%) !important;
+}
+[data-theme="night"] .theme-nav [style*="197,164,109"],
+[data-theme="night"] .theme-nav [style*="197, 164, 109"],
+[data-theme="night"] .theme-cinematic [style*="197,164,109"],
+[data-theme="night"] .theme-cinematic [style*="197, 164, 109"] {
+  background-image:
+    radial-gradient(220px 150px at 88% 0%, rgba(76, 141, 255, 0.22), transparent 72%),
+    linear-gradient(120deg, rgba(255, 255, 255, 0.06), rgba(8, 47, 120, 0.22)) !important;
+}
+
+[data-theme="night"] [stroke="#C5A46D"] { stroke: #1d4ed8; }
+[data-theme="night"] [fill="#C5A46D"] { fill: #1d4ed8; }
+[data-theme="night"] [stroke="#1C1F23"] { stroke: #d8e5f8; }
+[data-theme="night"] [fill="#17191C"] { fill: #ffffff; }
+[data-theme="night"] [stroke="#23262A"] { stroke: #d8e5f8; }
+
+/* 3D studio backdrop (inline radial gradient) stays dark sapphire. */
+[data-theme="night"] [style*="#23282D"] {
+  background: radial-gradient(
+    circle at 50% 38%,
+    #1a3b70 0%,
+    #0c2145 55%,
+    #061329 100%
+  ) !important;
+}
+
+/* Keep printed reports neutral regardless of the on-screen theme. */
+@media print {
+  html[data-theme="night"] body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+}

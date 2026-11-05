@@ -1,0 +1,19 @@
+# Python / FastAPI build context (backend/)
+__pycache__
+*.py[cod]
+.venv
+venv
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.data
+*.log
+.git
+.github
+docs
+*.md
+!README.md
+.env
+.env.*
+.DS_Store
+Thumbs.db

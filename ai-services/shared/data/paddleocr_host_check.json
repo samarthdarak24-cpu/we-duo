@@ -1,0 +1,30 @@
+{
+  "checked_at": "2026-11-05T08:17:15+00:00",
+  "host": {
+    "system": "Windows",
+    "release": "11",
+    "machine": "AMD64",
+    "processor": "AMD64 Family 25 Model 80 Stepping 0, AuthenticAMD",
+    "python": "3.13.14"
+  },
+  "versions": {
+    "paddleocr": "3.7.0",
+    "paddle": "3.3.1"
+  },
+  "cpu_workaround": {
+    "FLAGS_use_mkldnn": "0",
+    "FLAGS_use_onednn": "0",
+    "enable_mkldnn_argument": false
+  },
+  "fixture": "data\\paddle_test.png",
+  "available": true,
+  "result": {
+    "engine": "paddleocr",
+    "method": "paddleocr-v3-predict",
+    "text": "MHO1AB1234",
+    "confidence": 0.975,
+    "is_ocr": true,
+    "warnings": []
+  },
+  "passed": true
+}

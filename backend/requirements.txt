@@ -1,0 +1,49 @@
+# TrustDrive intelligence service
+# Install: python -m pip install -r services/intelligence/requirements.txt
+# Optional adapters are imported lazily; a missing one degrades honestly instead
+# of being reported as a working integration (see app/ocr.py, app/llm.py).
+
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30,<1.0
+pydantic>=2.7,<3.0
+SQLAlchemy>=2.0,<3.0
+alembic>=1.13,<2.0
+httpx>=0.27,<1.0
+pytest>=8.0,<9.0
+# Loads repo-root .env / .env.local for every entrypoint (uvicorn, worker, eval).
+python-dotenv>=1.0,<2.0
+
+# Real document intelligence (used when available)
+PyMuPDF>=1.24,<3.0
+opencv-python-headless>=4.9,<6.0
+
+# Real anomaly detection (used when available)
+scikit-learn>=1.4,<2.0
+numpy>=1.26,<3.0
+
+# Damage adapter runtime: runs a licensed YOLO .onnx model without torch.
+# The adapter stays inactive until weights are placed in models/.
+onnxruntime>=1.17,<2.0
+
+# Real image OCR (ONNX CRNN, no torch/paddle required). Active by default.
+rapidocr-onnxruntime>=1.2,<2.0
+
+# Mileage model. A synthetic-demo model is shipped; retrain on real labels.
+xgboost>=2.0,<4.0
+
+# Damage detection: YOLO11m (MIT weights in models/car_damage.pt).
+# Pulls CPU/GPU torch; for CPU-only: pip install torch --index-url .../whl/cpu
+ultralytics>=8.3,<9.0
+
+# Local LLM (optional; set TD_LLM_PROVIDER=local). Install CPU torch first:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+#   pip install transformers>=4.44 accelerate
+# transformers>=4.44
+# accelerate>=0.30
+
+# Optional, activated only when installed. The service works without them.
+# paddleocr>=2.7        # OCR backend (heavy; needs paddlepaddle)
+# langgraph>=0.2        # stateful 12-node investigator
+# celery>=5.4           # only used when TD_BROKER_URL is set
+# redis>=5.0            # only used when TD_BROKER_URL is set
+# ultralytics>=8.0      # only when trained damage weights exist

@@ -1,0 +1,21 @@
+{
+  "name": "trustdrive-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Workspace wrapper. Frontend deps live in frontend/, backend deps in backend/.",
+  "scripts": {
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "start": "cd frontend && npm run start",
+    "lint": "cd frontend && npm run lint",
+    "test": "cd frontend && npm test",
+    "typecheck": "cd frontend && npx tsc --noEmit",
+    "test:e2e": "cd frontend && npx playwright test",
+    "seed:reset": "cd frontend && node scripts/reset-seed.mjs",
+    "schema:dump": "cd frontend && node scripts/dump-schema.mjs",
+    "intel:serve": "python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000",
+    "intel:worker": "cd backend && python -m app.worker",
+    "intel:test": "cd backend && python -m pytest -q",
+    "intel:migrate": "cd backend && alembic upgrade head"
+  }
+}

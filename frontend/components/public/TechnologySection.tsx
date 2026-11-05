@@ -1,0 +1,259 @@
+"use client";
+
+import { useState } from "react";
+import { Icon } from "@/components/ui/Icon";
+
+export function TechnologySection() {
+  const [activePillar, setActivePillar] = useState<number | null>(null);
+
+  const pillars = [
+    {
+      id: "engine",
+      title: "Deterministic Trust Engine",
+      subtitle: "Mathematical Rule-Based Scoring",
+      tag: "Pure Rules Logic",
+      icon: "Scale",
+      status: "100% Rule-Based",
+      highlights: ["Zero LLM hallucinations in score generation", "Fixed penalties for documented anomalies", "Auditable 0 to 100 deterministic scale"],
+      visualType: "formula",
+    },
+    {
+      id: "ocr",
+      title: "OCR & Document Vision",
+      subtitle: "Automotive Document Ingestion",
+      tag: "Computer Vision",
+      icon: "ScanSearch",
+      status: "99.2% Accuracy",
+      highlights: ["Sub-millimeter bounding box character extraction", "Cross-checks RC, Insurance & Workshop logs", "Detects font kerning tampering & doctored seals"],
+      visualType: "ocr",
+    },
+    {
+      id: "blockchain",
+      title: "Cryptographic SHA-256 Chains",
+      subtitle: "Immutable File Fingerprints",
+      tag: "Tamper-Evident",
+      icon: "ShieldCheck",
+      status: "256-Bit Ledger",
+      highlights: ["Cryptographic hash generated upon document arrival", "Append-only chain prevents retroactive tampering", "Permits verifiable independent auditing"],
+      visualType: "chain",
+    },
+    {
+      id: "audit",
+      title: "Zero-Knowledge Audit Trail",
+      subtitle: "Timestamped State Progression",
+      tag: "Immutable Ledger",
+      icon: "FileClock",
+      status: "Real-Time Feed",
+      highlights: ["Every status change permanently logged", "Admin reviews and seller appeals tracked", "Complete provenance preserved for life of vehicle"],
+      visualType: "feed",
+    },
+    {
+      id: "arbitration",
+      title: "Human Dispute Arbitration",
+      subtitle: "Admin Verification Queue",
+      tag: "Human Oversight",
+      icon: "Users",
+      status: "Admin Queue Live",
+      highlights: ["AI flags inconsistencies without accusing fraud", "Sellers can upload corrective evidence and receipts", "Human inspectors review disputed records"],
+      visualType: "arbitration",
+    },
+    {
+      id: "privacy",
+      title: "Privacy & Consent Safeguards",
+      subtitle: "Granular Document Masking",
+      tag: "Privacy First",
+      icon: "Lock",
+      status: "Granular Consent",
+      highlights: ["Owner names & contact masked on public browsing", "Sellers grant explicit access to verified buyers", "Protected under Indian DPDP privacy standards"],
+      visualType: "privacy",
+    },
+  ];
+
+  return (
+    <section id="technology" className="py-24 bg-[#08090A] border-t border-[#23262A] relative overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
+        <div className="max-w-3xl mb-16">
+          <span className="text-[11px] font-mono uppercase tracking-[0.24em] text-[#C5A46D] inline-block mb-3">
+            Integrity by Design
+          </span>
+          <h2 className="font-display font-bold text-3xl sm:text-5xl text-white tracking-tight leading-[1.12]">
+            Built on Intelligence. <br className="hidden sm:inline" />
+            Designed for Transparency.
+          </h2>
+          <p className="mt-4 text-[15px] text-[#BFC3C8] leading-relaxed">
+            We reject marketing hype. Every claim made on TrustDrive is backed by cryptographic hash chains, computer vision, and transparent deterministic rules.
+          </p>
+        </div>
+
+        {/* 6 Architectural Feature Cards with Visual HUD Elements */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {pillars.map((pillar, idx) => {
+            const isHovered = activePillar === idx;
+
+            return (
+              <div
+                key={pillar.id}
+                onMouseEnter={() => setActivePillar(idx)}
+                onMouseLeave={() => setActivePillar(null)}
+                className={`p-6 rounded-2xl bg-[#111315] border transition-all duration-300 flex flex-col justify-between group relative overflow-hidden shadow-xl ${
+                  isHovered ? "border-[#C5A46D] shadow-[#C5A46D]/5 -translate-y-1" : "border-[#23262A] hover:border-[#3A3E45]"
+                }`}
+              >
+                {/* Top Subtle Ambient Glow on Hover */}
+                <div
+                  className={`absolute -top-20 -right-20 w-40 h-40 bg-[#C5A46D]/10 rounded-full blur-3xl pointer-events-none transition-opacity duration-500 ${
+                    isHovered ? "opacity-100" : "opacity-0"
+                  }`}
+                />
+
+                <div className="space-y-4">
+                  {/* Card Header & Status Badge */}
+                  <div className="flex items-center justify-between">
+                    <div className="w-10 h-10 rounded-xl bg-[#17191C] border border-[#23262A] flex items-center justify-center text-[#C5A46D] group-hover:border-[#C5A46D]/50 transition-colors">
+                      <Icon name={pillar.icon} size={20} />
+                    </div>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#36B982] bg-[#36B982]/10 border border-[#36B982]/20 px-2.5 py-0.5 rounded-full">
+                      {pillar.status}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#7A8089] block">
+                      {pillar.tag}
+                    </span>
+                    <h3 className="font-display font-bold text-lg text-white mt-0.5 group-hover:text-[#F5F5F5] transition-colors">
+                      {pillar.title}
+                    </h3>
+                  </div>
+
+                  {/* ================= VISUAL HUD ELEMENT (Replacing Plain Text) ================= */}
+                  <div className="p-3.5 rounded-xl bg-[#08090A] border border-[#23262A] font-mono text-[11px] space-y-2">
+                    {/* Visual 1: Deterministic Formula */}
+                    {pillar.visualType === "formula" && (
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-[#7A8089] text-[10px]">
+                          <span>SCORING FORMULA</span>
+                          <span className="text-[#36B982]">EXPLICIT RULES</span>
+                        </div>
+                        <div className="p-2 rounded bg-[#111315] text-[#C5A46D] font-bold text-[12px] text-center border border-[#23262A]">
+                          Trust = 100 - &Sigma;(Penalties) + Coverage
+                        </div>
+                        <div className="text-[10px] text-[#7A8089] text-center">
+                          0% Black-box LLM &bull; Pure deterministic math
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Visual 2: OCR Bounding Box Preview */}
+                    {pillar.visualType === "ocr" && (
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-[#7A8089] text-[10px]">
+                          <span>OCR CONFIDENCE</span>
+                          <span className="text-[#36B982]">99.2% MATCH</span>
+                        </div>
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-[10px] p-1 rounded bg-[#111315]">
+                            <span className="text-[#7A8089]">VIN:</span>
+                            <span className="text-white">WBA5R1C5...KAK12</span>
+                          </div>
+                          <div className="flex justify-between text-[10px] p-1 rounded bg-[#111315]">
+                            <span className="text-[#7A8089]">SEAL:</span>
+                            <span className="text-[#36B982]">AUTHENTIC RTO</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Visual 3: Cryptographic Hash Block */}
+                    {pillar.visualType === "chain" && (
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-[#7A8089] text-[10px]">
+                          <span>HASH VERIFICATION</span>
+                          <span className="text-[#36B982]">SHA-256 MATCH</span>
+                        </div>
+                        <div className="p-1.5 rounded bg-[#111315] text-[10px] text-[#BFC3C8] truncate">
+                          #block-28: 9f8a4e21c33b0c44...
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[10px] text-[#36B982]">
+                          <Icon name="ShieldCheck" size={12} />
+                          <span>Tamper-evident append-only chain</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Visual 4: Audit Stream */}
+                    {pillar.visualType === "feed" && (
+                      <div className="space-y-1 text-[10px]">
+                        <div className="flex items-center justify-between text-[#7A8089]">
+                          <span>LIVE AUDIT STREAM</span>
+                          <span className="text-[#36B982] animate-pulse">RECORDING</span>
+                        </div>
+                        <div className="p-1 rounded bg-[#111315] text-[#BFC3C8] truncate">
+                          [14:20:05] Document Ingested (RC)
+                        </div>
+                        <div className="p-1 rounded bg-[#111315] text-[#36B982] truncate">
+                          [14:20:07] Cryptographic Hash Anchored
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Visual 5: Human Arbitration */}
+                    {pillar.visualType === "arbitration" && (
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-[#7A8089] text-[10px]">
+                          <span>WORKFLOW ROUTING</span>
+                          <span className="text-[#E7A83E]">DISPUTE QUEUE</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1 text-[10px] text-center">
+                          <span className="p-1 rounded bg-[#111315] text-[#E7A83E]">AI Flags Issue</span>
+                          <span className="p-1 rounded bg-[#111315] text-[#36B982]">Human Arbitrates</span>
+                        </div>
+                        <div className="text-[10px] text-[#7A8089] text-center">
+                          Zero false accusations &bull; Appealable findings
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Visual 6: Privacy Masking Switch */}
+                    {pillar.visualType === "privacy" && (
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-[#7A8089] text-[10px]">
+                          <span>SELLER PRIVACY MASK</span>
+                          <span className="text-[#36B982]">PROTECTED</span>
+                        </div>
+                        <div className="p-1.5 rounded bg-[#111315] flex items-center justify-between text-[10px]">
+                          <span className="text-[#7A8089]">Owner Name:</span>
+                          <span className="text-white font-bold">S***h D***k</span>
+                        </div>
+                        <div className="text-[10px] text-[#7A8089] text-center">
+                          Consent-gated document sharing
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Bullet Highlights */}
+                  <div className="space-y-1.5 pt-1">
+                    {pillar.highlights.map((h, i) => (
+                      <div key={i} className="flex items-start gap-2 text-[12px] text-[#7A8089] leading-snug">
+                        <span className="w-1 h-1 rounded-full bg-[#C5A46D] mt-1.5 shrink-0" />
+                        <span>{h}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Bottom Active Implementation Footer */}
+                <div className="mt-5 pt-3 border-t border-[#23262A]/60 flex items-center gap-1.5 text-[11px] font-mono text-[#36B982]">
+                  <Icon name="CheckCircle2" size={13} />
+                  <span>Production Implementation Active</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}

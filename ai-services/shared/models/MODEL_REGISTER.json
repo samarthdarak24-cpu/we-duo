@@ -1,0 +1,114 @@
+{
+  "models": [
+    {
+      "name": "mileage_xgb.json",
+      "source": "trained locally from data/mileage_training.csv",
+      "license": "project-owned",
+      "purpose": "mileage anomaly scoring (demo only)",
+      "bytes": 129767,
+      "sha256": "139dde9ecc77b110f1119c38272456c5e29b7eba5563460e30723a65acec7f49",
+      "dataset_label": "synthetic-demo",
+      "metrics": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "rows": 600,
+        "positives": 300
+      },
+      "trained_at": "2026-11-05T06:01:25+00:00"
+    },
+    {
+      "name": "car_damage.pt",
+      "source": "github:ReverendBayes/YOLO11m-Car-Damage-Detector@main/trained.pt",
+      "license": "MIT",
+      "purpose": "car body damage detection (dent, scratch, crack, shattered_glass, broken_lamp, flat_tire)",
+      "bytes": 40508965,
+      "sha256": "40d324e82d8a9cef052d747bba1b65ba70e66fa2153cc832570370128d2c3818",
+      "classes": [
+        "dent",
+        "scratch",
+        "crack",
+        "shattered_glass",
+        "broken_lamp",
+        "flat_tire"
+      ],
+      "notes": "YOLO11m fine-tuned on CarDD_COCO; assistive only, requires inspector validation."
+    }
+  ],
+  "auto_downloaded": [
+    {
+      "name": "PP-OCRv6_medium_det",
+      "engine": "paddleocr",
+      "source": "paddleocr auto-download (PaddleX official models / hf:PaddlePaddle/PP-OCRv6_medium_det)",
+      "path": "~/.paddlex/official_models/PP-OCRv6_medium_det",
+      "weights_file": "inference.pdiparams",
+      "bytes": 61960476,
+      "sha256": "85218d2e3d98f5a21c58b4220627be923a97aee5db3cc71f39536ab31ac53960",
+      "purpose": "text detection",
+      "license": "Apache-2.0 (PaddleOCR)",
+      "downloaded_at": "2026-11-05T12:43+05:30",
+      "verified_on": "this Windows CPU host only",
+      "notes": "oneDNN disabled via FLAGS_use_mkldnn=0 / FLAGS_use_onednn=0 and enable_mkldnn=False; cross-host re-verification still open"
+    },
+    {
+      "name": "PP-OCRv6_medium_rec",
+      "engine": "paddleocr",
+      "source": "paddleocr auto-download (PaddleX official models / hf:PaddlePaddle/PP-OCRv6_medium_rec)",
+      "path": "~/.paddlex/official_models/PP-OCRv6_medium_rec",
+      "weights_file": "inference.pdiparams",
+      "bytes": 76465087,
+      "sha256": "1b01c79a914587933f615569e75de54f2e638ebb5d3f3b3c1b38c24ede8c7319",
+      "purpose": "text recognition",
+      "license": "Apache-2.0 (PaddleOCR)",
+      "downloaded_at": "2026-11-05T12:44+05:30",
+      "verified_on": "this Windows CPU host only",
+      "notes": "rendered plate MH01AB1234 read at 0.975 confidence; cross-host re-verification still open"
+    }
+  ],
+  "asset_policy": {
+    "decided_on": "2026-11-05",
+    "car_damage.pt": {
+      "decision": "commit",
+      "reason": "The damage adapter and its automated tests must work from a fresh clone with no network. 40.5 MB is below the 100 MB single-file limit and MIT permits redistribution.",
+      "fetch_on_demand_alternative": "python scripts/fetch_models.py --hf ReverendBayes/YOLO11m-Car-Damage-Detector --file trained.pt --name car_damage.pt --license MIT --sha256 40d324e82d8a9cef052d747bba1b65ba70e66fa2153cc832570370128d2c3818"
+    },
+    "small_fixtures": {
+      "decision": "commit",
+      "reason": "Under 1.2 MB in total and required by automated tests / saved evaluation evidence; the CSV is also regenerable."
+    },
+    "host_model_caches": {
+      "decision": "do-not-commit",
+      "reason": "PaddleOCR caches live outside the repository and are re-downloaded on first use; recorded above for provenance and integrity only."
+    },
+    "mileage_xgb.json": {
+      "decision": "commit (demo only)",
+      "reason": "129 KB, project-owned, but trained on 600 synthetic rows. Retrain with --dataset-label real-labelled when a real labelled corpus exists."
+    }
+  },
+  "fixtures": [
+    {
+      "name": "data/yolo_sample.png",
+      "bytes": 1124841,
+      "sha256": "f05b803f81dd7c5046190992867a439f3993b1cc706140cabfd847b8b14770f4",
+      "purpose": "real-image fixture for test_damage_adapter_detects_on_a_real_sample"
+    },
+    {
+      "name": "data/mileage_training.csv",
+      "bytes": 17292,
+      "sha256": "d6a70de30303ebafcd68b727ebb9b36aa4608d0345471b635d67aff84b6d0860",
+      "purpose": "600 synthetic rows used for the shipped mileage_xgb.json"
+    },
+    {
+      "name": "data/eval_llm.log",
+      "bytes": 11500,
+      "sha256": "e6f36a8f02ffe3a46eaaa1fc2cc566d9ba72075a72bb0326ce0cab547f800c32",
+      "purpose": "saved 10-case grounded-LLM evaluation: 10/10 passed, 2 LLM narratives, 8 deterministic fallbacks"
+    },
+    {
+      "name": "data/paddle_test.png",
+      "bytes": 5101,
+      "sha256": "05912c398ad84f07508c981b3490446bff792ca5fa0981357deae8c86cb8bc91",
+      "purpose": "rendered plate fixture for the PaddleOCR 0.975-confidence verification"
+    }
+  ]
+}

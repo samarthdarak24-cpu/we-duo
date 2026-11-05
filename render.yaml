@@ -1,0 +1,65 @@
+# ---------------------------------------------------------------------------
+# TrustDrive — Render Blueprint.
+#
+# One web service + one persistent disk. This is deliberate: the Next.js data
+# layer uses `node:sqlite` and the FastAPI service reads the same file, and two
+# Render services cannot mount the same disk. A split frontend/backend blueprint
+# requires moving the Next data layer to Postgres first (docs/DEPLOYMENT.md,
+# "Scale-out path"). Do not split this file without that migration.
+#
+# First deploy: set ADMIN_EMAIL and ADMIN_PASSWORD in the Render dashboard.
+# TD_SEED_DEMO=0 means the published demo accounts are never created.
+# ---------------------------------------------------------------------------
+services:
+  - type: web
+    name: trustdrive
+    runtime: docker
+    dockerfilePath: ./Dockerfile.render
+    plan: standard
+    region: singapore
+    healthCheckPath: /api/v1/health/ready
+    autoDeploy: true
+    disk:
+      name: trustdrive-data
+      mountPath: /data
+      sizeGB: 10
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TD_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: TD_DATA_DIR
+        value: /data
+      - key: TD_DB_FILE
+        value: /data/trustdrive.db
+      - key: TD_DB_URL
+        value: sqlite+pysqlite:////data/trustdrive.db
+      - key: TD_UPLOAD_DIR
+        value: /data/uploads
+      - key: TD_INTELLIGENCE_URL
+        value: http://127.0.0.1:8000
+      - key: TD_SEED_DEMO
+        value: "0"
+      - key: TD_LLM_PROVIDER
+        value: none
+      # Generated once by Render and kept across deploys.
+      - key: JWT_SECRET
+        generateValue: true
+      - key: TD_SERVICE_TOKEN
+        generateValue: true
+      - key: DOWNLOAD_SIGNING_SECRET
+        generateValue: true
+      # Required on first boot (bootstrap admin). Set in the dashboard.
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      # Optional external LLM (leave empty for the deterministic answer).
+      - key: TD_LLM_BASE_URL
+        sync: false
+      - key: TD_LLM_API_KEY
+        sync: false
+      - key: TD_LLM_MODEL
+        sync: false

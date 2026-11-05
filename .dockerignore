@@ -1,0 +1,57 @@
+# Secrets and local state (never bake into an image)
+.env
+.env.*
+!.env.example
+.data
+data
+*.pem
+*.key
+secrets
+
+# Node
+node_modules
+.next
+.next_*
+.next_incomplete
+coverage
+dist
+build
+
+# Python
+__pycache__
+*.py[cod]
+.venv
+venv
+.pytest_cache
+.mypy_cache
+.ruff_cache
+
+# Tests / reports
+e2e
+tests
+test-results
+playwright-report
+coverage
+*.log
+
+# Repo metadata / docs (not needed at runtime)
+.git
+.github
+docs
+*.md
+!README.md
+
+# Large model artifacts are supplied separately in the slim image
+models
+precedent
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+.tmp_*
+.qa*
+.shots*
+.td-verify-saved
+deploy

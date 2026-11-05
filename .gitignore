@@ -1,0 +1,85 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Node
+node_modules/
+.next/
+.next-old*
+.next_verify*
+.next_probe
+.next_incomplete
+.next_qa*
+.next_static
+*.jar
+.td-shots
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local tooling / agent state (never commit)
+.workbuddy-ai/
+.freebuff/
+ezgif*.zip
+
+# QA run artifacts (keep qa/ source scripts, ignore outputs)
+qa/**/results/
+qa/**/reports/
+qa/**/screenshots/
+qa/**/*.zip
+qa/**/trace*
+
+# Tests
+test-results/
+playwright-report/
+allure-results/
+
+# Temporary uploads
+tmp/
+temp/
+.tmp_*
+.qa*
+.shots*
+.td-verify-saved
+
+# Local data (database, uploads, backups)
+.data/
+data/*.db
+data/*.db-wal
+data/*.db-shm
+
+# Keep source assets, migrations and lockfiles tracked
+!frontend/public/
+!frontend/public/**
+!backend/alembic/
+!backend/alembic/**
+!package-lock.json
+!backend/requirements*.txt
+deploy/

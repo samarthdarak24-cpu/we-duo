@@ -1,0 +1,23 @@
+# Node / Next.js build context (frontend/)
+node_modules
+.next
+.next_*
+.next_incomplete
+coverage
+dist
+build
+.git
+.github
+docs
+*.md
+!README.md
+.env
+.env.*
+.data
+*.log
+e2e
+tests
+test-results
+playwright-report
+.DS_Store
+Thumbs.db

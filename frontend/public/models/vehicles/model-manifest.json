@@ -1,0 +1,1246 @@
+{
+  "modelId": "trustdrive-sedan",
+  "modelVersion": "1.1.0",
+  "generatedAt": "2026-11-05T08:00:55.347Z",
+  "generatedBy": "scripts/build-manifest.mjs (measured from the shipped asset)",
+  "filePath": "public/models/vehicles/trustdrive-sedan.glb",
+  "publicUrl": "/models/vehicles/trustdrive-sedan.glb",
+  "sha256": "c272098089d78c5cd9fd9f24ff50ee8acf8d932c55f2d55fc10adb6c8998966b",
+  "fileSizeBytes": 11778688,
+  "asset": {
+    "generator": "Created by RapidPipeline 3D Processor v7.1.0 | rapidpipeline.com",
+    "nodeCount": 101,
+    "meshCount": 97,
+    "namedMeshCount": 85,
+    "materialCount": 29,
+    "imageCount": 14,
+    "textureCount": 15,
+    "animationCount": 0,
+    "skinCount": 0,
+    "extensionsUsed": [
+      "KHR_materials_clearcoat",
+      "KHR_materials_emissive_strength",
+      "KHR_materials_iridescence",
+      "KHR_materials_transmission",
+      "KHR_materials_variants",
+      "KHR_texture_transform"
+    ],
+    "extensionsRequired": [],
+    "requiresDraco": false,
+    "requiresMeshopt": false
+  },
+  "dimensionsMeters": {
+    "length": 4.357,
+    "width": 2.728,
+    "height": 1.308
+  },
+  "bounds": {
+    "min": {
+      "x": -1.369,
+      "y": -0.159,
+      "z": -1.94
+    },
+    "max": {
+      "x": 1.359,
+      "y": 1.149,
+      "z": 2.417
+    }
+  },
+  "coordinateSystem": {
+    "up": "+Y",
+    "forward": "+Z",
+    "vehicleLeft": "+X",
+    "units": "metres",
+    "note": "Measured from the asset: the bonnet is at +Z 2.417 m and the rear valance at -Z 1.940 m."
+  },
+  "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/legalcode",
+  "attribution": {
+    "creator": "Eric Chadwick",
+    "organization": "Darmstadt Graphics Group GmbH (DGG)",
+    "copyrightHolder": "Khronos Group Inc.",
+    "year": "2024",
+    "source": "KhronosGroup/glTF-Sample-Assets — Models/CarConcept"
+  },
+  "licenseExclusions": "LicenseRef-LegalMark-Khronos: the Khronos and 3D Commerce logos on `License Plate` and `InteriorSteeringEmblem` are trademarks and are excluded from the CC BY 4.0 grant. TrustDrive substitutes a neutral material for both at runtime.",
+  "modifications": [
+    "Khronos / 3D Commerce logo surfaces (`License Plate`, `InteriorSteeringEmblem`) are rendered with a neutral material because the asset licence excludes those trademarks.",
+    "Primary and secondary body paint materials are overridden at runtime with a metallic silver automotive clearcoat so every TrustDrive vehicle reads as the same reference finish; panel gaps, glass, tyres and trim keep the asset materials.",
+    "No geometry, texture or node was added to the asset. The GLB is served byte-for-byte as published."
+  ],
+  "supportedInteractions": [
+    "360_orbit_rotation",
+    "touch_pinch_zoom",
+    "wheel_zoom",
+    "component_raycaster_selection",
+    "smooth_exploded_disassembly",
+    "exploded_reassembly",
+    "damage_hotspot_selection",
+    "severity_filtering",
+    "x_ray_ghosted_transparency",
+    "camera_presets",
+    "theater_and_native_fullscreen",
+    "turntable_auto_rotate"
+  ],
+  "components": [
+    {
+      "id": "bonnet",
+      "label": "Bonnet / Engine Hood",
+      "category": "closure",
+      "available": true,
+      "meshSeparable": true,
+      "primaryNode": "BodyHood",
+      "nodes": [
+        "BodyHood",
+        "BodyHoodInterior01",
+        "BodyHoodInterior02",
+        "BodyHoodTopgrill",
+        "BodyHoodUnder"
+      ],
+      "explosionVector": [
+        0,
+        0.85,
+        0.55
+      ],
+      "hotspotAnchor": [
+        0,
+        0.9,
+        1.78
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": -1.106,
+          "y": 0.129,
+          "z": 1.168
+        },
+        "max": {
+          "x": 1.106,
+          "y": 0.877,
+          "z": 2.417
+        }
+      },
+      "xrayRole": "exterior",
+      "trademarked": false,
+      "description": "Hinged front hood assembly. In this asset the hood node also parents the headlight and top-grille meshes, so those lift with it during disassembly."
+    },
+    {
+      "id": "front_bumper",
+      "label": "Front Bumper & Lower Fascia",
+      "category": "exterior_body",
+      "available": true,
+      "meshSeparable": false,
+      "primaryNode": "BodyPanelsColor2",
+      "nodes": [
+        "BodyPanelsColor2"
+      ],
+      "explosionVector": [
+        0,
+        0,
+        0
+      ],
+      "hotspotAnchor": [
+        0,
+        0.4,
+        2.44
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": -1.111,
+          "y": 0.108,
+          "z": 1.6
+        },
+        "max": {
+          "x": 1.111,
+          "y": 0.6,
+          "z": 2.42
+        }
+      },
+      "xrayRole": "exterior",
+      "trademarked": false,
+      "description": "Front lower fascia. The asset models the secondary-colour panels as one continuous mesh running the length of the car, so the front section is selected by position but cannot be detached separately."
+    },
+    {
+      "id": "rear_bumper",
+      "label": "Rear Bumper & Lower Valance",
+      "category": "exterior_body",
+      "available": true,
+      "meshSeparable": false,
+      "primaryNode": "BodyRearPanelsColor1",
+      "nodes": [
+        "BodyRearPanelsColor1"
+      ],
+      "explosionVector": [
+        0,
+        0,
+        0
+      ],
+      "hotspotAnchor": [
+        0,
+        0.5,
+        -1.93
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": -1.118,
+          "y": 0.347,
+          "z": -1.95
+        },
+        "max": {
+          "x": 1.118,
+          "y": 0.9,
+          "z": -1.5
+        }
+      },
+      "xrayRole": "exterior",
+      "trademarked": false,
+      "description": "Rear lower valance. It shares the rear-panel mesh with the hatch, tail-light and rear-glass group, so it moves with that assembly rather than on its own."
+    },
+    {
+      "id": "boot",
+      "label": "Boot Lid / Rear Hatch",
+      "category": "closure",
+      "available": true,
+      "meshSeparable": true,
+      "primaryNode": "BodyRearPanelsColor1",
+      "nodes": [
+        "InteriorRearHatch"
+      ],
+      "explosionVector": [
+        0,
+        0.75,
+        -0.45
+      ],
+      "hotspotAnchor": [
+        0,
+        1.14,
+        -1.05
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": -0.899,
+          "y": 1.09,
+          "z": -1.624
+        },
+        "max": {
+          "x": 0.899,
+          "y": 1.15,
+          "z": -0.429
+        }
+      },
+      "xrayRole": "exterior",
+      "trademarked": false,
+      "description": "Liftback hatch. The asset exposes it as `InteriorRearHatch` parented by the rear panel group; lifting that group opens the hatch together with the tail-lights and rear glass."
+    },
+    {
+      "id": "roof",
+      "label": "Roof Panel & Pillars",
+      "category": "exterior_body",
+      "available": true,
+      "meshSeparable": true,
+      "primaryNode": "BodyRoofPanel",
+      "nodes": [
+        "BodyRoofPanel",
+        "BodyPillars"
+      ],
+      "explosionVector": [
+        0,
+        0.95,
+        0
+      ],
+      "hotspotAnchor": [
+        0,
+        1.17,
+        -0.08
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": -1.107,
+          "y": 1.05,
+          "z": -0.472
+        },
+        "max": {
+          "x": 1.107,
+          "y": 1.149,
+          "z": 1.401
+        }
+      },
+      "xrayRole": "exterior",
+      "trademarked": false,
+      "description": "Roof panel and the greenhouse pillar frame (`BodyPillars`) that carries the side glass openings."
+    },
+    {
+      "id": "mirrors",
+      "label": "Exterior Door Mirrors",
+      "category": "exterior_body",
+      "available": true,
+      "meshSeparable": false,
+      "primaryNode": "BodyDoorLMirror",
+      "nodes": [
+        "BodyDoorLMirror",
+        "BodyDoorLMirrorColor1",
+        "BodyDoorLMirrorColor2",
+        "BodyDoorRMirror",
+        "BodyDoorRMirrorColor1",
+        "BodyDoorRMirrorColor2"
+      ],
+      "explosionVector": [
+        0,
+        0,
+        0
+      ],
+      "hotspotAnchor": [
+        1.18,
+        0.95,
+        0.43
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": -1.169,
+          "y": 0.873,
+          "z": 0.259
+        },
+        "max": {
+          "x": 1.169,
+          "y": 1.014,
+          "z": 0.597
+        }
+      },
+      "xrayRole": "exterior",
+      "trademarked": false,
+      "description": "Both mirror housings. They are parented inside their door groups, so they travel with the door when it is opened in the exploded view."
+    },
+    {
+      "id": "front_left_door",
+      "label": "Front Left Door Assembly",
+      "category": "closure",
+      "available": true,
+      "meshSeparable": true,
+      "primaryNode": "BodyDoorLColor1",
+      "nodes": [
+        "BodyDoorLColor1",
+        "BodyDoorLColor2",
+        "BodyDoorLHandle01",
+        "BodyDoorLHandle02",
+        "BodyDoorLWindow",
+        "BodyDoorLWindowGasket",
+        "InteriorDoorL01",
+        "InteriorDoorL02",
+        "InteriorDoorL03",
+        "InteriorDoorL04",
+        "InteriorDoorL05",
+        "InteriorDoorL06"
+      ],
+      "explosionVector": [
+        0.85,
+        0.05,
+        0.05
+      ],
+      "hotspotAnchor": [
+        1.13,
+        0.62,
+        0.16
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": 0.735,
+          "y": 0.155,
+          "z": -0.675
+        },
+        "max": {
+          "x": 1.11,
+          "y": 1.115,
+          "z": 0.994
+        }
+      },
+      "xrayRole": "exterior",
+      "trademarked": false,
+      "description": "Left-side door shell with its inner trim, handle, window and glass run channel. The `BodyDoorLColor1` node carries the hinge pivot at [1.09, -1, 0.64], which is what the exploded view swings."
+    },
+    {
+      "id": "front_right_door",
+      "label": "Front Right Door Assembly",
+      "category": "closure",
+      "available": true,
+      "meshSeparable": true,
+      "primaryNode": "BodyDoorRColor1",
+      "nodes": [
+        "BodyDoorRColor1",
+        "BodyDoorRColor2",
+        "BodyDoorRHandle01",
+        "BodyDoorRHandle02",
+        "BodyDoorRWindow",
+        "BodyDoorRWindowGasket",
+        "InteriorDoorR01",
+        "InteriorDoorR02",
+        "InteriorDoorR03",
+        "InteriorDoorR04",
+        "InteriorDoorR05",
+        "InteriorDoorR06"
+      ],
+      "explosionVector": [
+        -0.85,
+        0.05,
+        0.05
+      ],
+      "hotspotAnchor": [
+        -1.13,
+        0.62,
+        0.16
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": -1.11,
+          "y": 0.155,
+          "z": -0.675
+        },
+        "max": {
+          "x": -0.735,
+          "y": 1.115,
+          "z": 0.994
+        }
+      },
+      "xrayRole": "exterior",
+      "trademarked": false,
+      "description": "Right-side door shell with inner trim, handle, window and glass run channel, hinged on the `BodyDoorRColor1` pivot at [-1.09, -1, 0.64]."
+    },
+    {
+      "id": "rear_left_door",
+      "label": "Rear Left Door",
+      "category": "closure",
+      "available": false,
+      "meshSeparable": false,
+      "unavailableReason": "The reference asset is a two-door coupé: `inspect-glb.mjs` finds only BodyDoorLColor1 and BodyDoorRColor1, with no rear door mesh on either side. Rear-left access is the quarter glass and rear panel.",
+      "alternativeComponentId": "rear_glass",
+      "nodes": [],
+      "explosionVector": [
+        0,
+        0,
+        0
+      ],
+      "hotspotAnchor": [
+        0.95,
+        1,
+        -0.85
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": 0.923,
+          "y": 0.958,
+          "z": -1.147
+        },
+        "max": {
+          "x": 1.114,
+          "y": 1.11,
+          "z": -0.476
+        }
+      },
+      "xrayRole": "exterior",
+      "trademarked": false,
+      "description": "Not present on this body style. Damage reported here is stored against the rear-left quarter region and shown without a 3D marker."
+    },
+    {
+      "id": "rear_right_door",
+      "label": "Rear Right Door",
+      "category": "closure",
+      "available": false,
+      "meshSeparable": false,
+      "unavailableReason": "The reference asset is a two-door coupé: `inspect-glb.mjs` finds only BodyDoorLColor1 and BodyDoorRColor1, with no rear door mesh on either side. Rear-right access is the quarter glass and rear panel.",
+      "alternativeComponentId": "rear_glass",
+      "nodes": [],
+      "explosionVector": [
+        0,
+        0,
+        0
+      ],
+      "hotspotAnchor": [
+        -0.95,
+        1,
+        -0.85
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": -1.114,
+          "y": 0.958,
+          "z": -1.147
+        },
+        "max": {
+          "x": -0.923,
+          "y": 1.11,
+          "z": -0.476
+        }
+      },
+      "xrayRole": "exterior",
+      "trademarked": false,
+      "description": "Not present on this body style. Damage reported here is stored against the rear-right quarter region and shown without a 3D marker."
+    },
+    {
+      "id": "windshield",
+      "label": "Windscreen & Wipers",
+      "category": "glass",
+      "available": true,
+      "meshSeparable": true,
+      "primaryNode": "BodyWindshield",
+      "nodes": [
+        "BodyWindshield",
+        "BodyWindshieldGasket",
+        "BodyWindshieldWipers",
+        "BodyWindshieldWipersBase"
+      ],
+      "explosionVector": [
+        0,
+        0.4,
+        0.35
+      ],
+      "hotspotAnchor": [
+        0,
+        1.02,
+        1.1
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": -0.879,
+          "y": 0.759,
+          "z": 0.069
+        },
+        "max": {
+          "x": 0.879,
+          "y": 1.126,
+          "z": 1.715
+        }
+      },
+      "xrayRole": "glass",
+      "trademarked": false,
+      "description": "Laminated front glass with its rubber run channel and both wiper blades at the scuttle."
+    },
+    {
+      "id": "rear_glass",
+      "label": "Rear Screen & Quarter Glass",
+      "category": "glass",
+      "available": true,
+      "meshSeparable": false,
+      "primaryNode": "BodyRearwindow",
+      "nodes": [
+        "BodyRearwindow",
+        "BodyWindowsRearSides"
+      ],
+      "explosionVector": [
+        0,
+        0,
+        0
+      ],
+      "hotspotAnchor": [
+        0,
+        1.05,
+        -0.95
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": -0.923,
+          "y": 0.95,
+          "z": -1.629
+        },
+        "max": {
+          "x": 0.923,
+          "y": 1.09,
+          "z": -0.432
+        }
+      },
+      "xrayRole": "glass",
+      "trademarked": false,
+      "description": "Rear screen plus the fixed side quarter lights. Both are parented to the rear hatch group and open with it."
+    },
+    {
+      "id": "front_left_wheel",
+      "label": "Front Left Wheel & Brakes",
+      "category": "wheels_brakes",
+      "available": true,
+      "meshSeparable": true,
+      "primaryNode": "WheelFrontL",
+      "nodes": [
+        "WheelFrontL",
+        "WheelFrontLRim",
+        "WheelFrontLBrakeDisc",
+        "WheelFrontLBrakePad"
+      ],
+      "explosionVector": [
+        0.7,
+        0,
+        0
+      ],
+      "hotspotAnchor": [
+        1.38,
+        0.38,
+        1.48
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": 0.592,
+          "y": -0.141,
+          "z": 0.944
+        },
+        "max": {
+          "x": 1.359,
+          "y": 0.927,
+          "z": 2.024
+        }
+      },
+      "xrayRole": "mechanical",
+      "trademarked": false,
+      "description": "Tyre, rim, ventilated disc and pad on the `WheelFrontL` node. The tyre itself is an unnamed two-primitive mesh, so it is resolved through its parent node."
+    },
+    {
+      "id": "front_right_wheel",
+      "label": "Front Right Wheel & Brakes",
+      "category": "wheels_brakes",
+      "available": true,
+      "meshSeparable": true,
+      "primaryNode": "WheelFrontR",
+      "nodes": [
+        "WheelFrontR",
+        "WheelFrontRRim",
+        "WheelFrontRBrakeDisc",
+        "WheelFrontRBrakePad"
+      ],
+      "explosionVector": [
+        -0.7,
+        0,
+        0
+      ],
+      "hotspotAnchor": [
+        -1.38,
+        0.38,
+        1.48
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": -1.369,
+          "y": -0.159,
+          "z": 0.944
+        },
+        "max": {
+          "x": -0.584,
+          "y": 0.927,
+          "z": 2.024
+        }
+      },
+      "xrayRole": "mechanical",
+      "trademarked": false,
+      "description": "Tyre, rim, ventilated disc and pad on the `WheelFrontR` node, resolved through its parent when the unnamed tyre mesh is clicked."
+    },
+    {
+      "id": "rear_left_wheel",
+      "label": "Rear Left Wheel & Brakes",
+      "category": "wheels_brakes",
+      "available": true,
+      "meshSeparable": true,
+      "primaryNode": "WheelRearL",
+      "nodes": [
+        "WheelRearL",
+        "WheelRearLRim",
+        "WheelRearLBrakeDisc",
+        "WheelRearLBrakePad"
+      ],
+      "explosionVector": [
+        0.7,
+        0,
+        0
+      ],
+      "hotspotAnchor": [
+        1.14,
+        0.38,
+        -1.31
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": 0.843,
+          "y": -0.108,
+          "z": -1.806
+        },
+        "max": {
+          "x": 1.127,
+          "y": 0.876,
+          "z": -0.822
+        }
+      },
+      "xrayRole": "mechanical",
+      "trademarked": false,
+      "description": "Rear-left tyre, rim, disc and pad on the `WheelRearL` node."
+    },
+    {
+      "id": "rear_right_wheel",
+      "label": "Rear Right Wheel & Brakes",
+      "category": "wheels_brakes",
+      "available": true,
+      "meshSeparable": true,
+      "primaryNode": "WheelRearR",
+      "nodes": [
+        "WheelRearR",
+        "WheelRearRRim",
+        "WheelRearRBrakeDisc",
+        "WheelRearRBrakePad"
+      ],
+      "explosionVector": [
+        -0.7,
+        0,
+        0
+      ],
+      "hotspotAnchor": [
+        -1.14,
+        0.38,
+        -1.31
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": -1.127,
+          "y": -0.151,
+          "z": -1.849
+        },
+        "max": {
+          "x": -0.842,
+          "y": 0.919,
+          "z": -0.779
+        }
+      },
+      "xrayRole": "mechanical",
+      "trademarked": false,
+      "description": "Rear-right tyre, rim, disc and pad on the `WheelRearR` node."
+    },
+    {
+      "id": "headlights",
+      "label": "Headlamp Assemblies",
+      "category": "lighting",
+      "available": true,
+      "meshSeparable": false,
+      "primaryNode": "BodyHeadlights",
+      "nodes": [
+        "BodyHeadlights"
+      ],
+      "explosionVector": [
+        0,
+        0,
+        0
+      ],
+      "hotspotAnchor": [
+        0.55,
+        0.66,
+        2.28
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": -0.805,
+          "y": 0.621,
+          "z": 2.096
+        },
+        "max": {
+          "x": 0.805,
+          "y": 0.691,
+          "z": 2.267
+        }
+      },
+      "xrayRole": "exterior",
+      "trademarked": false,
+      "description": "One `BodyHeadlights` mesh spanning both lamp clusters. It is parented to the hood node, so it lifts with the bonnet in the exploded view."
+    },
+    {
+      "id": "taillights",
+      "label": "Tail & Signal Lamps",
+      "category": "lighting",
+      "available": true,
+      "meshSeparable": false,
+      "primaryNode": "BodyTaillights",
+      "nodes": [
+        "BodyTaillights",
+        "BodyTaillightsPanels",
+        "BodyTurnsignalsRear"
+      ],
+      "explosionVector": [
+        0,
+        0,
+        0
+      ],
+      "hotspotAnchor": [
+        0,
+        0.98,
+        -1.66
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": -0.895,
+          "y": 0.923,
+          "z": -1.671
+        },
+        "max": {
+          "x": 0.895,
+          "y": 1.002,
+          "z": -1.194
+        }
+      },
+      "xrayRole": "exterior",
+      "trademarked": false,
+      "description": "Rear lamp clusters, their lenses and the rear turn-signal strip, all parented to the rear hatch group."
+    },
+    {
+      "id": "engine",
+      "label": "Engine Block",
+      "category": "powertrain",
+      "available": true,
+      "meshSeparable": true,
+      "primaryNode": "Engine",
+      "nodes": [
+        "Engine"
+      ],
+      "explosionVector": [
+        0,
+        0.45,
+        0.3
+      ],
+      "hotspotAnchor": [
+        0,
+        0.78,
+        1.95
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": -0.602,
+          "y": 0.14,
+          "z": 1.603
+        },
+        "max": {
+          "x": 0.602,
+          "y": 0.748,
+          "z": 2.325
+        }
+      },
+      "xrayRole": "mechanical",
+      "trademarked": false,
+      "description": "The single `Engine` mesh in the front bay. It is the only powertrain geometry this asset provides — there is no separate gearbox, driveshaft or exhaust mesh, so those are reported as unverified rather than drawn."
+    },
+    {
+      "id": "suspension",
+      "label": "Axle & Suspension Frame",
+      "category": "chassis_structure",
+      "available": true,
+      "meshSeparable": true,
+      "primaryNode": "Axles",
+      "nodes": [
+        "Axles"
+      ],
+      "explosionVector": [
+        0,
+        -0.35,
+        0
+      ],
+      "hotspotAnchor": [
+        0.95,
+        0.42,
+        1.3
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": -1.053,
+          "y": 0.289,
+          "z": -1.409
+        },
+        "max": {
+          "x": 1.053,
+          "y": 0.479,
+          "z": 1.591
+        }
+      },
+      "xrayRole": "mechanical",
+      "trademarked": false,
+      "description": "One `Axles` mesh carrying the front and rear axle geometry between the wheel hubs. No individual damper, spring or control-arm meshes exist in the asset, so they are not simulated."
+    },
+    {
+      "id": "chassis",
+      "label": "Chassis Floor & Cage",
+      "category": "chassis_structure",
+      "available": true,
+      "meshSeparable": false,
+      "primaryNode": "InteriorCage",
+      "nodes": [
+        "BodyUnderside",
+        "InteriorCage"
+      ],
+      "explosionVector": [
+        0,
+        0,
+        0
+      ],
+      "hotspotAnchor": [
+        0,
+        0.12,
+        0
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": -1.094,
+          "y": 0.089,
+          "z": -1.894
+        },
+        "max": {
+          "x": 1.094,
+          "y": 0.2,
+          "z": 2.39
+        }
+      },
+      "xrayRole": "structure",
+      "trademarked": false,
+      "description": "`BodyUnderside` is the root body tub that parents every other node, so it cannot be moved; the roll-over `InteriorCage` is the separable structural element."
+    },
+    {
+      "id": "interior",
+      "label": "Cabin, Seats & Dashboard",
+      "category": "interior",
+      "available": true,
+      "meshSeparable": false,
+      "primaryNode": "InteriorDashMid",
+      "nodes": [
+        "InteriorDashMid",
+        "InteriorDashSides",
+        "InteriorFloor",
+        "InteriorFloormats",
+        "InteriorMid",
+        "InteriorPillar",
+        "InteriorRearPanels",
+        "InteriorPedalAccel",
+        "InteriorPedalAccelArm",
+        "InteriorPedalBrake",
+        "InteriorPedalBrakeArm",
+        "InteriorSeatsColor1",
+        "InteriorSeatsColor2",
+        "InteriorSeatsFrame1",
+        "InteriorSeatsFrame2",
+        "InteriorSteeringBase",
+        "InteriorSteeringCylinder",
+        "InteriorSteeringWheel01",
+        "InteriorSteeringWheel02",
+        "InteriorSteeringWheel03",
+        "InteriorSteeringWheel04",
+        "InteriorSteeringDash",
+        "InteriorSteeringDashColumn",
+        "InteriorSteeringHandleL",
+        "InteriorSteeringHandleR"
+      ],
+      "explosionVector": [
+        0,
+        0.35,
+        0
+      ],
+      "hotspotAnchor": [
+        0,
+        0.95,
+        -0.3
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": -1.105,
+          "y": 0.094,
+          "z": -1.867
+        },
+        "max": {
+          "x": 1.105,
+          "y": 1.114,
+          "z": 1.662
+        }
+      },
+      "xrayRole": "interior",
+      "trademarked": false,
+      "description": "Dashboard, floor, mats, seats, pedal set, pillar trim and the steering column assembly. Door trim panels are mapped to their door components instead."
+    },
+    {
+      "id": "steering_emblem",
+      "label": "Steering Wheel Emblem",
+      "category": "trim",
+      "available": true,
+      "meshSeparable": true,
+      "primaryNode": "InteriorSteeringEmblem",
+      "nodes": [
+        "InteriorSteeringEmblem"
+      ],
+      "explosionVector": [
+        0,
+        0,
+        0
+      ],
+      "hotspotAnchor": [
+        0,
+        0.64,
+        0.97
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": -0.022,
+          "y": 0.613,
+          "z": 0.95
+        },
+        "max": {
+          "x": 0.023,
+          "y": 0.655,
+          "z": 0.967
+        }
+      },
+      "xrayRole": "interior",
+      "trademarked": true,
+      "description": "Hub badge on the steering wheel. Like the rear plate it carries Khronos artwork that the licence excludes, so TrustDrive renders it as a blank disc."
+    },
+    {
+      "id": "license_plate",
+      "label": "Rear Number Plate",
+      "category": "trim",
+      "available": true,
+      "meshSeparable": true,
+      "primaryNode": "License Plate",
+      "nodes": [
+        "License Plate"
+      ],
+      "explosionVector": [
+        0,
+        0,
+        0
+      ],
+      "hotspotAnchor": [
+        0,
+        0.32,
+        -1.95
+      ],
+      "selectionBounds": {
+        "min": {
+          "x": -0.179,
+          "y": 0.264,
+          "z": -1.917
+        },
+        "max": {
+          "x": 0.179,
+          "y": 0.366,
+          "z": -1.884
+        }
+      },
+      "xrayRole": "exterior",
+      "trademarked": true,
+      "description": "Rear plate panel. The asset textures it with Khronos artwork, which its licence excludes, so TrustDrive renders it as a blank plate and never as a readable registration."
+    }
+  ],
+  "availability": {
+    "totalRegistered": 24,
+    "availableCount": 22,
+    "unavailableCount": 2,
+    "nonSeparableCount": 8,
+    "availableList": [
+      {
+        "id": "bonnet",
+        "label": "Bonnet / Engine Hood",
+        "primaryNode": "BodyHood",
+        "nodeCount": 5,
+        "separable": true
+      },
+      {
+        "id": "front_bumper",
+        "label": "Front Bumper & Lower Fascia",
+        "primaryNode": "BodyPanelsColor2",
+        "nodeCount": 1,
+        "separable": false
+      },
+      {
+        "id": "rear_bumper",
+        "label": "Rear Bumper & Lower Valance",
+        "primaryNode": "BodyRearPanelsColor1",
+        "nodeCount": 1,
+        "separable": false
+      },
+      {
+        "id": "boot",
+        "label": "Boot Lid / Rear Hatch",
+        "primaryNode": "BodyRearPanelsColor1",
+        "nodeCount": 1,
+        "separable": true
+      },
+      {
+        "id": "roof",
+        "label": "Roof Panel & Pillars",
+        "primaryNode": "BodyRoofPanel",
+        "nodeCount": 2,
+        "separable": true
+      },
+      {
+        "id": "mirrors",
+        "label": "Exterior Door Mirrors",
+        "primaryNode": "BodyDoorLMirror",
+        "nodeCount": 6,
+        "separable": false
+      },
+      {
+        "id": "front_left_door",
+        "label": "Front Left Door Assembly",
+        "primaryNode": "BodyDoorLColor1",
+        "nodeCount": 12,
+        "separable": true
+      },
+      {
+        "id": "front_right_door",
+        "label": "Front Right Door Assembly",
+        "primaryNode": "BodyDoorRColor1",
+        "nodeCount": 12,
+        "separable": true
+      },
+      {
+        "id": "windshield",
+        "label": "Windscreen & Wipers",
+        "primaryNode": "BodyWindshield",
+        "nodeCount": 4,
+        "separable": true
+      },
+      {
+        "id": "rear_glass",
+        "label": "Rear Screen & Quarter Glass",
+        "primaryNode": "BodyRearwindow",
+        "nodeCount": 2,
+        "separable": false
+      },
+      {
+        "id": "front_left_wheel",
+        "label": "Front Left Wheel & Brakes",
+        "primaryNode": "WheelFrontL",
+        "nodeCount": 4,
+        "separable": true
+      },
+      {
+        "id": "front_right_wheel",
+        "label": "Front Right Wheel & Brakes",
+        "primaryNode": "WheelFrontR",
+        "nodeCount": 4,
+        "separable": true
+      },
+      {
+        "id": "rear_left_wheel",
+        "label": "Rear Left Wheel & Brakes",
+        "primaryNode": "WheelRearL",
+        "nodeCount": 4,
+        "separable": true
+      },
+      {
+        "id": "rear_right_wheel",
+        "label": "Rear Right Wheel & Brakes",
+        "primaryNode": "WheelRearR",
+        "nodeCount": 4,
+        "separable": true
+      },
+      {
+        "id": "headlights",
+        "label": "Headlamp Assemblies",
+        "primaryNode": "BodyHeadlights",
+        "nodeCount": 1,
+        "separable": false
+      },
+      {
+        "id": "taillights",
+        "label": "Tail & Signal Lamps",
+        "primaryNode": "BodyTaillights",
+        "nodeCount": 3,
+        "separable": false
+      },
+      {
+        "id": "engine",
+        "label": "Engine Block",
+        "primaryNode": "Engine",
+        "nodeCount": 1,
+        "separable": true
+      },
+      {
+        "id": "suspension",
+        "label": "Axle & Suspension Frame",
+        "primaryNode": "Axles",
+        "nodeCount": 1,
+        "separable": true
+      },
+      {
+        "id": "chassis",
+        "label": "Chassis Floor & Cage",
+        "primaryNode": "InteriorCage",
+        "nodeCount": 2,
+        "separable": false
+      },
+      {
+        "id": "interior",
+        "label": "Cabin, Seats & Dashboard",
+        "primaryNode": "InteriorDashMid",
+        "nodeCount": 25,
+        "separable": false
+      },
+      {
+        "id": "steering_emblem",
+        "label": "Steering Wheel Emblem",
+        "primaryNode": "InteriorSteeringEmblem",
+        "nodeCount": 1,
+        "separable": true
+      },
+      {
+        "id": "license_plate",
+        "label": "Rear Number Plate",
+        "primaryNode": "License Plate",
+        "nodeCount": 1,
+        "separable": true
+      }
+    ],
+    "unavailableList": [
+      {
+        "id": "rear_left_door",
+        "label": "Rear Left Door",
+        "reason": "The reference asset is a two-door coupé: `inspect-glb.mjs` finds only BodyDoorLColor1 and BodyDoorRColor1, with no rear door mesh on either side. Rear-left access is the quarter glass and rear panel.",
+        "alternativeId": "rear_glass"
+      },
+      {
+        "id": "rear_right_door",
+        "label": "Rear Right Door",
+        "reason": "The reference asset is a two-door coupé: `inspect-glb.mjs` finds only BodyDoorLColor1 and BodyDoorRColor1, with no rear door mesh on either side. Rear-right access is the quarter glass and rear panel.",
+        "alternativeId": "rear_glass"
+      }
+    ],
+    "nonSeparableList": [
+      {
+        "id": "front_bumper",
+        "label": "Front Bumper & Lower Fascia",
+        "sharesNodeWith": "BodyPanelsColor2"
+      },
+      {
+        "id": "rear_bumper",
+        "label": "Rear Bumper & Lower Valance",
+        "sharesNodeWith": "BodyRearPanelsColor1"
+      },
+      {
+        "id": "mirrors",
+        "label": "Exterior Door Mirrors",
+        "sharesNodeWith": "BodyDoorLMirror"
+      },
+      {
+        "id": "rear_glass",
+        "label": "Rear Screen & Quarter Glass",
+        "sharesNodeWith": "BodyRearwindow"
+      },
+      {
+        "id": "headlights",
+        "label": "Headlamp Assemblies",
+        "sharesNodeWith": "BodyHeadlights"
+      },
+      {
+        "id": "taillights",
+        "label": "Tail & Signal Lamps",
+        "sharesNodeWith": "BodyTaillights"
+      },
+      {
+        "id": "chassis",
+        "label": "Chassis Floor & Cage",
+        "sharesNodeWith": "InteriorCage"
+      },
+      {
+        "id": "interior",
+        "label": "Cabin, Seats & Dashboard",
+        "sharesNodeWith": "InteriorDashMid"
+      }
+    ]
+  },
+  "unmappedAssetNodes": [],
+  "integrity": {
+    "note": "The SHA-256 above proves the served file is the audited file. It says nothing about the authenticity of any document."
+  }
+}

@@ -1,0 +1,23 @@
+# Slim runtime for the combined Render image / CI.
+# Excludes torch, ultralytics, paddlepaddle and sentence-transformers (multi-GB).
+# Those adapters stay inactive and report so honestly; OCR uses RapidOCR (ONNX),
+# damage uses the OpenCV path, retrieval uses keyword overlap, LLM uses the
+# deterministic answer. See docs/DEPLOYMENT.md for the optional ML image.
+
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30,<1.0
+pydantic>=2.7,<3.0
+SQLAlchemy>=2.0,<3.0
+alembic>=1.13,<2.0
+httpx>=0.27,<1.0
+python-multipart>=0.0.9,<1.0
+python-dotenv>=1.0,<2.0
+pytest>=8.0,<9.0
+
+PyMuPDF>=1.24,<3.0
+opencv-python-headless>=4.9,<6.0
+scikit-learn>=1.4,<2.0
+numpy>=1.26,<3.0
+onnxruntime>=1.17,<2.0
+rapidocr-onnxruntime>=1.2,<2.0
+xgboost>=2.0,<4.0
