@@ -15,12 +15,23 @@ async function main() {
   });
 
   try {
+    console.log('Navigating to http://127.0.0.1:3000/login...');
     await page.goto('http://127.0.0.1:3000/login', { waitUntil: 'networkidle' });
-    await page.fill('input[type="email"]', 'samarth@trustdrive.dev');
-    await page.fill('input[type="password"]', 'demo1234');
-    await page.click('button[type="submit"]');
-    await page.waitForTimeout(3000);
-    console.log('Final URL:', page.url());
+    console.log('Title:', await page.title());
+
+    // Click 1-click Demo Seller button
+    const sellerBtn = page.locator('button', { hasText: 'Seller' }).first();
+    await sellerBtn.click();
+    console.log('Clicked Seller demo button');
+    await page.waitForTimeout(500);
+
+    // Click submit
+    const submitBtn = page.locator('button[type="submit"]');
+    await submitBtn.click();
+    console.log('Clicked submit button');
+
+    await page.waitForTimeout(4000);
+    console.log('URL after login:', page.url());
   } catch (err) {
     console.error('Error:', err);
   } finally {

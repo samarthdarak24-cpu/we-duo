@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -58,9 +59,24 @@ app = FastAPI(
 for _router in ROUTERS:
     app.include_router(_router)
 
+def _cors_origins() -> list[str]:
+    """Browser origins allowed to call this API.
+
+    The local dev servers are always allowed. TD_CORS_ORIGINS (comma separated)
+    adds deployed origins - the published site and its public API tunnel -
+    without editing this file.
+    """
+    origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    for origin in os.getenv("TD_CORS_ORIGINS", "").split(","):
+        origin = origin.strip().rstrip("/")
+        if origin and origin not in origins:
+            origins.append(origin)
+    return origins
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=_cors_origins(),
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH", "DELETE"],
     allow_headers=["*"],

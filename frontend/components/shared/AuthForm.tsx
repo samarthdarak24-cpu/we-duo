@@ -48,8 +48,11 @@ export function AuthForm({ mode: initialMode }: { mode: "login" | "register" }) 
 
   function afterAuth(userRole: string) {
     const target = userRole === "seller" ? "/seller" : userRole === "admin" ? "/admin/queue" : "/buyer";
-    router.push(target);
-    router.refresh();
+    if (typeof window !== "undefined") {
+      window.location.href = target;
+    } else {
+      router.push(target);
+    }
   }
 
   function fillDemo(acc: (typeof demoAccounts)[0]) {
