@@ -135,7 +135,18 @@ export function getCategory(id: string | null | undefined): CategoryProfile | un
 
 /** Map a combustion profile onto its electric counterpart (legacy rows only). */
 function electricVariant(id: string): string {
-  return ({ petrol_motorcycle: "electric_motorcycle", petrol_scooter: "electric_scooter", passenger_car: "electric_car" } as Record<string, string>)[id] ?? id;
+  return ({
+    petrol_motorcycle: "electric_motorcycle",
+    petrol_scooter: "electric_scooter",
+    passenger_car: "electric_car",
+    moped: "electric_bike",
+    auto_rickshaw: "electric_three_wheeler",
+    passenger_three_wheeler: "electric_three_wheeler",
+    cargo_three_wheeler: "electric_three_wheeler",
+    hatchback: "electric_car",
+    suv: "electric_car",
+    muv: "electric_car",
+  } as Record<string, string>)[id] ?? id;
 }
 
 /**
@@ -169,9 +180,23 @@ export function matchCategoryId(raw: string | null | undefined, fuel?: string | 
     id = legacy?.id;
   }
   if (!id) {
-    if (/bike|motorcycle|superbike/i.test(raw)) id = "petrol_motorcycle";
+    if (/moped/i.test(raw)) id = "moped";
+    else if (/electric\s*bike|e-?bike|electric\s*bicycle|e-?bicycle/i.test(raw)) id = "electric_bike";
+    else if (/electric\s*(auto|rickshaw|three)|e-?rickshaw/i.test(raw)) id = "electric_three_wheeler";
+    else if (/auto\s*rickshaw|rickshaw|tuk\s*tuk/i.test(raw)) id = "auto_rickshaw";
+    else if (/cargo.*three|goods.*three|loader\s*rickshaw/i.test(raw)) id = "cargo_three_wheeler";
+    else if (/three[\s-]?wheeler|3[\s-]?wheeler|tricycle/i.test(raw)) id = "passenger_three_wheeler";
+    else if (/hatchback/i.test(raw)) id = "hatchback";
+    else if (/suv|sport utility/i.test(raw)) id = "suv";
+    else if (/muv|mpv|multi utility/i.test(raw)) id = "muv";
+    else if (/hybrid/i.test(raw)) id = "hybrid_car";
+    else if (/electric commercial|e-?truck|electric van|electric lcv|electric bus|electric lorry/i.test(raw)) id = "electric_commercial";
+    else if (/light commercial|\blcv\b|pickup|delivery van/i.test(raw)) id = "light_commercial";
+    else if (/truck|lorry|heavy vehicle/i.test(raw)) id = "truck";
+    else if (/\bbus\b|coach|stage carriage/i.test(raw)) id = "bus";
+    else if (/bike|motorcycle|superbike/i.test(raw)) id = "petrol_motorcycle";
     else if (/scooter/i.test(raw)) id = "petrol_scooter";
-    else if (/car|sedan|suv|hatchback|muv|coupe/i.test(raw)) id = "passenger_car";
+    else if (/car|sedan|coupe/i.test(raw)) id = "passenger_car";
   }
   if (!id || !getCategory(id)) return undefined;
   return String(fuel ?? "").toLowerCase().includes("electric") ? electricVariant(id) : id;
@@ -226,7 +251,7 @@ export function validateIdentity(
     errors.push(
       cat.identity.vinApplicable
         ? "VIN must be 17 characters and must not contain I, O or Q."
-        : `${cat.identity.primaryLabel} must be 8-22 letters/digits. The 17-character car VIN rule does not apply to two-wheelers.`
+        : `${cat.identity.primaryLabel} must be 8-22 letters/digits. The 17-character car VIN rule does not apply to this category.`
     );
   }
 
@@ -350,6 +375,11 @@ export function labelsForCategory(categoryId: string): NonNullable<CategoryProfi
 
 export function isElectric(categoryId: string): boolean {
   return getCategory(categoryId)?.powertrain === "electric";
+}
+/** True for battery-electric AND hybrid profiles (battery evidence applies). */
+export function hasBatteryPack(categoryId: string): boolean {
+  const p = getCategory(categoryId)?.powertrain;
+  return !!SPEC.powertrains.find((x) => x.id === p)?.hasBatteryPack;
 }
 export function hasEngine(categoryId: string): boolean {
   const p = getCategory(categoryId)?.powertrain;

@@ -63,6 +63,13 @@ def _electric_variant(category_id: str) -> str:
         "petrol_motorcycle": "electric_motorcycle",
         "petrol_scooter": "electric_scooter",
         "passenger_car": "electric_car",
+        "moped": "electric_bike",
+        "auto_rickshaw": "electric_three_wheeler",
+        "passenger_three_wheeler": "electric_three_wheeler",
+        "cargo_three_wheeler": "electric_three_wheeler",
+        "hatchback": "electric_car",
+        "suv": "electric_car",
+        "muv": "electric_car",
     }.get(category_id, category_id)
 
 
@@ -95,11 +102,39 @@ def match_category_id(raw: str | None, fuel: str | None = None) -> str | None:
                 candidate = cat["id"]
                 break
     if candidate is None:
-        if re.search(r"bike|motorcycle|superbike", raw, re.I):
+        if re.search(r"moped", raw, re.I):
+            candidate = "moped"
+        elif re.search(r"electric\s*bike|e-?bike|electric\s*bicycle|e-?bicycle", raw, re.I):
+            candidate = "electric_bike"
+        elif re.search(r"electric\s*(auto|rickshaw|three)|e-?rickshaw", raw, re.I):
+            candidate = "electric_three_wheeler"
+        elif re.search(r"auto\s*rickshaw|rickshaw|tuk\s*tuk", raw, re.I):
+            candidate = "auto_rickshaw"
+        elif re.search(r"cargo.*three|goods.*three|loader\s*rickshaw", raw, re.I):
+            candidate = "cargo_three_wheeler"
+        elif re.search(r"three[\s-]?wheeler|3[\s-]?wheeler|tricycle", raw, re.I):
+            candidate = "passenger_three_wheeler"
+        elif re.search(r"hatchback", raw, re.I):
+            candidate = "hatchback"
+        elif re.search(r"suv|sport utility", raw, re.I):
+            candidate = "suv"
+        elif re.search(r"muv|mpv|multi utility", raw, re.I):
+            candidate = "muv"
+        elif re.search(r"hybrid", raw, re.I):
+            candidate = "hybrid_car"
+        elif re.search(r"electric commercial|e-?truck|electric van|electric lcv|electric bus|electric lorry", raw, re.I):
+            candidate = "electric_commercial"
+        elif re.search(r"light commercial|\blcv\b|pickup|delivery van", raw, re.I):
+            candidate = "light_commercial"
+        elif re.search(r"truck|lorry|heavy vehicle", raw, re.I):
+            candidate = "truck"
+        elif re.search(r"\bbus\b|coach|stage carriage", raw, re.I):
+            candidate = "bus"
+        elif re.search(r"bike|motorcycle|superbike", raw, re.I):
             candidate = "petrol_motorcycle"
         elif re.search(r"scooter", raw, re.I):
             candidate = "petrol_scooter"
-        elif re.search(r"car|sedan|suv|hatchback|muv|coupe", raw, re.I):
+        elif re.search(r"car|sedan|coupe", raw, re.I):
             candidate = "passenger_car"
     if candidate and not get_category(candidate):
         return None
@@ -184,6 +219,12 @@ def powertrain(cat: dict[str, Any]) -> dict[str, Any]:
 def is_electric(category_id: str) -> bool:
     cat = get_category(category_id) or get_category(DEFAULT_CATEGORY_ID)
     return bool(cat and cat.get("powertrain") == "electric")
+
+
+def has_battery_pack(category_id: str) -> bool:
+    """True for battery-electric AND hybrid profiles (battery evidence applies)."""
+    cat = get_category(category_id) or get_category(DEFAULT_CATEGORY_ID)
+    return bool(cat and powertrain(cat).get("hasBatteryPack"))
 
 
 def has_engine(category_id: str) -> bool:
