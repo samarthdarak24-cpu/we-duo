@@ -284,8 +284,7 @@ def validate_identity(
             errors.append(
                 "VIN must be 17 characters and must not contain I, O or Q."
                 if ident.get("vinApplicable")
-                else f"{ident['primaryLabel']} must be 8-22 letters/digits; the 17-character car VIN rule does not apply here."
-            )
+                else f"{ident['primaryLabel']} must be 8-22 letters/digits; the 17-character car VIN rule does not apply here."            )
     elif require_all:
         errors.append(f"{ident['primaryLabel']} is required.")
 

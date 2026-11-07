@@ -30,6 +30,7 @@ import {
   documentsForCategory,
   fieldsForCategory,
   getCategory,
+  hasBatteryPack,
   implementedCategories,
   isElectric,
   labelsForCategory,
@@ -106,6 +107,8 @@ export function categoryProfile(categoryId: string) {
         : `Damage CV: ${detector.note}`,
       isElectric(categoryId)
         ? "Battery State of Health is recorded only from a battery health report and is never treated as an odometer reading."
+        : hasBatteryPack(categoryId)
+        ? "Hybrid battery evidence is recorded only from a battery health or service report and is never treated as an odometer reading."
         : "No electric-battery checks apply to this combustion vehicle.",
     ],
   };
