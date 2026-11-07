@@ -21,6 +21,7 @@ function parse(req: Request): MarketplaceFilters {
     yearMax: num(p.get("yearMax")),
     kmMax: num(p.get("kmMax")),
     fuel: p.get("fuel") ?? undefined,
+    category: p.get("category") ?? undefined,
     transmission: p.get("transmission") ?? undefined,
     location: p.get("location") ?? undefined,
     ownershipMax: num(p.get("ownershipMax")),

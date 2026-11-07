@@ -12,11 +12,13 @@ function UserMenu({
   role,
   initials,
   base,
+  demo,
 }: {
   name: string;
   role: string;
   initials: string;
   base: string;
+  demo: boolean;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -47,7 +49,7 @@ function UserMenu({
       <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-56 overflow-hidden rounded-[12px] border border-[#333A41] bg-[#1B1E22] p-1.5 shadow-[0_18px_50px_rgba(0,0,0,0.45)]">
         <div className="px-2.5 py-2">
           <div className="truncate text-[13px] font-semibold text-[#F5F5F5]">{name}</div>
-          <div className="text-[11px] text-[#98A0A8]">{role} · demo workspace</div>
+          <div className="text-[11px] text-[#98A0A8]">{role}{demo ? " · sample records included" : " · live account"}</div>
         </div>
         <div className="my-1 h-px bg-[#2F353B]" />
         <Link href={`${base}/settings`} className="flex items-center gap-2.5 rounded-[8px] px-2.5 py-2 text-[12.5px] text-[#C9CFD5] hover:bg-[#252A2F] hover:text-white">
@@ -95,6 +97,7 @@ export function Topbar({
   notificationsHref,
   settingsHref,
   unread,
+  demo = false,
 }: {
   variant: "buyer" | "seller" | "admin";
   profile: BuyerProfile | SellerProfile;
@@ -103,6 +106,7 @@ export function Topbar({
   notificationsHref?: string;
   settingsHref?: string;
   unread?: number;
+  demo?: boolean;
 }) {
   const router = useRouter();
   const [q, setQ] = useState("");
@@ -136,6 +140,12 @@ export function Topbar({
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search registration, VIN or vehicle ID"
             aria-label="Search registration, VIN or vehicle ID"
+            // Browser autofill / accessibility extensions can inject an inline
+            // `style` attribute on search inputs before React hydrates. React
+            // then reports "Extra attributes from the server". The attribute is
+            // never produced by this component (verified against the SSR HTML),
+            // so suppress the false-positive warning on this node only.
+            suppressHydrationWarning
             className="h-10 w-full rounded-[11px] border border-[#2F353B] bg-[#1E2126] pl-10 pr-16 text-[13px] text-[#F5F5F5] outline-none transition placeholder:text-[#7E8790] focus:border-[#B99A60] focus:ring-2 focus:ring-[#B99A60]/20"
           />
           <span className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded border border-[#3A4148] px-1.5 py-0.5 text-[10px] font-medium text-[#7E8790] lg:block">
@@ -175,7 +185,13 @@ export function Topbar({
         <ThemeToggle variant="compact" />
         <Bell href={notificationsHref ?? `${base}/notifications`} unread={unread} />
         <div className="mx-1 hidden h-6 w-px bg-[#2F353B] sm:block" />
-        <UserMenu name={profile.name} role={profile.role} initials={profile.avatarInitials} base={base} />
+        <UserMenu
+          name={profile.name}
+          role={profile.role}
+          initials={profile.avatarInitials}
+          base={base}
+          demo={demo}
+        />
       </div>
     </header>
   );

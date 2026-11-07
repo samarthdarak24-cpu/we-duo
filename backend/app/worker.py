@@ -143,9 +143,11 @@ def _document(payload: dict) -> dict:
         return {"status": "skipped", "reason": "no path supplied"}
     from pathlib import Path
     r = extract.process_document(Path(path), str(payload.get("document_id") or "unknown"),
-                                 payload["vehicle_id"], str(payload.get("doc_type") or "rc"))
+                                 payload["vehicle_id"], str(payload.get("doc_type") or "rc"),
+                                 payload.get("category_id"))
     return {"status": "succeeded", "confidence": r.confidence, "flags": r.flags,
-            "engine": r.engine, "review_id": r.manual_review_id}
+            "engine": r.engine, "category_id": r.category_id,
+            "review_id": r.manual_review_id}
 
 
 @handler("ocr")
@@ -183,7 +185,8 @@ def _damage(payload: dict) -> dict:
     p = payload.get("path")
     if not p:
         return {"status": "skipped", "reason": "no image path"}
-    return {"status": "succeeded", **detectors.damage_signals(Path(p))}
+    return {"status": "succeeded",
+            **detectors.damage_signals(Path(p), payload.get("category_id"))}
 
 
 @handler("trust_score_recalculation")

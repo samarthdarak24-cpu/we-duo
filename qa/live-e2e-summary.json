@@ -1,0 +1,1778 @@
+{
+  "runId": "LIVE-MW6DOO1A",
+  "base": "http://127.0.0.1:3000",
+  "backend": "http://127.0.0.1:8000",
+  "generatedAt": "2026-11-07T12:31:31.887Z",
+  "categoriesTested": [
+    "petrol_motorcycle",
+    "petrol_scooter",
+    "electric_scooter",
+    "electric_motorcycle",
+    "passenger_car",
+    "electric_car"
+  ],
+  "created": [
+    {
+      "categoryId": "petrol_motorcycle",
+      "vehicleId": "v-1794054449573",
+      "listingId": "l-v-1794054449573",
+      "regNo": "MH12QA9442",
+      "primary": "FRM0054427822000",
+      "published": true,
+      "investigation": {
+        "source": "python-intelligence",
+        "orchestrator": "langgraph",
+        "nodes": 15,
+        "status": 200
+      },
+      "rc": {
+        "status": 201,
+        "documentStatus": "verified",
+        "engine": "rapidocr",
+        "confidence": 0.786
+      },
+      "evidence": [
+        "SCREENSHOTS/cat-petrol_motorcycle-investigation.png",
+        "SCREENSHOTS/cat-petrol_motorcycle-published.png",
+        "SCREENSHOTS/buyer-petrol_motorcycle-detail.png"
+      ]
+    },
+    {
+      "categoryId": "petrol_scooter",
+      "vehicleId": "v-1794054461271",
+      "listingId": "l-v-1794054461271",
+      "regNo": "MH13QA2301",
+      "primary": "FRM0054428822001",
+      "published": true,
+      "investigation": {
+        "source": "python-intelligence",
+        "orchestrator": "langgraph",
+        "nodes": 15,
+        "status": 200
+      },
+      "rc": {
+        "status": 201,
+        "documentStatus": "verified",
+        "engine": "rapidocr",
+        "confidence": 0.785
+      },
+      "evidence": [
+        "SCREENSHOTS/cat-petrol_scooter-investigation.png",
+        "SCREENSHOTS/cat-petrol_scooter-published.png",
+        "SCREENSHOTS/buyer-petrol_scooter-detail.png"
+      ]
+    },
+    {
+      "categoryId": "electric_scooter",
+      "vehicleId": "v-1794054469821",
+      "listingId": "l-v-1794054469821",
+      "regNo": "MH14QA3467",
+      "primary": "FRM0054429822002",
+      "published": true,
+      "investigation": {
+        "source": "python-intelligence",
+        "orchestrator": "langgraph",
+        "nodes": 16,
+        "status": 200
+      },
+      "rc": {
+        "status": 201,
+        "documentStatus": "verified",
+        "engine": "rapidocr",
+        "confidence": 0.779
+      },
+      "evidence": [
+        "SCREENSHOTS/cat-electric_scooter-investigation.png",
+        "SCREENSHOTS/cat-electric_scooter-published.png",
+        "SCREENSHOTS/buyer-electric_scooter-detail.png"
+      ]
+    },
+    {
+      "categoryId": "electric_motorcycle",
+      "vehicleId": "v-1794054478303",
+      "listingId": "l-v-1794054478303",
+      "regNo": "MH15QA8013",
+      "primary": "FRM0054430822003",
+      "published": true,
+      "investigation": {
+        "source": "python-intelligence",
+        "orchestrator": "langgraph",
+        "nodes": 16,
+        "status": 200
+      },
+      "rc": {
+        "status": 201,
+        "documentStatus": "verified",
+        "engine": "rapidocr",
+        "confidence": 0.787
+      },
+      "evidence": [
+        "SCREENSHOTS/cat-electric_motorcycle-investigation.png",
+        "SCREENSHOTS/cat-electric_motorcycle-published.png",
+        "SCREENSHOTS/buyer-electric_motorcycle-detail.png"
+      ]
+    },
+    {
+      "categoryId": "passenger_car",
+      "vehicleId": "v-1794054488033",
+      "listingId": "l-v-1794054488033",
+      "regNo": "MH16QA4426",
+      "primary": "91794054427822004",
+      "published": true,
+      "investigation": {
+        "source": "python-intelligence",
+        "orchestrator": "langgraph",
+        "nodes": 15,
+        "status": 200
+      },
+      "rc": {
+        "status": 201,
+        "documentStatus": "verified",
+        "engine": "rapidocr",
+        "confidence": 0.778
+      },
+      "evidence": [
+        "SCREENSHOTS/cat-passenger_car-investigation.png",
+        "SCREENSHOTS/cat-passenger_car-published.png",
+        "SCREENSHOTS/buyer-passenger_car-detail.png",
+        "SCREENSHOTS/buyer-car-3d-hotspot.png",
+        "SCREENSHOTS/seller-inquiry-reply.png"
+      ]
+    },
+    {
+      "categoryId": "electric_car",
+      "vehicleId": "v-1794054498560",
+      "listingId": "l-v-1794054498560",
+      "regNo": "MH17QA9643",
+      "primary": "91794054427822005",
+      "published": true,
+      "investigation": {
+        "source": "python-intelligence",
+        "orchestrator": "langgraph",
+        "nodes": 16,
+        "status": 200
+      },
+      "rc": {
+        "status": 201,
+        "documentStatus": "verified",
+        "engine": "rapidocr",
+        "confidence": 0.776
+      },
+      "evidence": [
+        "SCREENSHOTS/cat-electric_car-investigation.png",
+        "SCREENSHOTS/cat-electric_car-published.png",
+        "SCREENSHOTS/buyer-electric_car-detail.png"
+      ]
+    }
+  ],
+  "totals": {
+    "features": 11,
+    "passedFeatures": 11,
+    "failedFeatures": 0,
+    "checks": 272,
+    "passedChecks": 272,
+    "failedChecks": 0
+  },
+  "screenshotCount": 29,
+  "screenshots": [
+    "SCREENSHOTS/seller-dashboard.png",
+    "SCREENSHOTS/cat-petrol_motorcycle-step0.png",
+    "SCREENSHOTS/cat-petrol_motorcycle-investigation.png",
+    "SCREENSHOTS/cat-petrol_motorcycle-published.png",
+    "SCREENSHOTS/cat-petrol_scooter-step0.png",
+    "SCREENSHOTS/cat-petrol_scooter-investigation.png",
+    "SCREENSHOTS/cat-petrol_scooter-published.png",
+    "SCREENSHOTS/cat-electric_scooter-step0.png",
+    "SCREENSHOTS/cat-electric_scooter-investigation.png",
+    "SCREENSHOTS/cat-electric_scooter-published.png",
+    "SCREENSHOTS/cat-electric_motorcycle-step0.png",
+    "SCREENSHOTS/cat-electric_motorcycle-investigation.png",
+    "SCREENSHOTS/cat-electric_motorcycle-published.png",
+    "SCREENSHOTS/cat-passenger_car-step0.png",
+    "SCREENSHOTS/cat-passenger_car-investigation.png",
+    "SCREENSHOTS/cat-passenger_car-published.png",
+    "SCREENSHOTS/cat-electric_car-step0.png",
+    "SCREENSHOTS/cat-electric_car-investigation.png",
+    "SCREENSHOTS/cat-electric_car-published.png",
+    "SCREENSHOTS/buyer-dashboard.png",
+    "SCREENSHOTS/buyer-petrol_motorcycle-detail.png",
+    "SCREENSHOTS/buyer-petrol_scooter-detail.png",
+    "SCREENSHOTS/buyer-electric_scooter-detail.png",
+    "SCREENSHOTS/buyer-electric_motorcycle-detail.png",
+    "SCREENSHOTS/buyer-passenger_car-detail.png",
+    "SCREENSHOTS/buyer-electric_car-detail.png",
+    "SCREENSHOTS/buyer-car-3d-hotspot.png",
+    "SCREENSHOTS/seller-inquiry-reply.png",
+    "SCREENSHOTS/security-category-taxonomy.png"
+  ],
+  "consoleErrors": {
+    "total": 12,
+    "expectedHttpErrors": 12,
+    "unexpected": [],
+    "sample": [
+      "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)",
+      "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)",
+      "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)",
+      "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)",
+      "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)",
+      "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)",
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "Failed to load resource: the server responded with a status of 409 (Conflict)",
+      "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+    ]
+  },
+  "features": [
+    {
+      "feature": "Seller login",
+      "status": "PASS",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "checks": [
+        {
+          "label": "Seller login succeeds through the real form",
+          "ok": true,
+          "detail": "http://127.0.0.1:3000/seller"
+        }
+      ]
+    },
+    {
+      "feature": "Category: Petrol Motorcycle",
+      "status": "PASS",
+      "total": 23,
+      "passed": 23,
+      "failed": 0,
+      "checks": [
+        {
+          "label": "[petrol_motorcycle] category selectable in the real Seller wizard",
+          "ok": true,
+          "detail": "6 options"
+        },
+        {
+          "label": "[petrol_motorcycle] primary identifier label is \"Chassis / frame number\"",
+          "ok": true,
+          "detail": "Chassis / frame number"
+        },
+        {
+          "label": "[petrol_motorcycle] two-wheeler does NOT show \"VIN (17 characters)\"",
+          "ok": true,
+          "detail": "no universal 17-char VIN rule"
+        },
+        {
+          "label": "[petrol_motorcycle] combustion exposes \"Engine capacity (CC)\"",
+          "ok": true,
+          "detail": "petrol field shown"
+        },
+        {
+          "label": "[petrol_motorcycle] combustion exposes \"Engine number\"",
+          "ok": true,
+          "detail": "engine field shown"
+        },
+        {
+          "label": "[petrol_motorcycle] vehicle draft created via the real UI",
+          "ok": true,
+          "detail": "HTTP 201 id=v-1794054449573 reg=MH12QA9442"
+        },
+        {
+          "label": "[petrol_motorcycle] DB vehicle_category_id matches",
+          "ok": true,
+          "detail": "petrol_motorcycle == petrol_motorcycle"
+        },
+        {
+          "label": "[petrol_motorcycle] DB make/model/reg/primary correct",
+          "ok": true,
+          "detail": "Royal Enfield Classic 350 MH12QA9442 FRM0054427822000"
+        },
+        {
+          "label": "[petrol_motorcycle] DB fuel matches powertrain",
+          "ok": true,
+          "detail": "Petrol"
+        },
+        {
+          "label": "[petrol_motorcycle] asking price and location persisted",
+          "ok": true,
+          "detail": "price=165000 location=Mumbai, Maharashtra"
+        },
+        {
+          "label": "[petrol_motorcycle] combustion specs contain no battery_soh",
+          "ok": true,
+          "detail": "{}"
+        },
+        {
+          "label": "[petrol_motorcycle] publish gate blocks a bare draft (HTTP 422)",
+          "ok": true,
+          "detail": "HTTP 422 PUBLISH_BLOCKED"
+        },
+        {
+          "label": "[petrol_motorcycle] investigation answered by the real Python agent",
+          "ok": true,
+          "detail": "python-intelligence"
+        },
+        {
+          "label": "[petrol_motorcycle] orchestrator reported honestly",
+          "ok": true,
+          "detail": "langgraph"
+        },
+        {
+          "label": "[petrol_motorcycle] conditional 15-node set executed",
+          "ok": true,
+          "detail": "15 nodes (expected 15)"
+        },
+        {
+          "label": "[petrol_motorcycle] combustion node set omits EVBatteryAnalysisNode",
+          "ok": true,
+          "detail": "15 nodes"
+        },
+        {
+          "label": "[petrol_motorcycle] ai_runs row persisted with the real graph",
+          "ok": true,
+          "detail": "langgraph-conditional / completed"
+        },
+        {
+          "label": "[petrol_motorcycle] 3 real photos uploaded via multipart",
+          "ok": true,
+          "detail": "HTTP 201 {\"data\":{\"uploaded\":3,\"listingId\":\"l-v-1794054449573\",\"images\":[{\"id\":\"img-68f568c8-33e4-4fc9-a585-e2a742190e69\",\"position\":1,\"key\":\"photos/v-1794054449573/39f0"
+        },
+        {
+          "label": "[petrol_motorcycle] category-correct RC type accepted (rc_2w)",
+          "ok": true,
+          "detail": "HTTP 201 {\"data\":{\"ok\":true,\"id\":\"doc-1794054456585\",\"fileKey\":\"documents/v-1794054449573/d90a03ca-688e-4997-a5a1-1bed6e3a409f.png\",\"fileUrl\":\"/api/v1/files/documents/v-"
+        },
+        {
+          "label": "[petrol_motorcycle] real OCR ran on the RC image",
+          "ok": true,
+          "detail": "rapidocr rapidocr-onnx-crnn status=processed"
+        },
+        {
+          "label": "[petrol_motorcycle] RC auto-verified from extracted evidence",
+          "ok": true,
+          "detail": "status=verified confidence=0.786"
+        },
+        {
+          "label": "[petrol_motorcycle] verified RC row persisted in SQLite",
+          "ok": true,
+          "detail": "rc_2w / verified"
+        },
+        {
+          "label": "[petrol_motorcycle] listing published after the gate is satisfied",
+          "ok": true,
+          "detail": "HTTP 200 DB=published"
+        }
+      ],
+      "categoryId": "petrol_motorcycle",
+      "vehicleId": "v-1794054449573",
+      "listingId": "l-v-1794054449573",
+      "regNo": "MH12QA9442",
+      "primary": "FRM0054427822000",
+      "electric": false,
+      "twoWheeler": true,
+      "expectedNodes": 15,
+      "evidence": [
+        "SCREENSHOTS/cat-petrol_motorcycle-investigation.png",
+        "SCREENSHOTS/cat-petrol_motorcycle-published.png",
+        "SCREENSHOTS/buyer-petrol_motorcycle-detail.png"
+      ]
+    },
+    {
+      "feature": "Category: Petrol Scooter",
+      "status": "PASS",
+      "total": 23,
+      "passed": 23,
+      "failed": 0,
+      "checks": [
+        {
+          "label": "[petrol_scooter] category selectable in the real Seller wizard",
+          "ok": true,
+          "detail": "6 options"
+        },
+        {
+          "label": "[petrol_scooter] primary identifier label is \"Chassis / frame number\"",
+          "ok": true,
+          "detail": "Chassis / frame number"
+        },
+        {
+          "label": "[petrol_scooter] two-wheeler does NOT show \"VIN (17 characters)\"",
+          "ok": true,
+          "detail": "no universal 17-char VIN rule"
+        },
+        {
+          "label": "[petrol_scooter] combustion exposes \"Engine capacity (CC)\"",
+          "ok": true,
+          "detail": "petrol field shown"
+        },
+        {
+          "label": "[petrol_scooter] combustion exposes \"Engine number\"",
+          "ok": true,
+          "detail": "engine field shown"
+        },
+        {
+          "label": "[petrol_scooter] vehicle draft created via the real UI",
+          "ok": true,
+          "detail": "HTTP 201 id=v-1794054461271 reg=MH13QA2301"
+        },
+        {
+          "label": "[petrol_scooter] DB vehicle_category_id matches",
+          "ok": true,
+          "detail": "petrol_scooter == petrol_scooter"
+        },
+        {
+          "label": "[petrol_scooter] DB make/model/reg/primary correct",
+          "ok": true,
+          "detail": "Honda Activa 6G MH13QA2301 FRM0054428822001"
+        },
+        {
+          "label": "[petrol_scooter] DB fuel matches powertrain",
+          "ok": true,
+          "detail": "Petrol"
+        },
+        {
+          "label": "[petrol_scooter] asking price and location persisted",
+          "ok": true,
+          "detail": "price=92000 location=Mumbai, Maharashtra"
+        },
+        {
+          "label": "[petrol_scooter] combustion specs contain no battery_soh",
+          "ok": true,
+          "detail": "{}"
+        },
+        {
+          "label": "[petrol_scooter] publish gate blocks a bare draft (HTTP 422)",
+          "ok": true,
+          "detail": "HTTP 422 PUBLISH_BLOCKED"
+        },
+        {
+          "label": "[petrol_scooter] investigation answered by the real Python agent",
+          "ok": true,
+          "detail": "python-intelligence"
+        },
+        {
+          "label": "[petrol_scooter] orchestrator reported honestly",
+          "ok": true,
+          "detail": "langgraph"
+        },
+        {
+          "label": "[petrol_scooter] conditional 15-node set executed",
+          "ok": true,
+          "detail": "15 nodes (expected 15)"
+        },
+        {
+          "label": "[petrol_scooter] combustion node set omits EVBatteryAnalysisNode",
+          "ok": true,
+          "detail": "15 nodes"
+        },
+        {
+          "label": "[petrol_scooter] ai_runs row persisted with the real graph",
+          "ok": true,
+          "detail": "langgraph-conditional / completed"
+        },
+        {
+          "label": "[petrol_scooter] 3 real photos uploaded via multipart",
+          "ok": true,
+          "detail": "HTTP 201 {\"data\":{\"uploaded\":3,\"listingId\":\"l-v-1794054461271\",\"images\":[{\"id\":\"img-6cd73dd4-f816-4ca0-9704-36dd954605cb\",\"position\":1,\"key\":\"photos/v-1794054461271/2e27"
+        },
+        {
+          "label": "[petrol_scooter] category-correct RC type accepted (rc_2w)",
+          "ok": true,
+          "detail": "HTTP 201 {\"data\":{\"ok\":true,\"id\":\"doc-1794054465459\",\"fileKey\":\"documents/v-1794054461271/104bc3b4-ea99-4533-88bd-3026bd7afece.png\",\"fileUrl\":\"/api/v1/files/documents/v-"
+        },
+        {
+          "label": "[petrol_scooter] real OCR ran on the RC image",
+          "ok": true,
+          "detail": "rapidocr rapidocr-onnx-crnn status=processed"
+        },
+        {
+          "label": "[petrol_scooter] RC auto-verified from extracted evidence",
+          "ok": true,
+          "detail": "status=verified confidence=0.785"
+        },
+        {
+          "label": "[petrol_scooter] verified RC row persisted in SQLite",
+          "ok": true,
+          "detail": "rc_2w / verified"
+        },
+        {
+          "label": "[petrol_scooter] listing published after the gate is satisfied",
+          "ok": true,
+          "detail": "HTTP 200 DB=published"
+        }
+      ],
+      "categoryId": "petrol_scooter",
+      "vehicleId": "v-1794054461271",
+      "listingId": "l-v-1794054461271",
+      "regNo": "MH13QA2301",
+      "primary": "FRM0054428822001",
+      "electric": false,
+      "twoWheeler": true,
+      "expectedNodes": 15,
+      "evidence": [
+        "SCREENSHOTS/cat-petrol_scooter-investigation.png",
+        "SCREENSHOTS/cat-petrol_scooter-published.png",
+        "SCREENSHOTS/buyer-petrol_scooter-detail.png"
+      ]
+    },
+    {
+      "feature": "Category: Electric Scooter",
+      "status": "PASS",
+      "total": 27,
+      "passed": 27,
+      "failed": 0,
+      "checks": [
+        {
+          "label": "[electric_scooter] category selectable in the real Seller wizard",
+          "ok": true,
+          "detail": "6 options"
+        },
+        {
+          "label": "[electric_scooter] primary identifier label is \"Chassis / frame number\"",
+          "ok": true,
+          "detail": "Chassis / frame number"
+        },
+        {
+          "label": "[electric_scooter] two-wheeler does NOT show \"VIN (17 characters)\"",
+          "ok": true,
+          "detail": "no universal 17-char VIN rule"
+        },
+        {
+          "label": "[electric_scooter] EV hides \"Engine capacity (CC)\"",
+          "ok": true,
+          "detail": "no petrol details for EV"
+        },
+        {
+          "label": "[electric_scooter] EV hides \"Engine number\"",
+          "ok": true,
+          "detail": "no combustion engine on an EV"
+        },
+        {
+          "label": "[electric_scooter] EV exposes battery fields",
+          "ok": true,
+          "detail": "capacity=true soh=true"
+        },
+        {
+          "label": "[electric_scooter] EV exposes motor number (not engine number)",
+          "ok": true,
+          "detail": "motorNumber=true"
+        },
+        {
+          "label": "[electric_scooter] vehicle draft created via the real UI",
+          "ok": true,
+          "detail": "HTTP 201 id=v-1794054469821 reg=MH14QA3467"
+        },
+        {
+          "label": "[electric_scooter] DB vehicle_category_id matches",
+          "ok": true,
+          "detail": "electric_scooter == electric_scooter"
+        },
+        {
+          "label": "[electric_scooter] DB make/model/reg/primary correct",
+          "ok": true,
+          "detail": "Ola S1 Pro MH14QA3467 FRM0054429822002"
+        },
+        {
+          "label": "[electric_scooter] DB fuel matches powertrain",
+          "ok": true,
+          "detail": "Electric"
+        },
+        {
+          "label": "[electric_scooter] asking price and location persisted",
+          "ok": true,
+          "detail": "price=128000 location=Mumbai, Maharashtra"
+        },
+        {
+          "label": "[electric_scooter] battery SOH stored separately from odometer",
+          "ok": true,
+          "detail": "soh=92 km=6400"
+        },
+        {
+          "label": "[electric_scooter] EV specs contain no engine_cc",
+          "ok": true,
+          "detail": "{\"battery_soh\":\"92\"}"
+        },
+        {
+          "label": "[electric_scooter] odometer never written into battery_records",
+          "ok": true,
+          "detail": "batteryRows=0"
+        },
+        {
+          "label": "[electric_scooter] publish gate blocks a bare draft (HTTP 422)",
+          "ok": true,
+          "detail": "HTTP 422 PUBLISH_BLOCKED"
+        },
+        {
+          "label": "[electric_scooter] investigation answered by the real Python agent",
+          "ok": true,
+          "detail": "python-intelligence"
+        },
+        {
+          "label": "[electric_scooter] orchestrator reported honestly",
+          "ok": true,
+          "detail": "langgraph"
+        },
+        {
+          "label": "[electric_scooter] conditional 16-node set executed",
+          "ok": true,
+          "detail": "16 nodes (expected 16)"
+        },
+        {
+          "label": "[electric_scooter] EV node set includes EVBatteryAnalysisNode",
+          "ok": true,
+          "detail": "VehicleResolverNode,VehicleCategoryDetectionNode,DocumentRetrievalNode,OCRAnalysisNode,MileageAnalysisNode,EVBatteryAnalysisNode,DamageAnalysisNode,IdentityVerificationNode,HistoryCorrelationNode,Anom"
+        },
+        {
+          "label": "[electric_scooter] ai_runs row persisted with the real graph",
+          "ok": true,
+          "detail": "langgraph-conditional / completed"
+        },
+        {
+          "label": "[electric_scooter] 3 real photos uploaded via multipart",
+          "ok": true,
+          "detail": "HTTP 201 {\"data\":{\"uploaded\":3,\"listingId\":\"l-v-1794054469821\",\"images\":[{\"id\":\"img-bfffa962-1f54-4965-9af9-e3ede7950cb2\",\"position\":1,\"key\":\"photos/v-1794054469821/1a16"
+        },
+        {
+          "label": "[electric_scooter] category-correct RC type accepted (rc_2w)",
+          "ok": true,
+          "detail": "HTTP 201 {\"data\":{\"ok\":true,\"id\":\"doc-1794054473282\",\"fileKey\":\"documents/v-1794054469821/fe2d31ef-932c-49c3-a88f-7e9842a6d23c.png\",\"fileUrl\":\"/api/v1/files/documents/v-"
+        },
+        {
+          "label": "[electric_scooter] real OCR ran on the RC image",
+          "ok": true,
+          "detail": "rapidocr rapidocr-onnx-crnn status=processed"
+        },
+        {
+          "label": "[electric_scooter] RC auto-verified from extracted evidence",
+          "ok": true,
+          "detail": "status=verified confidence=0.779"
+        },
+        {
+          "label": "[electric_scooter] verified RC row persisted in SQLite",
+          "ok": true,
+          "detail": "rc_2w / verified"
+        },
+        {
+          "label": "[electric_scooter] listing published after the gate is satisfied",
+          "ok": true,
+          "detail": "HTTP 200 DB=published"
+        }
+      ],
+      "categoryId": "electric_scooter",
+      "vehicleId": "v-1794054469821",
+      "listingId": "l-v-1794054469821",
+      "regNo": "MH14QA3467",
+      "primary": "FRM0054429822002",
+      "electric": true,
+      "twoWheeler": true,
+      "expectedNodes": 16,
+      "evidence": [
+        "SCREENSHOTS/cat-electric_scooter-investigation.png",
+        "SCREENSHOTS/cat-electric_scooter-published.png",
+        "SCREENSHOTS/buyer-electric_scooter-detail.png"
+      ]
+    },
+    {
+      "feature": "Category: Electric Motorcycle",
+      "status": "PASS",
+      "total": 27,
+      "passed": 27,
+      "failed": 0,
+      "checks": [
+        {
+          "label": "[electric_motorcycle] category selectable in the real Seller wizard",
+          "ok": true,
+          "detail": "6 options"
+        },
+        {
+          "label": "[electric_motorcycle] primary identifier label is \"Chassis / frame number\"",
+          "ok": true,
+          "detail": "Chassis / frame number"
+        },
+        {
+          "label": "[electric_motorcycle] two-wheeler does NOT show \"VIN (17 characters)\"",
+          "ok": true,
+          "detail": "no universal 17-char VIN rule"
+        },
+        {
+          "label": "[electric_motorcycle] EV hides \"Engine capacity (CC)\"",
+          "ok": true,
+          "detail": "no petrol details for EV"
+        },
+        {
+          "label": "[electric_motorcycle] EV hides \"Engine number\"",
+          "ok": true,
+          "detail": "no combustion engine on an EV"
+        },
+        {
+          "label": "[electric_motorcycle] EV exposes battery fields",
+          "ok": true,
+          "detail": "capacity=true soh=true"
+        },
+        {
+          "label": "[electric_motorcycle] EV exposes motor number (not engine number)",
+          "ok": true,
+          "detail": "motorNumber=true"
+        },
+        {
+          "label": "[electric_motorcycle] vehicle draft created via the real UI",
+          "ok": true,
+          "detail": "HTTP 201 id=v-1794054478303 reg=MH15QA8013"
+        },
+        {
+          "label": "[electric_motorcycle] DB vehicle_category_id matches",
+          "ok": true,
+          "detail": "electric_motorcycle == electric_motorcycle"
+        },
+        {
+          "label": "[electric_motorcycle] DB make/model/reg/primary correct",
+          "ok": true,
+          "detail": "Revolt RV400 MH15QA8013 FRM0054430822003"
+        },
+        {
+          "label": "[electric_motorcycle] DB fuel matches powertrain",
+          "ok": true,
+          "detail": "Electric"
+        },
+        {
+          "label": "[electric_motorcycle] asking price and location persisted",
+          "ok": true,
+          "detail": "price=149000 location=Mumbai, Maharashtra"
+        },
+        {
+          "label": "[electric_motorcycle] battery SOH stored separately from odometer",
+          "ok": true,
+          "detail": "soh=88 km=11200"
+        },
+        {
+          "label": "[electric_motorcycle] EV specs contain no engine_cc",
+          "ok": true,
+          "detail": "{\"battery_soh\":\"88\"}"
+        },
+        {
+          "label": "[electric_motorcycle] odometer never written into battery_records",
+          "ok": true,
+          "detail": "batteryRows=0"
+        },
+        {
+          "label": "[electric_motorcycle] publish gate blocks a bare draft (HTTP 422)",
+          "ok": true,
+          "detail": "HTTP 422 PUBLISH_BLOCKED"
+        },
+        {
+          "label": "[electric_motorcycle] investigation answered by the real Python agent",
+          "ok": true,
+          "detail": "python-intelligence"
+        },
+        {
+          "label": "[electric_motorcycle] orchestrator reported honestly",
+          "ok": true,
+          "detail": "langgraph"
+        },
+        {
+          "label": "[electric_motorcycle] conditional 16-node set executed",
+          "ok": true,
+          "detail": "16 nodes (expected 16)"
+        },
+        {
+          "label": "[electric_motorcycle] EV node set includes EVBatteryAnalysisNode",
+          "ok": true,
+          "detail": "VehicleResolverNode,VehicleCategoryDetectionNode,DocumentRetrievalNode,OCRAnalysisNode,MileageAnalysisNode,EVBatteryAnalysisNode,DamageAnalysisNode,IdentityVerificationNode,HistoryCorrelationNode,Anom"
+        },
+        {
+          "label": "[electric_motorcycle] ai_runs row persisted with the real graph",
+          "ok": true,
+          "detail": "langgraph-conditional / completed"
+        },
+        {
+          "label": "[electric_motorcycle] 3 real photos uploaded via multipart",
+          "ok": true,
+          "detail": "HTTP 201 {\"data\":{\"uploaded\":3,\"listingId\":\"l-v-1794054478303\",\"images\":[{\"id\":\"img-c76cfeb5-da88-45e3-8ef5-51d8561fcc59\",\"position\":1,\"key\":\"photos/v-1794054478303/0226"
+        },
+        {
+          "label": "[electric_motorcycle] category-correct RC type accepted (rc_2w)",
+          "ok": true,
+          "detail": "HTTP 201 {\"data\":{\"ok\":true,\"id\":\"doc-1794054482954\",\"fileKey\":\"documents/v-1794054478303/ff1594bc-4193-4f5e-9580-0432f0f4212f.png\",\"fileUrl\":\"/api/v1/files/documents/v-"
+        },
+        {
+          "label": "[electric_motorcycle] real OCR ran on the RC image",
+          "ok": true,
+          "detail": "rapidocr rapidocr-onnx-crnn status=processed"
+        },
+        {
+          "label": "[electric_motorcycle] RC auto-verified from extracted evidence",
+          "ok": true,
+          "detail": "status=verified confidence=0.787"
+        },
+        {
+          "label": "[electric_motorcycle] verified RC row persisted in SQLite",
+          "ok": true,
+          "detail": "rc_2w / verified"
+        },
+        {
+          "label": "[electric_motorcycle] listing published after the gate is satisfied",
+          "ok": true,
+          "detail": "HTTP 200 DB=published"
+        }
+      ],
+      "categoryId": "electric_motorcycle",
+      "vehicleId": "v-1794054478303",
+      "listingId": "l-v-1794054478303",
+      "regNo": "MH15QA8013",
+      "primary": "FRM0054430822003",
+      "electric": true,
+      "twoWheeler": true,
+      "expectedNodes": 16,
+      "evidence": [
+        "SCREENSHOTS/cat-electric_motorcycle-investigation.png",
+        "SCREENSHOTS/cat-electric_motorcycle-published.png",
+        "SCREENSHOTS/buyer-electric_motorcycle-detail.png"
+      ]
+    },
+    {
+      "feature": "Category: Petrol Car",
+      "status": "PASS",
+      "total": 23,
+      "passed": 23,
+      "failed": 0,
+      "checks": [
+        {
+          "label": "[passenger_car] category selectable in the real Seller wizard",
+          "ok": true,
+          "detail": "6 options"
+        },
+        {
+          "label": "[passenger_car] primary identifier label is \"VIN (17 characters)\"",
+          "ok": true,
+          "detail": "VIN (17 characters)"
+        },
+        {
+          "label": "[passenger_car] four-wheeler shows \"VIN (17 characters)\"",
+          "ok": true,
+          "detail": "ISO 3779 applies to cars only"
+        },
+        {
+          "label": "[passenger_car] combustion exposes \"Engine capacity (CC)\"",
+          "ok": true,
+          "detail": "petrol field shown"
+        },
+        {
+          "label": "[passenger_car] combustion exposes \"Engine number\"",
+          "ok": true,
+          "detail": "engine field shown"
+        },
+        {
+          "label": "[passenger_car] vehicle draft created via the real UI",
+          "ok": true,
+          "detail": "HTTP 201 id=v-1794054488033 reg=MH16QA4426"
+        },
+        {
+          "label": "[passenger_car] DB vehicle_category_id matches",
+          "ok": true,
+          "detail": "passenger_car == passenger_car"
+        },
+        {
+          "label": "[passenger_car] DB make/model/reg/primary correct",
+          "ok": true,
+          "detail": "Hyundai i20 MH16QA4426 91794054427822004"
+        },
+        {
+          "label": "[passenger_car] DB fuel matches powertrain",
+          "ok": true,
+          "detail": "Petrol"
+        },
+        {
+          "label": "[passenger_car] asking price and location persisted",
+          "ok": true,
+          "detail": "price=675000 location=Mumbai, Maharashtra"
+        },
+        {
+          "label": "[passenger_car] combustion specs contain no battery_soh",
+          "ok": true,
+          "detail": "{}"
+        },
+        {
+          "label": "[passenger_car] publish gate blocks a bare draft (HTTP 422)",
+          "ok": true,
+          "detail": "HTTP 422 PUBLISH_BLOCKED"
+        },
+        {
+          "label": "[passenger_car] investigation answered by the real Python agent",
+          "ok": true,
+          "detail": "python-intelligence"
+        },
+        {
+          "label": "[passenger_car] orchestrator reported honestly",
+          "ok": true,
+          "detail": "langgraph"
+        },
+        {
+          "label": "[passenger_car] conditional 15-node set executed",
+          "ok": true,
+          "detail": "15 nodes (expected 15)"
+        },
+        {
+          "label": "[passenger_car] combustion node set omits EVBatteryAnalysisNode",
+          "ok": true,
+          "detail": "15 nodes"
+        },
+        {
+          "label": "[passenger_car] ai_runs row persisted with the real graph",
+          "ok": true,
+          "detail": "langgraph-conditional / completed"
+        },
+        {
+          "label": "[passenger_car] 3 real photos uploaded via multipart",
+          "ok": true,
+          "detail": "HTTP 201 {\"data\":{\"uploaded\":3,\"listingId\":\"l-v-1794054488033\",\"images\":[{\"id\":\"img-e469fb47-bad6-4cd3-83be-dd80c5f613b9\",\"position\":1,\"key\":\"photos/v-1794054488033/8e66"
+        },
+        {
+          "label": "[passenger_car] category-correct RC type accepted (rc)",
+          "ok": true,
+          "detail": "HTTP 201 {\"data\":{\"ok\":true,\"id\":\"doc-1794054493085\",\"fileKey\":\"documents/v-1794054488033/204af1d7-6874-4757-ad13-9da85ab40efb.png\",\"fileUrl\":\"/api/v1/files/documents/v-"
+        },
+        {
+          "label": "[passenger_car] real OCR ran on the RC image",
+          "ok": true,
+          "detail": "rapidocr rapidocr-onnx-crnn status=processed"
+        },
+        {
+          "label": "[passenger_car] RC auto-verified from extracted evidence",
+          "ok": true,
+          "detail": "status=verified confidence=0.778"
+        },
+        {
+          "label": "[passenger_car] verified RC row persisted in SQLite",
+          "ok": true,
+          "detail": "rc / verified"
+        },
+        {
+          "label": "[passenger_car] listing published after the gate is satisfied",
+          "ok": true,
+          "detail": "HTTP 200 DB=published"
+        }
+      ],
+      "categoryId": "passenger_car",
+      "vehicleId": "v-1794054488033",
+      "listingId": "l-v-1794054488033",
+      "regNo": "MH16QA4426",
+      "primary": "91794054427822004",
+      "electric": false,
+      "twoWheeler": false,
+      "expectedNodes": 15,
+      "evidence": [
+        "SCREENSHOTS/cat-passenger_car-investigation.png",
+        "SCREENSHOTS/cat-passenger_car-published.png",
+        "SCREENSHOTS/buyer-passenger_car-detail.png",
+        "SCREENSHOTS/buyer-car-3d-hotspot.png",
+        "SCREENSHOTS/seller-inquiry-reply.png"
+      ]
+    },
+    {
+      "feature": "Category: Electric Car",
+      "status": "PASS",
+      "total": 27,
+      "passed": 27,
+      "failed": 0,
+      "checks": [
+        {
+          "label": "[electric_car] category selectable in the real Seller wizard",
+          "ok": true,
+          "detail": "6 options"
+        },
+        {
+          "label": "[electric_car] primary identifier label is \"VIN (17 characters)\"",
+          "ok": true,
+          "detail": "VIN (17 characters)"
+        },
+        {
+          "label": "[electric_car] four-wheeler shows \"VIN (17 characters)\"",
+          "ok": true,
+          "detail": "ISO 3779 applies to cars only"
+        },
+        {
+          "label": "[electric_car] EV hides \"Engine capacity (CC)\"",
+          "ok": true,
+          "detail": "no petrol details for EV"
+        },
+        {
+          "label": "[electric_car] EV hides \"Engine number\"",
+          "ok": true,
+          "detail": "no combustion engine on an EV"
+        },
+        {
+          "label": "[electric_car] EV exposes battery fields",
+          "ok": true,
+          "detail": "capacity=true soh=true"
+        },
+        {
+          "label": "[electric_car] EV exposes motor number (not engine number)",
+          "ok": true,
+          "detail": "motorNumber=true"
+        },
+        {
+          "label": "[electric_car] vehicle draft created via the real UI",
+          "ok": true,
+          "detail": "HTTP 201 id=v-1794054498560 reg=MH17QA9643"
+        },
+        {
+          "label": "[electric_car] DB vehicle_category_id matches",
+          "ok": true,
+          "detail": "electric_car == electric_car"
+        },
+        {
+          "label": "[electric_car] DB make/model/reg/primary correct",
+          "ok": true,
+          "detail": "Tata Nexon EV MH17QA9643 91794054427822005"
+        },
+        {
+          "label": "[electric_car] DB fuel matches powertrain",
+          "ok": true,
+          "detail": "Electric"
+        },
+        {
+          "label": "[electric_car] asking price and location persisted",
+          "ok": true,
+          "detail": "price=1395000 location=Mumbai, Maharashtra"
+        },
+        {
+          "label": "[electric_car] battery SOH stored separately from odometer",
+          "ok": true,
+          "detail": "soh=95 km=28000"
+        },
+        {
+          "label": "[electric_car] EV specs contain no engine_cc",
+          "ok": true,
+          "detail": "{\"battery_soh\":\"95\"}"
+        },
+        {
+          "label": "[electric_car] odometer never written into battery_records",
+          "ok": true,
+          "detail": "batteryRows=0"
+        },
+        {
+          "label": "[electric_car] publish gate blocks a bare draft (HTTP 422)",
+          "ok": true,
+          "detail": "HTTP 422 PUBLISH_BLOCKED"
+        },
+        {
+          "label": "[electric_car] investigation answered by the real Python agent",
+          "ok": true,
+          "detail": "python-intelligence"
+        },
+        {
+          "label": "[electric_car] orchestrator reported honestly",
+          "ok": true,
+          "detail": "langgraph"
+        },
+        {
+          "label": "[electric_car] conditional 16-node set executed",
+          "ok": true,
+          "detail": "16 nodes (expected 16)"
+        },
+        {
+          "label": "[electric_car] EV node set includes EVBatteryAnalysisNode",
+          "ok": true,
+          "detail": "VehicleResolverNode,VehicleCategoryDetectionNode,DocumentRetrievalNode,OCRAnalysisNode,MileageAnalysisNode,EVBatteryAnalysisNode,DamageAnalysisNode,IdentityVerificationNode,HistoryCorrelationNode,Anom"
+        },
+        {
+          "label": "[electric_car] ai_runs row persisted with the real graph",
+          "ok": true,
+          "detail": "langgraph-conditional / completed"
+        },
+        {
+          "label": "[electric_car] 3 real photos uploaded via multipart",
+          "ok": true,
+          "detail": "HTTP 201 {\"data\":{\"uploaded\":3,\"listingId\":\"l-v-1794054498560\",\"images\":[{\"id\":\"img-591ab9a3-3b38-4598-91b0-189225a26f73\",\"position\":1,\"key\":\"photos/v-1794054498560/3037"
+        },
+        {
+          "label": "[electric_car] category-correct RC type accepted (rc)",
+          "ok": true,
+          "detail": "HTTP 201 {\"data\":{\"ok\":true,\"id\":\"doc-1794054502848\",\"fileKey\":\"documents/v-1794054498560/00fd241d-1402-468c-8b05-f483ce0de2a2.png\",\"fileUrl\":\"/api/v1/files/documents/v-"
+        },
+        {
+          "label": "[electric_car] real OCR ran on the RC image",
+          "ok": true,
+          "detail": "rapidocr rapidocr-onnx-crnn status=processed"
+        },
+        {
+          "label": "[electric_car] RC auto-verified from extracted evidence",
+          "ok": true,
+          "detail": "status=verified confidence=0.776"
+        },
+        {
+          "label": "[electric_car] verified RC row persisted in SQLite",
+          "ok": true,
+          "detail": "rc / verified"
+        },
+        {
+          "label": "[electric_car] listing published after the gate is satisfied",
+          "ok": true,
+          "detail": "HTTP 200 DB=published"
+        }
+      ],
+      "categoryId": "electric_car",
+      "vehicleId": "v-1794054498560",
+      "listingId": "l-v-1794054498560",
+      "regNo": "MH17QA9643",
+      "primary": "91794054427822005",
+      "electric": true,
+      "twoWheeler": false,
+      "expectedNodes": 16,
+      "evidence": [
+        "SCREENSHOTS/cat-electric_car-investigation.png",
+        "SCREENSHOTS/cat-electric_car-published.png",
+        "SCREENSHOTS/buyer-electric_car-detail.png"
+      ]
+    },
+    {
+      "feature": "Buyer login",
+      "status": "PASS",
+      "total": 1,
+      "passed": 1,
+      "failed": 0,
+      "checks": [
+        {
+          "label": "Buyer login succeeds through the real form",
+          "ok": true,
+          "detail": "http://127.0.0.1:3000/buyer"
+        }
+      ]
+    },
+    {
+      "feature": "Buyer marketplace & multi-category",
+      "status": "PASS",
+      "total": 68,
+      "passed": 68,
+      "failed": 0,
+      "checks": [
+        {
+          "label": "[petrol_motorcycle] buyer marketplace category filter returns this listing",
+          "ok": true,
+          "detail": "8 items, match=true"
+        },
+        {
+          "label": "[petrol_motorcycle] marketplace item keeps the category identity",
+          "ok": true,
+          "detail": "petrol_motorcycle / Chassis / frame number"
+        },
+        {
+          "label": "[petrol_motorcycle] marketplace item reports the correct 3D status",
+          "ok": true,
+          "detail": "unavailable"
+        },
+        {
+          "label": "[petrol_motorcycle] buyer search by registration finds the listing",
+          "ok": true,
+          "detail": "q=MH12QA9442"
+        },
+        {
+          "label": "[petrol_motorcycle] 3D asset is unavailable (no licensed GLB)",
+          "ok": true,
+          "detail": "status=unavailable url=null"
+        },
+        {
+          "label": "[petrol_motorcycle] 3D interactions disabled + labelled schematic",
+          "ok": true,
+          "detail": "false / labelled-schematic"
+        },
+        {
+          "label": "[petrol_motorcycle] API states no car GLB is substituted",
+          "ok": true,
+          "detail": "Unavailable 3D asset. The viewer must display the labelled category schematic and disable interactions; it must never load the sedan GLB."
+        },
+        {
+          "label": "[petrol_motorcycle] car license/attribution NOT reused for a 2W",
+          "ok": true,
+          "detail": "license=null manifest=null"
+        },
+        {
+          "label": "[petrol_scooter] buyer marketplace category filter returns this listing",
+          "ok": true,
+          "detail": "3 items, match=true"
+        },
+        {
+          "label": "[petrol_scooter] marketplace item keeps the category identity",
+          "ok": true,
+          "detail": "petrol_scooter / Chassis / frame number"
+        },
+        {
+          "label": "[petrol_scooter] marketplace item reports the correct 3D status",
+          "ok": true,
+          "detail": "unavailable"
+        },
+        {
+          "label": "[petrol_scooter] buyer search by registration finds the listing",
+          "ok": true,
+          "detail": "q=MH13QA2301"
+        },
+        {
+          "label": "[petrol_scooter] 3D asset is unavailable (no licensed GLB)",
+          "ok": true,
+          "detail": "status=unavailable url=null"
+        },
+        {
+          "label": "[petrol_scooter] 3D interactions disabled + labelled schematic",
+          "ok": true,
+          "detail": "false / labelled-schematic"
+        },
+        {
+          "label": "[petrol_scooter] API states no car GLB is substituted",
+          "ok": true,
+          "detail": "Unavailable 3D asset. The viewer must display the labelled category schematic and disable interactions; it must never load the sedan GLB."
+        },
+        {
+          "label": "[petrol_scooter] car license/attribution NOT reused for a 2W",
+          "ok": true,
+          "detail": "license=null manifest=null"
+        },
+        {
+          "label": "[electric_scooter] buyer marketplace category filter returns this listing",
+          "ok": true,
+          "detail": "3 items, match=true"
+        },
+        {
+          "label": "[electric_scooter] marketplace item keeps the category identity",
+          "ok": true,
+          "detail": "electric_scooter / Chassis / frame number"
+        },
+        {
+          "label": "[electric_scooter] marketplace item reports the correct 3D status",
+          "ok": true,
+          "detail": "unavailable"
+        },
+        {
+          "label": "[electric_scooter] buyer search by registration finds the listing",
+          "ok": true,
+          "detail": "q=MH14QA3467"
+        },
+        {
+          "label": "[electric_scooter] 3D asset is unavailable (no licensed GLB)",
+          "ok": true,
+          "detail": "status=unavailable url=null"
+        },
+        {
+          "label": "[electric_scooter] 3D interactions disabled + labelled schematic",
+          "ok": true,
+          "detail": "false / labelled-schematic"
+        },
+        {
+          "label": "[electric_scooter] API states no car GLB is substituted",
+          "ok": true,
+          "detail": "Unavailable 3D asset. The viewer must display the labelled category schematic and disable interactions; it must never load the sedan GLB."
+        },
+        {
+          "label": "[electric_scooter] car license/attribution NOT reused for a 2W",
+          "ok": true,
+          "detail": "license=null manifest=null"
+        },
+        {
+          "label": "[electric_motorcycle] buyer marketplace category filter returns this listing",
+          "ok": true,
+          "detail": "3 items, match=true"
+        },
+        {
+          "label": "[electric_motorcycle] marketplace item keeps the category identity",
+          "ok": true,
+          "detail": "electric_motorcycle / Chassis / frame number"
+        },
+        {
+          "label": "[electric_motorcycle] marketplace item reports the correct 3D status",
+          "ok": true,
+          "detail": "unavailable"
+        },
+        {
+          "label": "[electric_motorcycle] buyer search by registration finds the listing",
+          "ok": true,
+          "detail": "q=MH15QA8013"
+        },
+        {
+          "label": "[electric_motorcycle] 3D asset is unavailable (no licensed GLB)",
+          "ok": true,
+          "detail": "status=unavailable url=null"
+        },
+        {
+          "label": "[electric_motorcycle] 3D interactions disabled + labelled schematic",
+          "ok": true,
+          "detail": "false / labelled-schematic"
+        },
+        {
+          "label": "[electric_motorcycle] API states no car GLB is substituted",
+          "ok": true,
+          "detail": "Unavailable 3D asset. The viewer must display the labelled category schematic and disable interactions; it must never load the sedan GLB."
+        },
+        {
+          "label": "[electric_motorcycle] car license/attribution NOT reused for a 2W",
+          "ok": true,
+          "detail": "license=null manifest=null"
+        },
+        {
+          "label": "[passenger_car] buyer marketplace category filter returns this listing",
+          "ok": true,
+          "detail": "20 items, match=true"
+        },
+        {
+          "label": "[passenger_car] marketplace item keeps the category identity",
+          "ok": true,
+          "detail": "passenger_car / VIN"
+        },
+        {
+          "label": "[passenger_car] marketplace item reports the correct 3D status",
+          "ok": true,
+          "detail": "available"
+        },
+        {
+          "label": "[passenger_car] buyer search by registration finds the listing",
+          "ok": true,
+          "detail": "q=MH16QA4426"
+        },
+        {
+          "label": "[passenger_car] category-matched car GLB is available",
+          "ok": true,
+          "detail": "status=available url=/models/vehicles/trustdrive-sedan.glb"
+        },
+        {
+          "label": "[passenger_car] car GLB is honestly labelled generic-reference",
+          "ok": true,
+          "detail": "generic-reference / vehicleSpecific=false"
+        },
+        {
+          "label": "[electric_car] buyer marketplace category filter returns this listing",
+          "ok": true,
+          "detail": "3 items, match=true"
+        },
+        {
+          "label": "[electric_car] marketplace item keeps the category identity",
+          "ok": true,
+          "detail": "electric_car / VIN"
+        },
+        {
+          "label": "[electric_car] marketplace item reports the correct 3D status",
+          "ok": true,
+          "detail": "available"
+        },
+        {
+          "label": "[electric_car] buyer search by registration finds the listing",
+          "ok": true,
+          "detail": "q=MH17QA9643"
+        },
+        {
+          "label": "[electric_car] category-matched car GLB is available",
+          "ok": true,
+          "detail": "status=available url=/models/vehicles/trustdrive-sedan.glb"
+        },
+        {
+          "label": "[electric_car] car GLB is honestly labelled generic-reference",
+          "ok": true,
+          "detail": "generic-reference / vehicleSpecific=false"
+        },
+        {
+          "label": "[petrol_motorcycle] buyer vehicle page renders the real registration",
+          "ok": true,
+          "detail": "MH12QA9442"
+        },
+        {
+          "label": "[petrol_motorcycle] buyer page never references a car GLB",
+          "ok": true,
+          "detail": "no car GLB in rendered text"
+        },
+        {
+          "label": "[petrol_motorcycle] buyer page shows a labelled schematic",
+          "ok": true,
+          "detail": "category schematic labelled"
+        },
+        {
+          "label": "[petrol_scooter] buyer vehicle page renders the real registration",
+          "ok": true,
+          "detail": "MH13QA2301"
+        },
+        {
+          "label": "[petrol_scooter] buyer page never references a car GLB",
+          "ok": true,
+          "detail": "no car GLB in rendered text"
+        },
+        {
+          "label": "[petrol_scooter] buyer page shows a labelled schematic",
+          "ok": true,
+          "detail": "category schematic labelled"
+        },
+        {
+          "label": "[electric_scooter] buyer vehicle page renders the real registration",
+          "ok": true,
+          "detail": "MH14QA3467"
+        },
+        {
+          "label": "[electric_scooter] buyer page never references a car GLB",
+          "ok": true,
+          "detail": "no car GLB in rendered text"
+        },
+        {
+          "label": "[electric_scooter] buyer page shows a labelled schematic",
+          "ok": true,
+          "detail": "category schematic labelled"
+        },
+        {
+          "label": "[electric_motorcycle] buyer vehicle page renders the real registration",
+          "ok": true,
+          "detail": "MH15QA8013"
+        },
+        {
+          "label": "[electric_motorcycle] buyer page never references a car GLB",
+          "ok": true,
+          "detail": "no car GLB in rendered text"
+        },
+        {
+          "label": "[electric_motorcycle] buyer page shows a labelled schematic",
+          "ok": true,
+          "detail": "category schematic labelled"
+        },
+        {
+          "label": "[passenger_car] buyer vehicle page renders the real registration",
+          "ok": true,
+          "detail": "MH16QA4426"
+        },
+        {
+          "label": "[electric_car] buyer vehicle page renders the real registration",
+          "ok": true,
+          "detail": "MH17QA9643"
+        },
+        {
+          "label": "[buyer] damage record created for hotspot",
+          "ok": true,
+          "detail": "HTTP 201 {}"
+        },
+        {
+          "label": "[buyer] 3D hotspot present for the stored damage",
+          "ok": true,
+          "detail": "hotspot button"
+        },
+        {
+          "label": "[buyer] PDF report generated",
+          "ok": true,
+          "detail": "HTTP 201 id=rep-1794054573919"
+        },
+        {
+          "label": "[buyer] PDF download returns real %PDF bytes",
+          "ok": true,
+          "detail": "42804 bytes"
+        },
+        {
+          "label": "[buyer] contact form opens",
+          "ok": true,
+          "detail": "visible"
+        },
+        {
+          "label": "[buyer] inquiry returns 201",
+          "ok": true,
+          "detail": "HTTP 201 id=q-1794054607002"
+        },
+        {
+          "label": "[buyer] inquiry persisted in SQLite",
+          "ok": true,
+          "detail": "open"
+        },
+        {
+          "label": "[seller] inbox shows the buyer message",
+          "ok": true,
+          "detail": "LIVE-MW6DOO1A"
+        },
+        {
+          "label": "[seller] reply returns 201",
+          "ok": true,
+          "detail": "HTTP 201"
+        },
+        {
+          "label": "[buyer] receives the seller reply",
+          "ok": true,
+          "detail": "2 messages"
+        }
+      ],
+      "evidence": [
+        "SCREENSHOTS/buyer-dashboard.png",
+        "SCREENSHOTS/buyer-petrol_motorcycle-detail.png",
+        "SCREENSHOTS/buyer-petrol_scooter-detail.png",
+        "SCREENSHOTS/buyer-electric_scooter-detail.png",
+        "SCREENSHOTS/buyer-electric_motorcycle-detail.png",
+        "SCREENSHOTS/buyer-passenger_car-detail.png",
+        "SCREENSHOTS/buyer-electric_car-detail.png",
+        "SCREENSHOTS/buyer-car-3d-hotspot.png"
+      ]
+    },
+    {
+      "feature": "Backend service & API",
+      "status": "PASS",
+      "total": 40,
+      "passed": 40,
+      "failed": 0,
+      "checks": [
+        {
+          "label": "[backend] /health reports the multicategory service",
+          "ok": true,
+          "detail": "intelligence-2.0.0-multicategory"
+        },
+        {
+          "label": "[backend] shared SQLite is connected",
+          "ok": true,
+          "detail": "{\"database\":\"connected\",\"dialect\":\"sqlite\",\"tables\":54,\"shared_with_nextjs\":true}"
+        },
+        {
+          "label": "[backend] LangGraph orchestrator with 16-node registry",
+          "ok": true,
+          "detail": "langgraph / 16"
+        },
+        {
+          "label": "[backend] petrol_motorcycle profile declares 15 conditional nodes",
+          "ok": true,
+          "detail": "15"
+        },
+        {
+          "label": "[backend] petrol_motorcycle omits EVBatteryAnalysisNode",
+          "ok": true,
+          "detail": "hasEvNode=false"
+        },
+        {
+          "label": "[backend] petrol_scooter profile declares 15 conditional nodes",
+          "ok": true,
+          "detail": "15"
+        },
+        {
+          "label": "[backend] petrol_scooter omits EVBatteryAnalysisNode",
+          "ok": true,
+          "detail": "hasEvNode=false"
+        },
+        {
+          "label": "[backend] electric_scooter profile declares 16 conditional nodes",
+          "ok": true,
+          "detail": "16"
+        },
+        {
+          "label": "[backend] electric_scooter includes EVBatteryAnalysisNode",
+          "ok": true,
+          "detail": "hasEvNode=true"
+        },
+        {
+          "label": "[backend] electric_motorcycle profile declares 16 conditional nodes",
+          "ok": true,
+          "detail": "16"
+        },
+        {
+          "label": "[backend] electric_motorcycle includes EVBatteryAnalysisNode",
+          "ok": true,
+          "detail": "hasEvNode=true"
+        },
+        {
+          "label": "[backend] passenger_car profile declares 15 conditional nodes",
+          "ok": true,
+          "detail": "15"
+        },
+        {
+          "label": "[backend] passenger_car omits EVBatteryAnalysisNode",
+          "ok": true,
+          "detail": "hasEvNode=false"
+        },
+        {
+          "label": "[backend] electric_car profile declares 16 conditional nodes",
+          "ok": true,
+          "detail": "16"
+        },
+        {
+          "label": "[backend] electric_car includes EVBatteryAnalysisNode",
+          "ok": true,
+          "detail": "hasEvNode=true"
+        },
+        {
+          "label": "[security] anonymous intelligence call is rejected",
+          "ok": true,
+          "detail": "HTTP 401"
+        },
+        {
+          "label": "[backend] petrol_motorcycle investigation HTTP 200 on the real agent",
+          "ok": true,
+          "detail": "HTTP 200"
+        },
+        {
+          "label": "[backend] petrol_motorcycle executed 15 LangGraph nodes",
+          "ok": true,
+          "detail": "15 nodes / langgraph"
+        },
+        {
+          "label": "[backend] petrol_motorcycle EV node conditional is correct",
+          "ok": true,
+          "detail": "EV node absent"
+        },
+        {
+          "label": "[backend] petrol_motorcycle agent_investigations row persisted",
+          "ok": true,
+          "detail": "2 rows"
+        },
+        {
+          "label": "[backend] petrol_scooter investigation HTTP 200 on the real agent",
+          "ok": true,
+          "detail": "HTTP 200"
+        },
+        {
+          "label": "[backend] petrol_scooter executed 15 LangGraph nodes",
+          "ok": true,
+          "detail": "15 nodes / langgraph"
+        },
+        {
+          "label": "[backend] petrol_scooter EV node conditional is correct",
+          "ok": true,
+          "detail": "EV node absent"
+        },
+        {
+          "label": "[backend] petrol_scooter agent_investigations row persisted",
+          "ok": true,
+          "detail": "2 rows"
+        },
+        {
+          "label": "[backend] electric_scooter investigation HTTP 200 on the real agent",
+          "ok": true,
+          "detail": "HTTP 200"
+        },
+        {
+          "label": "[backend] electric_scooter executed 16 LangGraph nodes",
+          "ok": true,
+          "detail": "16 nodes / langgraph"
+        },
+        {
+          "label": "[backend] electric_scooter EV node conditional is correct",
+          "ok": true,
+          "detail": "EV node present"
+        },
+        {
+          "label": "[backend] electric_scooter agent_investigations row persisted",
+          "ok": true,
+          "detail": "2 rows"
+        },
+        {
+          "label": "[backend] electric_motorcycle investigation HTTP 200 on the real agent",
+          "ok": true,
+          "detail": "HTTP 200"
+        },
+        {
+          "label": "[backend] electric_motorcycle executed 16 LangGraph nodes",
+          "ok": true,
+          "detail": "16 nodes / langgraph"
+        },
+        {
+          "label": "[backend] electric_motorcycle EV node conditional is correct",
+          "ok": true,
+          "detail": "EV node present"
+        },
+        {
+          "label": "[backend] electric_motorcycle agent_investigations row persisted",
+          "ok": true,
+          "detail": "2 rows"
+        },
+        {
+          "label": "[backend] passenger_car investigation HTTP 200 on the real agent",
+          "ok": true,
+          "detail": "HTTP 200"
+        },
+        {
+          "label": "[backend] passenger_car executed 15 LangGraph nodes",
+          "ok": true,
+          "detail": "15 nodes / langgraph"
+        },
+        {
+          "label": "[backend] passenger_car EV node conditional is correct",
+          "ok": true,
+          "detail": "EV node absent"
+        },
+        {
+          "label": "[backend] passenger_car agent_investigations row persisted",
+          "ok": true,
+          "detail": "2 rows"
+        },
+        {
+          "label": "[backend] electric_car investigation HTTP 200 on the real agent",
+          "ok": true,
+          "detail": "HTTP 200"
+        },
+        {
+          "label": "[backend] electric_car executed 16 LangGraph nodes",
+          "ok": true,
+          "detail": "16 nodes / langgraph"
+        },
+        {
+          "label": "[backend] electric_car EV node conditional is correct",
+          "ok": true,
+          "detail": "EV node present"
+        },
+        {
+          "label": "[backend] electric_car agent_investigations row persisted",
+          "ok": true,
+          "detail": "2 rows"
+        }
+      ]
+    },
+    {
+      "feature": "Security & edge cases",
+      "status": "PASS",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "checks": [
+        {
+          "label": "[rbac] seller cannot open /admin",
+          "ok": true,
+          "detail": "final url=http://127.0.0.1:3000/login?next=admin"
+        },
+        {
+          "label": "[rbac] buyer blocked from seller vehicle endpoint",
+          "ok": true,
+          "detail": "HTTP 403"
+        },
+        {
+          "label": "[rbac] buyer cannot create a seller vehicle",
+          "ok": true,
+          "detail": "HTTP 403"
+        },
+        {
+          "label": "[rbac] buyer cannot publish a listing",
+          "ok": true,
+          "detail": "HTTP 403"
+        },
+        {
+          "label": "[edge] duplicate registration is detected with HTTP 409",
+          "ok": true,
+          "detail": "HTTP 409 DUPLICATE_REG"
+        },
+        {
+          "label": "[edge] 2W 10-char frame number is ACCEPTED (no universal VIN rule)",
+          "ok": true,
+          "detail": "frame=F054427822 (10 chars) HTTP 201 {}"
+        },
+        {
+          "label": "[edge] car with the same 10-char frame is REJECTED",
+          "ok": true,
+          "detail": "HTTP 400 VALIDATION_FAILED"
+        },
+        {
+          "label": "[edge] EV draft with petrol fields is not silently turned into a combustion vehicle",
+          "ok": true,
+          "detail": "HTTP 201"
+        },
+        {
+          "label": "[edge] EV keeps Electric fuel + EV category",
+          "ok": true,
+          "detail": "Electric / electric_scooter"
+        },
+        {
+          "label": "[security] malformed/injection-style registration is rejected",
+          "ok": true,
+          "detail": "HTTP 400"
+        },
+        {
+          "label": "[taxonomy] wizard offers exactly the 6 implemented categories",
+          "ok": true,
+          "detail": "petrol_motorcycle,petrol_scooter,electric_scooter,electric_motorcycle,passenger_car,electric_car"
+        },
+        {
+          "label": "[taxonomy] planned categories are NOT selectable",
+          "ok": true,
+          "detail": "petrol_motorcycle,petrol_scooter,electric_scooter,electric_motorcycle,passenger_car,electric_car"
+        }
+      ]
+    }
+  ]
+}

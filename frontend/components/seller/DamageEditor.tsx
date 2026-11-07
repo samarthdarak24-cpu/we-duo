@@ -5,22 +5,37 @@ import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { InlineAlert } from "@/components/shared/InlineAlert";
+import { apiCall } from "@/lib/client/api";
 
 const severities = ["Minor", "Moderate", "Major"] as const;
 const repairStates = ["Not repaired", "Repaired", "Pending repair"] as const;
 
+export interface FiledDamage {
+  id: string;
+  zoneLabel: string;
+  severity: string;
+  description: string;
+  repairStatus: string;
+  status: string;
+  inspectionDate: string | null;
+}
+
 /**
  * Records a damage entry against a real 3D zone. The hotspot only appears in the
  * viewer because this POST created a damage record — never as a decoration.
+ * Verified rows are immutable: a correction is written as a new pending record
+ * that supersedes the original.
  */
 export function DamageEditor({
   vehicleId,
   zones,
   recordCount,
+  records = [],
 }: {
   vehicleId: string;
   zones: { id: string; label: string }[];
   recordCount: number;
+  records?: FiledDamage[];
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -32,6 +47,10 @@ export function DamageEditor({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+  const [correctingId, setCorrectingId] = useState<string | null>(null);
+  const [correctionText, setCorrectionText] = useState("");
+  const [correctionRepair, setCorrectionRepair] = useState("");
+  const [correctionBusy, setCorrectionBusy] = useState(false);
 
   async function submit() {
     if (!zoneId) {
@@ -45,27 +64,64 @@ export function DamageEditor({
     setBusy(true);
     setError(null);
     setInfo(null);
-    const res = await fetch(`/api/v1/vehicles/${vehicleId}/damage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        zoneId,
-        description: description.trim(),
-        severity,
-        repairStatus,
-        inspectionDate: inspectionDate || undefined,
-      }),
-    });
-    const json = (await res.json().catch(() => ({}))) as { error?: { message?: string } };
+    const r = await apiCall<{ id?: string }>(
+      `/api/v1/vehicles/${vehicleId}/damage`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          zoneId,
+          description: description.trim(),
+          severity,
+          repairStatus,
+          inspectionDate: inspectionDate || undefined,
+        }),
+      },
+      "Could not record the damage."
+    );
     setBusy(false);
-    if (!res.ok) {
-      setError(json.error?.message ?? "Could not record the damage.");
+    if (!r.ok) {
+      setError(r.message);
       return;
     }
     setDescription("");
     setInspectionDate("");
     setInfo("Damage recorded as pending. It becomes a 3D hotspot immediately and needs review before it affects the report.");
     // Let the confirmation paint before the server refresh re-renders this card.
+    window.setTimeout(() => router.refresh(), 1500);
+  }
+
+  /** Verified rows are never edited in place — a correction supersedes them. */
+  async function correct() {
+    if (!correctingId) return;
+    if (correctionText.trim().length < 8) {
+      setError("Describe the correction in at least 8 characters.");
+      return;
+    }
+    setCorrectionBusy(true);
+    setError(null);
+    setInfo(null);
+    const r = await apiCall<{ id?: string }>(
+      `/api/v1/damage/${correctingId}/correction`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          description: correctionText.trim(),
+          repairStatus: correctionRepair || undefined,
+        }),
+      },
+      "Could not file the correction."
+    );
+    setCorrectionBusy(false);
+    if (!r.ok) {
+      setError(r.message);
+      return;
+    }
+    setCorrectingId(null);
+    setCorrectionText("");
+    setCorrectionRepair("");
+    setInfo("Correction filed as a new pending record. The original row stays intact and is superseded once reviewed.");
     window.setTimeout(() => router.refresh(), 1500);
   }
 
@@ -153,6 +209,88 @@ export function DamageEditor({
               {busy ? "Saving…" : "Save damage"}
             </button>
           </div>
+        </div>
+      )}
+
+      {records.length > 0 && (
+        <div className="mt-4 border-t border-border pt-3">
+          <p className="td-label">Filed records</p>
+          <ul className="space-y-2">
+            {records.map((rec) => (
+              <li key={rec.id} className="rounded-card border border-border bg-surface-tint p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[12.5px] font-semibold">{rec.zoneLabel}</span>
+                    <span className="td-chip">{rec.severity}</span>
+                    <span className="td-chip">{rec.repairStatus}</span>
+                    <span className="td-chip">{rec.status}</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setCorrectingId((v) => (v === rec.id ? null : rec.id));
+                      setCorrectionText("");
+                      setCorrectionRepair("");
+                      setError(null);
+                    }}
+                    className="td-btn td-btn-secondary td-btn-sm"
+                  >
+                    <Icon name="PencilLine" size={12} /> Request correction
+                  </button>
+                </div>
+                <p className="mt-1.5 text-[12px] leading-relaxed text-muted">{rec.description}</p>
+                <p className="mt-1 text-[10.5px] font-mono text-muted">
+                  id {rec.id} · inspected {rec.inspectionDate ?? "not recorded"}
+                </p>
+                {correctingId === rec.id && (
+                  <div className="mt-3 space-y-2 rounded-card border border-border bg-surface p-3">
+                    <label className="block">
+                      <span className="td-label">Correction description</span>
+                      <textarea
+                        value={correctionText}
+                        onChange={(e) => setCorrectionText(e.target.value)}
+                        rows={2}
+                        maxLength={500}
+                        placeholder="What is wrong with this record, and what should replace it?"
+                        className="td-input resize-y"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="td-label">Repair status in the corrected record (optional)</span>
+                      <select
+                        value={correctionRepair}
+                        onChange={(e) => setCorrectionRepair(e.target.value)}
+                        className="td-input td-select"
+                      >
+                        <option value="">Keep the original</option>
+                        {repairStates.map((r) => (
+                          <option key={r} value={r}>
+                            {r}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[11px] text-muted">
+                        Supersedes {rec.id}. Nothing here edits or deletes the original row.
+                      </p>
+                      <button
+                        onClick={correct}
+                        disabled={correctionBusy}
+                        className="td-btn td-btn-primary td-btn-sm"
+                      >
+                        <Icon
+                          name={correctionBusy ? "Loader2" : "Save"}
+                          size={13}
+                          className={correctionBusy ? "animate-spin" : ""}
+                        />
+                        {correctionBusy ? "Filing…" : "File correction"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

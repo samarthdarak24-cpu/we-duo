@@ -37,7 +37,7 @@ services:
       - key: TD_INTELLIGENCE_URL
         value: http://127.0.0.1:8000
       - key: TD_SEED_DEMO
-        value: "0"
+        value: "1"
       - key: TD_LLM_PROVIDER
         value: none
       # Generated once by Render and kept across deploys.

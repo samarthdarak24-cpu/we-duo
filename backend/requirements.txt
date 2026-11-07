@@ -43,7 +43,8 @@ ultralytics>=8.3,<9.0
 
 # Optional, activated only when installed. The service works without them.
 # paddleocr>=2.7        # OCR backend (heavy; needs paddlepaddle)
-# langgraph>=0.2        # stateful 12-node investigator
+langgraph>=0.2,<0.5    # conditional 15/16-node LangGraph investigator (sequential-fallback if absent)
+langgraph-checkpoint-sqlite>=3.0,<4.0  # durable investigation threads; memory fallback if absent
 # celery>=5.4           # only used when TD_BROKER_URL is set
 # redis>=5.0            # only used when TD_BROKER_URL is set
 # ultralytics>=8.0      # only when trained damage weights exist

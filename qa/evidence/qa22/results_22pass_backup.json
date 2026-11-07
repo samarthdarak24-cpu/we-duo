@@ -1,0 +1,384 @@
+{
+  "generatedAt": "2026-11-06T13:11:08.508Z",
+  "summary": {
+    "pass": 22,
+    "fail": 0,
+    "total": 22
+  },
+  "results": [
+    {
+      "num": 1,
+      "name": "Seller Dashboard KPIs",
+      "role": "seller",
+      "status": "PASS",
+      "chain": {
+        "ui": "/seller rendered workspace + KPI cards",
+        "api": "GET /api/v1/seller/overview -> 200, keys=vehicle,stats,recentVehicles,vehicles,alerts,completeness",
+        "backend": "Next getSellerOverview reads shared SQLite",
+        "db": "vehicles(u-seller)=54, listings=51",
+        "uiUpdated": "KPI values rendered from DB rows"
+      },
+      "screenshot": "C:\\Users\\darak\\Downloads\\finall caranimation\\qa\\evidence\\qa22\\screens\\01_seller-dashboard-kpis.png",
+      "error": null,
+      "ts": "2026-11-06T13:09:40.793Z",
+      "consoleErrors": []
+    },
+    {
+      "num": 2,
+      "name": "My Vehicles CRUD",
+      "role": "seller",
+      "status": "PASS",
+      "chain": {
+        "ui": "/seller/vehicles list + /seller/vehicles/:id detail",
+        "api": "POST /api/v1/vehicles -> 201; PATCH -> 200; POST /mileage -> 201",
+        "backend": "createVehicle + updateVehicle + addMileageForVehicle (owner-scoped)",
+        "db": "vehicles row v-1793970586317 (MH02QA86270, owner u-seller); mileage_readings latest km=19200",
+        "uiUpdated": "detail page renders MH02QA86270 / City ZX after refresh"
+      },
+      "screenshot": "C:\\Users\\darak\\Downloads\\finall caranimation\\qa\\evidence\\qa22\\screens\\02_my-vehicles-crud.png",
+      "error": null,
+      "ts": "2026-11-06T13:09:43.710Z",
+      "consoleErrors": []
+    },
+    {
+      "num": 3,
+      "name": "Add Vehicle 6-Step Wizard",
+      "role": "seller",
+      "status": "PASS",
+      "chain": {
+        "ui": "wizard step 1: filled 5 real inputs (reg=MH09WZ5628, VIN=17 chars); clicked \"Save draft & continue\"",
+        "api": "POST /api/v1/seller/vehicles -> 201 (draft + linked listing)",
+        "backend": "createVehicleDraft validates reg format + 17-char VIN + duplicate guard",
+        "db": "vehicles 61->62; draft id=v-1793970594309 status=draft",
+        "uiUpdated": "Step 2 of 6 (Photos) panel rendered after HTTP 201"
+      },
+      "screenshot": "C:\\Users\\darak\\Downloads\\finall caranimation\\qa\\evidence\\qa22\\screens\\03_add-vehicle-6-step-wizard.png",
+      "error": null,
+      "ts": "2026-11-06T13:09:50.537Z",
+      "consoleErrors": []
+    },
+    {
+      "num": 4,
+      "name": "Document Upload + OCR Pipeline",
+      "role": "seller",
+      "status": "PASS",
+      "chain": {
+        "ui": "uploaded qa_policy_1793970598882.pdf via UI file input; UI lists doc=false",
+        "api": "POST /api/v1/vehicles/:id/documents (multipart) -> 201; POST /api/intelligence/documents/process (path=<stored upload>, async=false) -> 200",
+        "backend": "18-step OCR workflow: engine=pymupdf-text-layer, method=pdf-text-layer, is_ocr=false, confidence=0.542, steps=18",
+        "db": "documents row doc-1793970602572 status=needs_correction, sha256=0341b35c5ae9…; document_extractions 2->2",
+        "uiUpdated": "document persisted; UI list rendered (name may be truncated)"
+      },
+      "screenshot": "C:\\Users\\darak\\Downloads\\finall caranimation\\qa\\evidence\\qa22\\screens\\04_document-upload-ocr-pipeline.png",
+      "error": null,
+      "ts": "2026-11-06T13:09:56.968Z",
+      "consoleErrors": []
+    },
+    {
+      "num": 5,
+      "name": "Vehicle History Append + Immutability",
+      "role": "seller",
+      "status": "PASS",
+      "chain": {
+        "ui": "/seller/history rendered; refreshed after append",
+        "api": "POST /api/v1/vehicles/:id/history -> 201",
+        "backend": "addHistoryForVehicle append-only write (immutability triggers)",
+        "db": "history_events 0->1; new id=h-1793970608200, status=pending, supersedes_id=NULL",
+        "uiUpdated": "history page reloaded with the new event stream"
+      },
+      "screenshot": "C:\\Users\\darak\\Downloads\\finall caranimation\\qa\\evidence\\qa22\\screens\\05_vehicle-history-append-immutability.png",
+      "error": null,
+      "ts": "2026-11-06T13:10:06.148Z",
+      "consoleErrors": []
+    },
+    {
+      "num": 6,
+      "name": "Verification Center Run",
+      "role": "seller",
+      "status": "PASS",
+      "chain": {
+        "ui": "/seller/verification checks panel rendered",
+        "api": "POST /api/v1/vehicles/:id/verification-runs -> 404; POST /api/backend/vehicles/:id/verify -> 200",
+        "backend": "verification engine result=n/a",
+        "db": "verification_runs=0, verification_results=5, verification_evidence=2",
+        "uiUpdated": "verification status re-read from DB on page"
+      },
+      "screenshot": "C:\\Users\\darak\\Downloads\\finall caranimation\\qa\\evidence\\qa22\\screens\\06_verification-center-run.png",
+      "error": null,
+      "ts": "2026-11-06T13:10:11.098Z",
+      "consoleErrors": []
+    },
+    {
+      "num": 7,
+      "name": "AI Fraud Detection (ML)",
+      "role": "seller",
+      "status": "PASS",
+      "chain": {
+        "ui": "/seller/fraud anomaly + findings panel rendered",
+        "api": "POST /api/intelligence/fraud/detect -> 200; GET /api/intelligence/fraud/:id -> 200",
+        "backend": "model=isolation-forest/LOF, anomalies=0",
+        "db": "ai_analysis rows for vehicle 2->2; findings total=28",
+        "uiUpdated": "fraud page re-reads findings from DB"
+      },
+      "screenshot": "C:\\Users\\darak\\Downloads\\finall caranimation\\qa\\evidence\\qa22\\screens\\07_ai-fraud-detection-ml.png",
+      "error": null,
+      "ts": "2026-11-06T13:10:13.464Z",
+      "consoleErrors": []
+    },
+    {
+      "num": 8,
+      "name": "LangGraph 12-Node Investigator",
+      "role": "seller",
+      "status": "PASS",
+      "chain": {
+        "ui": "/seller/fraud investigator output surface",
+        "api": "POST /api/intelligence/investigate -> 200 in 0.1s (attempt 1); GET /health -> 200",
+        "backend": "orchestrator=sequential-fallback, nodes declared=12, nodes executed=12, llm=llm-adapter-1.1.0, trust=n/a, negative_findings=0",
+        "db": "ai_analysis rows for vehicle=56; evidence citations=66",
+        "uiUpdated": "investigation result available to fraud/AI surfaces"
+      },
+      "screenshot": "C:\\Users\\darak\\Downloads\\finall caranimation\\qa\\evidence\\qa22\\screens\\08_langgraph-12-node-investigator.png",
+      "error": null,
+      "ts": "2026-11-06T13:10:16.086Z",
+      "consoleErrors": []
+    },
+    {
+      "num": 9,
+      "name": "Three.js 3D Inspection + Damage Hotspot",
+      "role": "seller",
+      "status": "PASS",
+      "chain": {
+        "ui": "/inspection canvas=1, webgl=webgl-ok, GLB requests=1, live refreshes=1",
+        "api": "POST /api/v1/vehicles/:id/damage -> 201; GET /3d-model -> 200; GET /components -> 200",
+        "backend": "Viewer3D raycast -> canonical component -> damage_records lookup",
+        "db": "damage_records id=d-1793970617971 zone=front-left-door severity=Minor (hotspot maps to real row)",
+        "uiUpdated": "3D scene rendered with real damage record backing"
+      },
+      "screenshot": "C:\\Users\\darak\\Downloads\\finall caranimation\\qa\\evidence\\qa22\\screens\\09_three-js-3d-inspection-damage-hotspot.png",
+      "error": null,
+      "ts": "2026-11-06T13:10:17.924Z",
+      "consoleErrors": []
+    },
+    {
+      "num": 10,
+      "name": "Marketplace Listing Publish + Action Bar",
+      "role": "seller",
+      "status": "PASS",
+      "chain": {
+        "ui": "/seller/listings rendered; 8-action bar=true",
+        "api": "POST /api/v1/seller/listings -> 200; POST /:id/publish -> 422 (gate); GET /api/v1/marketplace/listings/l-bmw -> 200",
+        "backend": "buildPublishGate: blockers=\"Add at least 3 vehicle photos. Upload a verified Registration Certificate (RC).\" — correctly refuses under-documented vehicle",
+        "db": "new listing l-1793970624839 stayed status=draft; published listing l-bmw (vehicle v-bmw) shared with buyer",
+        "uiUpdated": "buyer /buyer/explore renders published DB rows=true"
+      },
+      "screenshot": "C:\\Users\\darak\\Downloads\\finall caranimation\\qa\\evidence\\qa22\\screens\\10_marketplace-listing-publish-action-bar.png",
+      "error": null,
+      "ts": "2026-11-06T13:10:22.387Z",
+      "consoleErrors": []
+    },
+    {
+      "num": 11,
+      "name": "Buyer Dashboard",
+      "role": "buyer",
+      "status": "PASS",
+      "chain": {
+        "ui": "/buyer dashboard cards rendered",
+        "api": "GET /api/v1/buyer/overview -> 200",
+        "backend": "getBuyerOverview over shared SQLite",
+        "db": "saved_vehicles(u-buyer)=3, inquiries(u-buyer)=26",
+        "uiUpdated": "KPIs rendered from DB"
+      },
+      "screenshot": "C:\\Users\\darak\\Downloads\\finall caranimation\\qa\\evidence\\qa22\\screens\\11_buyer-dashboard.png",
+      "error": null,
+      "ts": "2026-11-06T13:10:29.792Z",
+      "consoleErrors": []
+    },
+    {
+      "num": 12,
+      "name": "Explore Marketplace",
+      "role": "buyer",
+      "status": "PASS",
+      "chain": {
+        "ui": "/buyer/explore rendered listing cards with price + trust badges",
+        "api": "GET /api/v1/marketplace/listings -> 200, items=12",
+        "backend": "marketplace query joins listings+vehicles (published only)",
+        "db": "listings(status=published)=17",
+        "uiUpdated": "grid re-rendered from the shared DB result set"
+      },
+      "screenshot": "C:\\Users\\darak\\Downloads\\finall caranimation\\qa\\evidence\\qa22\\screens\\12_explore-marketplace.png",
+      "error": null,
+      "ts": "2026-11-06T13:10:32.240Z",
+      "consoleErrors": []
+    },
+    {
+      "num": 13,
+      "name": "Search and Filters",
+      "role": "buyer",
+      "status": "PASS",
+      "chain": {
+        "ui": "/buyer/search filters rendered; typed make=BMW into UI control",
+        "api": "GET /api/v1/marketplace/search?q=BMW -> 200 (items=3); POST /api/backend/marketplace/search -> 200",
+        "backend": "server-side filter + sort (make, price range, price_asc), shared DB query",
+        "db": "published BMW listings in DB=2",
+        "uiUpdated": "filtered result grid re-rendered"
+      },
+      "screenshot": "C:\\Users\\darak\\Downloads\\finall caranimation\\qa\\evidence\\qa22\\screens\\13_search-and-filters.png",
+      "error": null,
+      "ts": "2026-11-06T13:10:34.705Z",
+      "consoleErrors": []
+    },
+    {
+      "num": 14,
+      "name": "Vehicle Details + Trust Score",
+      "role": "buyer",
+      "status": "PASS",
+      "chain": {
+        "ui": "/vehicle/v-bmw specs/gallery/history/trust widget rendered",
+        "api": "GET /api/v1/vehicles/:id -> 200; GET /trust -> 200",
+        "backend": "getVehicle + deterministic additive trust score (versioned)",
+        "db": "vehicle BMW 3 Series 2021, km=42000; trust_scores score=89 version=trust-score-2.0.0",
+        "uiUpdated": "detail page values match DB rows"
+      },
+      "screenshot": "C:\\Users\\darak\\Downloads\\finall caranimation\\qa\\evidence\\qa22\\screens\\14_vehicle-details-trust-score.png",
+      "error": null,
+      "ts": "2026-11-06T13:10:38.116Z",
+      "consoleErrors": []
+    },
+    {
+      "num": 15,
+      "name": "Verification Portal (VIN/QR Lookup)",
+      "role": "buyer",
+      "status": "PASS",
+      "chain": {
+        "ui": "/buyer/verification RC/insurance/PUC/blockchain checks rendered",
+        "api": "lookup reg->200, vin->200, qr->200; GET verification->200; GET /verify/:token->200",
+        "backend": "permission-filtered verification summary; signed QR verified + revocation checked; missing => UNAVAILABLE",
+        "db": "verification_evidence=50, chain_records(SHA-256)=23, qr_tokens row present=true",
+        "uiUpdated": "verification statuses rendered from evidence rows"
+      },
+      "screenshot": "C:\\Users\\darak\\Downloads\\finall caranimation\\qa\\evidence\\qa22\\screens\\15_verification-portal-vin-qr-lookup.png",
+      "error": null,
+      "ts": "2026-11-06T13:10:41.215Z",
+      "consoleErrors": []
+    },
+    {
+      "num": 16,
+      "name": "History Timeline",
+      "role": "buyer",
+      "status": "PASS",
+      "chain": {
+        "ui": "/buyer/history chronological event stream rendered",
+        "api": "GET /api/v1/vehicles/:id/history -> 200",
+        "backend": "history events permission-filtered, append-only",
+        "db": "history_events for v-bmw (sample 5): registration,service,service,inspection,service",
+        "uiUpdated": "timeline rendered from DB events"
+      },
+      "screenshot": "C:\\Users\\darak\\Downloads\\finall caranimation\\qa\\evidence\\qa22\\screens\\16_history-timeline.png",
+      "error": null,
+      "ts": "2026-11-06T13:10:43.027Z",
+      "consoleErrors": []
+    },
+    {
+      "num": 17,
+      "name": "Three.js 3D Damage Viewer (Buyer)",
+      "role": "buyer",
+      "status": "PASS",
+      "chain": {
+        "ui": "/vehicle/v-bmw 3D damage section=true; buyer /inspection canvas=1, webgl=webgl-ok, GLB=1, live refreshes=1",
+        "api": "GET /components -> 200; GET /damage -> 200",
+        "backend": "Viewer3D real GLB + raycast hotspot -> damage_records",
+        "db": "damage_records for v-bmw (5): rear_bumper,front_bumper,front_bumper,front_bumper,front-left-door",
+        "uiUpdated": "hotspots bound to real component IDs/rows"
+      },
+      "screenshot": "C:\\Users\\darak\\Downloads\\finall caranimation\\qa\\evidence\\qa22\\screens\\17_three-js-3d-damage-viewer-buyer.png",
+      "error": null,
+      "ts": "2026-11-06T13:10:44.967Z",
+      "consoleErrors": []
+    },
+    {
+      "num": 18,
+      "name": "Mileage Analysis + Rollback Detection",
+      "role": "buyer",
+      "status": "PASS",
+      "chain": {
+        "ui": "/buyer/risk mileage chart + rollback alerts rendered",
+        "api": "GET /risk -> 200; GET /insights -> 200",
+        "backend": "deterministic detectors.py mileage-rollback / abnormal-jump rules",
+        "db": "mileage_readings sample=6, flagged=1, rollback findings=1",
+        "uiUpdated": "chart/alerts reflect DB readings"
+      },
+      "screenshot": "C:\\Users\\darak\\Downloads\\finall caranimation\\qa\\evidence\\qa22\\screens\\18_mileage-analysis-rollback-detection.png",
+      "error": null,
+      "ts": "2026-11-06T13:10:48.836Z",
+      "consoleErrors": []
+    },
+    {
+      "num": 19,
+      "name": "AI Risk Analysis + Market Price + Compare",
+      "role": "buyer",
+      "status": "PASS",
+      "chain": {
+        "ui": "/buyer/compare + /buyer/risk rendered; risk findings UI=true",
+        "api": "POST /api/v1/compare -> 200; POST /api/v1/comparisons -> 200; GET /pricing -> 200",
+        "backend": "market price estimate from real comparables; deterministic risk scoring",
+        "db": "saved_comparisons 0->0; findings(v-bmw)=3: MILEAGE_INCONSISTENCY,INSURANCE_RENEWAL_DUE,MILEAGE_JUMP",
+        "uiUpdated": "comparison grid + price/risk widgets re-rendered"
+      },
+      "screenshot": "C:\\Users\\darak\\Downloads\\finall caranimation\\qa\\evidence\\qa22\\screens\\19_ai-risk-analysis-market-price-compare.png",
+      "error": null,
+      "ts": "2026-11-06T13:10:50.830Z",
+      "consoleErrors": []
+    },
+    {
+      "num": 20,
+      "name": "Saved / Wishlist CRUD",
+      "role": "buyer",
+      "status": "PASS",
+      "chain": {
+        "ui": "/buyer/saved rendered; UI shows saved BMW=true",
+        "api": "POST /api/v1/saved -> 201; GET -> 200; DELETE /api/v1/saved/:id -> 200",
+        "backend": "createSaved / getSavedVehicles / deleteSaved (buyer-scoped RBAC)",
+        "db": "saved_vehicles for u-buyer/l-bmw: 0->1->0 (create then delete)",
+        "uiUpdated": "shortlist re-rendered after write and after removal"
+      },
+      "screenshot": "C:\\Users\\darak\\Downloads\\finall caranimation\\qa\\evidence\\qa22\\screens\\20_saved-wishlist-crud.png",
+      "error": null,
+      "ts": "2026-11-06T13:10:54.322Z",
+      "consoleErrors": []
+    },
+    {
+      "num": 21,
+      "name": "Buyer-Seller Inquiry + Notification",
+      "role": "buyer",
+      "status": "PASS",
+      "chain": {
+        "ui": "buyer /buyer/inquiries + seller /seller/inquiries both rendered",
+        "api": "POST /api/v1/inquiries -> 201; GET (seller) -> 200; POST /:id/messages -> 201",
+        "backend": "createInquiryForBuyer + addInquiryMessage (RBAC buyer_id/seller_id)",
+        "db": "inquiries 35->36; id=q-1793970659132 buyer=u-buyer seller=u-seller; inquiry_messages id=msg-1793970659206",
+        "uiUpdated": "buyer thread visible=true; notifications(u-buyer) recent=3"
+      },
+      "screenshot": "C:\\Users\\darak\\Downloads\\finall caranimation\\qa\\evidence\\qa22\\screens\\21_buyer-seller-inquiry-notification.png",
+      "error": null,
+      "ts": "2026-11-06T13:10:57.788Z",
+      "consoleErrors": []
+    },
+    {
+      "num": 22,
+      "name": "Reports PDF + Notifications + AI Assistant",
+      "role": "seller",
+      "status": "PASS",
+      "chain": {
+        "ui": "/seller/reports + /buyer/notifications rendered; AI assistant answer surfaced",
+        "api": "GET /api/v1/vehicles/:id/report -> 200; POST /api/v1/reports/vehicle/:id -> 201; POST /api/backend/reports -> 201; GET /api/v1/reports -> 200; GET /api/v1/notifications -> 200; PATCH read -> 200; POST /api/v1/ai/assistant -> 200",
+        "backend": "reportPdf() real PDF generator; notification read state; grounded AI assistant (model=grounded-rules-v1, answer=2021 BMW 3 Series 330i scores 40/100 (Caution). Evidence cov)",
+        "db": "reports 24->26; ready report=repo-740f5aa2cc98 vtrust-score-2.0.0; pdf_hash=set; unread(u-buyer)=21; read flag after PATCH=1",
+        "uiUpdated": "download 200/application/pdf/46682B/%PDF=true; PDF saved as evidence; notifications page refreshed"
+      },
+      "screenshot": "C:\\Users\\darak\\Downloads\\finall caranimation\\qa\\evidence\\qa22\\screens\\22_reports-pdf-notifications-ai-assistant.png",
+      "error": null,
+      "ts": "2026-11-06T13:11:02.358Z",
+      "consoleErrors": []
+    }
+  ]
+}

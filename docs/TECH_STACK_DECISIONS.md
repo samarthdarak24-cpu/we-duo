@@ -38,7 +38,7 @@
 | OCR | PyMuPDF text layer + OpenCV preprocessing; **PaddleOCR adapter** | PaddleOCR mandatory | Heavy install; the adapter activates when present and the payload names the active engine |
 | Anomaly ML | scikit-learn Isolation Forest + LOF | XGBoost | No labelled fraud corpus exists; a supervised model would be theatre |
 | Explainability | exact additive attribution (`app/explain.py`) | SHAP | The score is linear/additive, so per-feature contributions are exact |
-| Agent | LangGraph 12 nodes with checkpointer; sequential fallback | LangChain chains | LangGraph gives explicit state + interrupt; LangChain would add ~40 packages |
+| Agent | LangGraph 15/16 conditional nodes with checkpointer; sequential fallback | LangChain chains | LangGraph gives explicit state + interrupt; LangChain would add ~40 packages |
 | LLM | provider adapter; offline = **no conclusion** | always-on LLM | Never fabricate a verification; offline returns a deterministic evidence-only answer |
 | Retrieval | relational, permission-filtered queries | pgvector | Evidence is small and exact; embeddings would add an unexplainable similarity hop |
 | Damage CV | OpenCV signals + inspector confirmation | YOLO mandatory | No trained weights; YOLO is an adapter slot |

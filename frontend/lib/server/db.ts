@@ -15,8 +15,30 @@ import { buildChain, recordHash } from "./chain";
 import { signQrToken } from "./qr";
 import { ensureUploadFromPublic } from "./files";
 import { getComponentById, mapZoneToComponentId } from "@/lib/vehicle-registry";
+import { categoryForVehicle } from "@/lib/vehicle-categories";
+import {
+  ensureMultiCategorySchema,
+  seedMultiCategoryDemo,
+  VEHICLE_INSERT_SQL,
+} from "./multicategory";
 
 export const SCHEMA_VERSION = 3;
+
+// `damage_records` gained six additive geometry/component columns in the
+// multi-category migration. Positional `INSERT INTO ... VALUES` statements are
+// therefore unsafe: they would fail once the table has 20 columns. Both the
+// seed path and the runtime write path now name their columns explicitly.
+const DAMAGE_BASE_COLUMNS = [
+  "id", "vehicle_id", "zone_id", "description", "severity", "repair_status", "repair_details",
+  "inspection_date", "status", "photo_keys", "repair_invoice_doc_id", "supersedes_id",
+  "created_by", "created_at",
+] as const;
+const DAMAGE_WRITE_COLUMNS = [
+  ...DAMAGE_BASE_COLUMNS, "component_id", "damage_type", "position_source",
+] as const;
+const placeholders = (n: number) => Array.from({ length: n }, () => "?").join(",");
+const DAMAGE_BASE_INSERT_SQL = `INSERT INTO damage_records (${DAMAGE_BASE_COLUMNS.join(", ")}) VALUES (${placeholders(DAMAGE_BASE_COLUMNS.length)})`;
+const DAMAGE_WRITE_INSERT_SQL = `INSERT INTO damage_records (${DAMAGE_WRITE_COLUMNS.join(", ")}) VALUES (${placeholders(DAMAGE_WRITE_COLUMNS.length)})`;
 
 export interface UserRow {
   id: string;
@@ -47,7 +69,9 @@ export interface VehicleRow {
   variant: string;
   year: number;
   reg_no: string;
-  vin: string;
+  /** NULL while the identifier is unknown; two-wheelers store a chassis/frame
+   * number here, cars a 17-character VIN. */
+  vin: string | null;
   fuel: string;
   transmission: string;
   category: string;
@@ -66,6 +90,9 @@ export interface VehicleRow {
   condition: string;
   created_at: string;
   updated_at: string;
+  /** Authoritative multi-category id. NULL only on a fresh DB before backfill;
+   *  legacy rows are resolved from free-text `category` + `fuel` at read time. */
+  vehicle_category_id?: string | null;
 }
 
 export interface DocumentRow {
@@ -316,6 +343,8 @@ const g = globalThis as unknown as {
   __tdDb?: DatabaseSync;
   __tdFkReport?: unknown;
   __tdDamageBackfill?: number;
+  __tdMultiCategory?: { addedColumns: string[]; backfilled: number };
+  __tdMultiCategoryDemo?: { seeded: number; skipped: number };
 };
 
 const TABLES = [
@@ -350,7 +379,7 @@ function migrate(conn: DatabaseSync) {
     km_claimed INTEGER DEFAULT 0, last_verified_km INTEGER DEFAULT 0, asking_price INTEGER DEFAULT 0,
     status TEXT DEFAULT 'draft', base_value INTEGER DEFAULT 0, condition_score REAL DEFAULT 0.7,
     trustdrive_id TEXT, qr_token TEXT, description TEXT DEFAULT '', condition TEXT DEFAULT 'Good',
-    created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+    created_at TEXT NOT NULL, updated_at TEXT NOT NULL, vehicle_category_id TEXT);
 
   CREATE TABLE documents(
     id TEXT PRIMARY KEY, vehicle_id TEXT NOT NULL, type TEXT NOT NULL, file_name TEXT NOT NULL,
@@ -524,6 +553,15 @@ function ensurePublicTables(conn: DatabaseSync) {
   CREATE TABLE IF NOT EXISTS newsletter_subscribers(
     email TEXT PRIMARY KEY, created_at TEXT NOT NULL);
   CREATE INDEX IF NOT EXISTS idx_contact_created ON contact_messages(created_at);
+  -- Sliding-window limiter state shared by every Next.js process that opens the
+  -- same database. Rows older than the longest window are swept on each call.
+  CREATE TABLE IF NOT EXISTS rate_limit_hits(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    bucket TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    hit_at INTEGER NOT NULL);
+  CREATE INDEX IF NOT EXISTS idx_rate_limit_lookup ON rate_limit_hits(bucket, subject, hit_at);
+  CREATE INDEX IF NOT EXISTS idx_rate_limit_age ON rate_limit_hits(hit_at);
   `);
 }
 
@@ -718,22 +756,33 @@ function hashOf(value: string) {
 }
 
 function seed(conn: DatabaseSync) {
-  const count = conn.prepare("SELECT COUNT(*) AS c FROM users").get() as { c: number };
-  if (count.c > 0) return;
-
-  // Production must never receive the published demo accounts. Set
-  // TD_SEED_DEMO=0 and provide ADMIN_EMAIL/ADMIN_PASSWORD to bootstrap one admin.
+  // Production must never receive the published demo accounts when TD_SEED_DEMO=0.
+  // Set TD_SEED_DEMO=0 and provide ADMIN_EMAIL/ADMIN_PASSWORD to bootstrap one admin.
   if (process.env.TD_SEED_DEMO === "0") {
+    const count = conn.prepare("SELECT COUNT(*) AS c FROM users").get() as { c: number };
+    if (count.c > 0) {
+      console.log(`[seed] TD_SEED_DEMO=0: database already has ${count.c} user(s); demo seeding skipped.`);
+      return;
+    }
     const email = process.env.ADMIN_EMAIL?.trim();
     const password = process.env.ADMIN_PASSWORD;
     if (email && password && password.length >= 8) {
       conn.prepare(
-        "INSERT INTO users(id,name,role,email,password_hash,initials,phone,city,seller_type,business_name,kyc_status,preferences,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)"
+        "INSERT OR IGNORE INTO users(id,name,role,email,password_hash,initials,phone,city,seller_type,business_name,kyc_status,preferences,created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)"
       ).run(
         "u-admin", "TrustDrive Admin", "admin", email, hashPassword(password),
         "TA", "", "", null, null, "verified", "{}", new Date().toISOString()
       );
+      console.log(`[seed] TD_SEED_DEMO=0: bootstrapped custom admin account for email=${email}`);
+    } else {
+      console.log("[seed] TD_SEED_DEMO=0: no admin credentials provided (ADMIN_EMAIL/ADMIN_PASSWORD unset); skipping bootstrap.");
     }
+    return;
+  }
+
+  const hasBuyer = conn.prepare("SELECT id FROM users WHERE id = 'u-buyer'").get();
+  if (hasBuyer) {
+    console.log("[seed] TD_SEED_DEMO active: demo accounts already exist in database; skipping duplicate seeding.");
     return;
   }
 
@@ -748,7 +797,7 @@ function seed(conn: DatabaseSync) {
     ["u-seller2", "WeDuo Motors", "seller", "weduo@trustdrive.dev", pw, "WM", "+91 98200 77007", "Pune", "dealer", "WeDuo Motors Pvt Ltd", "verified", "{}", null, 1, 0, null, iso(1), iso(200)],
   ];
   const iu = conn.prepare(
-    "INSERT INTO users (id, name, role, email, password_hash, initials, phone, city, seller_type, business_name, kyc_status, preferences, avatar_url, email_verified, twofa_enabled, kyc_doc_key, last_login_at, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+    "INSERT OR IGNORE INTO users (id, name, role, email, password_hash, initials, phone, city, seller_type, business_name, kyc_status, preferences, avatar_url, email_verified, twofa_enabled, kyc_doc_key, last_login_at, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
   );
   users.forEach((u) => iu.run(...u));
 
@@ -768,8 +817,10 @@ function seed(conn: DatabaseSync) {
     ["v-kawasaki", "u-seller2", "Kawasaki", "Ninja ZX-10R", "ABS", 2020, "MH02CZ4455", "JKAZX1000KA012345", "Petrol", "Manual", "Superbike", "Lime Green", 2, "Mumbai", 14000, 14000, 1420000, "published", 1650000, 0.84, "TD-9K1N2Z3X", "qr-ninja", "Verified track-ready Ninja ZX-10R with clear title and zero drop damage.", "Very good", iso(110), iso(3)],
     ["v-bmw-bike", "u-seller", "BMW Motorrad", "R 1250 GS", "Triple Black", 2021, "MH14DZ1100", "WB10J9102M123456", "Petrol", "Manual", "Adventure Bike", "Triple Black", 1, "Pune", 22000, 22000, 2050000, "published", 2300000, 0.94, "TD-3B4M5W6B", "qr-gs", "Touring flagship R 1250 GS with full pannier kit and complete BMW Motorrad logs.", "Excellent", iso(60), iso(4)],
   ];
-  const iv = conn.prepare("INSERT INTO vehicles VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
-  vehicles.forEach((v) => iv.run(...v));
+  // Explicit column list: `vehicles` gained `vehicle_category_id` in the
+  // additive multi-category migration, so positional INSERTs are unsafe.
+  const iv = conn.prepare(VEHICLE_INSERT_SQL.replace("INSERT INTO vehicles", "INSERT OR REPLACE INTO vehicles"));
+  vehicles.forEach((v) => iv.run(...v, categoryForVehicle({ category: v[10], fuel: v[8] }).id));
 
   const docTypes = ["rc", "insurance", "puc", "service", "ownership", "inspection"];
   const docStatus: Record<string, Record<string, [string, string | null]>> = {
@@ -798,7 +849,7 @@ function seed(conn: DatabaseSync) {
     inspection: { inspector: "AutoAssure", date: "2023-06-01", odometerKm: "42000", result: "Passed" },
   };
   const idoc = conn.prepare(
-    "INSERT INTO documents (id, vehicle_id, type, file_name, mime, size_bytes, status, status_reason, sha256, consent, version, supersedes_id, extracted, verified_at, uploaded_at, file_key) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+    "INSERT OR IGNORE INTO documents (id, vehicle_id, type, file_name, mime, size_bytes, status, status_reason, sha256, consent, version, supersedes_id, extracted, verified_at, uploaded_at, file_key) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
   );
   for (const v of vehicles) {
     const vid = v[0];
@@ -833,7 +884,7 @@ function seed(conn: DatabaseSync) {
     ["f-to1", "v-toyota", "INSURANCE_EXPIRED", "INSURANCE_EXPIRED", "low", "Insurance renewal required", "The policy expires within 30 days.", "Renew the policy.", JSON.stringify({ validTo: "2026-03-31" }), 6, "open", iso(4)],
     ["f-h1", "v-honda", "DUPLICATE_DOCUMENT", "DUPLICATE_DOCUMENT", "low", "Possible duplicate document", "A service invoice shares an invoice number with another vehicle. Possible clerical reuse.", "Confirm the invoice belongs to this vehicle.", JSON.stringify({ invoiceNo: "INV-778812" }), 0, "cleared", iso(5)],
   ];
-  const ifind = conn.prepare("INSERT INTO findings VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
+  const ifind = conn.prepare("INSERT OR IGNORE INTO findings VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
   findings.forEach((f) => {
     const [id, vid, ruleKey, code, severity, title, explanation, recommendation, evidence, points, status, createdAt] = f;
     ifind.run(id, vid, ruleKey, code, severity, title, explanation, recommendation, evidence, null, points, status, createdAt);
@@ -877,7 +928,7 @@ function seed(conn: DatabaseSync) {
     ["m-bb1", "v-bmw-bike", "2021", 4500, "rto", "2021-09-01T00:00:00Z", 0, 1, 0, "v-bmw-bike-rc"],
     ["m-bb2", "v-bmw-bike", "2024", 22000, "service_center", "2024-11-15T00:00:00Z", 0, 1, 0, "v-bmw-bike-service"],
   ];
-  const im = conn.prepare("INSERT INTO mileage_readings VALUES (?,?,?,?,?,?,?,?,?,?)");
+  const im = conn.prepare("INSERT OR IGNORE INTO mileage_readings VALUES (?,?,?,?,?,?,?,?,?,?)");
   mileage.forEach((m) => im.run(...m));
 
   const pricing: [string, number, number, number, string, number, string, string][] = [
@@ -895,7 +946,7 @@ function seed(conn: DatabaseSync) {
     ["v-kawasaki", 1350000, 1420000, 1500000, "Moderate", 7, "Comparables: Liter-class supersport", iso(2)],
     ["v-bmw-bike", 1950000, 2050000, 2180000, "High", 10, "Comparables: Adventure touring segment", iso(1)],
   ];
-  const ip = conn.prepare("INSERT INTO pricing VALUES (?,?,?,?,?,?,?,?)");
+  const ip = conn.prepare("INSERT OR IGNORE INTO pricing VALUES (?,?,?,?,?,?,?,?)");
   pricing.forEach((p) => ip.run(...p));
 
   const listings: [string, string, string, string, string, string, string, number, number, number, string | null, string | null, string, string][] = [
@@ -913,7 +964,7 @@ function seed(conn: DatabaseSync) {
     ["l-kawasaki", "v-kawasaki", "published", "Published on Marketplace", "Kawasaki Ninja ZX-10R with verified track-free inspection, zero fall damage, new Pirelli rubber.", "Very good", "Mumbai", 29, 6, 1, null, iso(100), iso(100), iso(3)],
     ["l-bmw-bike", "v-bmw-bike", "published", "Published on Marketplace", "BMW R 1250 GS Adventure with complete BMW Motorrad service stamps and electronic suspension verification.", "Excellent", "Pune", 52, 14, 5, null, iso(55), iso(55), iso(4)],
   ];
-  const il = conn.prepare("INSERT INTO listings VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+  const il = conn.prepare("INSERT OR IGNORE INTO listings VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
   listings.forEach((l) => il.run(...l));
 
   const images = [
@@ -924,7 +975,7 @@ function seed(conn: DatabaseSync) {
     ["img-merc-1", "l-merc", "photos/v-merc/front.jpg", 1, "photo"],
     ["img-seller-1", "l-seller", "photos/v-seller/front.jpg", 1, "photo"],
   ];
-  const iimg = conn.prepare("INSERT INTO listing_images VALUES (?,?,?,?,?)");
+  const iimg = conn.prepare("INSERT OR IGNORE INTO listing_images VALUES (?,?,?,?,?)");
   images.forEach((i) => iimg.run(...i));
 
   type Q = [string, string, string, string, string, string, string, string, string, string, string];
@@ -935,7 +986,7 @@ function seed(conn: DatabaseSync) {
     ["q4", "l-bmw", "u-buyer", "u-seller", "Aditya Darak", "AD", "Is the odometer reading verified? Can I schedule a test drive?", "message", "replied", iso(2), iso(0, 4)],
     ["q5", "l-audi", "u-buyer", "u-seller2", "Aditya Darak", "AD", "Can you share the service records?", "documents", "open", iso(3), iso(3)],
   ];
-  const iq = conn.prepare("INSERT INTO inquiries VALUES (?,?,?,?,?,?,?,?,?,?,?)");
+  const iq = conn.prepare("INSERT OR IGNORE INTO inquiries VALUES (?,?,?,?,?,?,?,?,?,?,?)");
   inquiries.forEach((q) => iq.run(...q));
 
   const messages: [string, string, string, string, string, number | null, string | null, string, string][] = [
@@ -946,7 +997,7 @@ function seed(conn: DatabaseSync) {
     ["msg-q4b", "q4", "u-seller", "Samarth Darak", "Yes — the verified report is attached. Test drive available Saturday at 11 am.", null, iso(0, 11), "[]", iso(0, 4)],
     ["msg-q5", "q5", "u-buyer", "Aditya Darak", "Can you share the service records?", null, null, "[]", iso(3)],
   ];
-  const imsg = conn.prepare("INSERT INTO inquiry_messages VALUES (?,?,?,?,?,?,?,?,?)");
+  const imsg = conn.prepare("INSERT OR IGNORE INTO inquiry_messages VALUES (?,?,?,?,?,?,?,?,?)");
   messages.forEach((m) => imsg.run(...m));
 
   const saved: [string, string, string, number, string, string][] = [
@@ -954,14 +1005,14 @@ function seed(conn: DatabaseSync) {
     ["sv-2", "u-buyer", "l-audi", 2250000, "All", iso(9)],
     ["sv-3", "u-buyer", "l-merc", 3400000, "All", iso(5)],
   ];
-  const isv = conn.prepare("INSERT INTO saved_vehicles VALUES (?,?,?,?,?,?)");
+  const isv = conn.prepare("INSERT OR IGNORE INTO saved_vehicles VALUES (?,?,?,?,?,?)");
   saved.forEach((s) => isv.run(...s));
 
   const searches = [
     ["ss-1", "u-buyer", "Verified BMW under ₹30L", JSON.stringify({ make: "BMW", priceMax: 3000000, verification: "verified" }), 1, iso(20)],
     ["ss-2", "u-buyer", "Automatic SUVs in Pune", JSON.stringify({ transmission: "Automatic", location: "Pune" }), 0, iso(14)],
   ];
-  const iss = conn.prepare("INSERT INTO saved_searches VALUES (?,?,?,?,?,?)");
+  const iss = conn.prepare("INSERT OR IGNORE INTO saved_searches VALUES (?,?,?,?,?,?)");
   searches.forEach((s) => iss.run(...s));
 
   const notifs: [string, string, string, string, string, string, number, string][] = [
@@ -975,10 +1026,10 @@ function seed(conn: DatabaseSync) {
     ["n8", "u-buyer", "recommended", "New recommended vehicle", "A Mercedes C-Class matching your shortlist was added.", JSON.stringify({ vehicleId: "v-merc" }), 1, iso(2)],
     ["n9", "u-admin", "admin", "Dispute pending review", "Samarth Darak disputed the VIN mismatch finding.", JSON.stringify({ findingId: "f-s1" }), 0, iso(0, 3)],
   ];
-  const ino = conn.prepare("INSERT INTO notifications VALUES (?,?,?,?,?,?,?,?)");
+  const ino = conn.prepare("INSERT OR IGNORE INTO notifications VALUES (?,?,?,?,?,?,?,?)");
   notifs.forEach((n) => ino.run(...n));
 
-  const ia = conn.prepare("INSERT INTO activity VALUES (?,?,?,?,?)");
+  const ia = conn.prepare("INSERT OR IGNORE INTO activity VALUES (?,?,?,?,?)");
   ia.run("u-buyer", 12, 3, 3, 2);
   ia.run("u-seller", 5, 0, 0, 0);
 
@@ -1009,7 +1060,7 @@ function seed(conn: DatabaseSync) {
     ["h-ho1", "v-honda", "registration", "2020-12-01T00:00:00Z", 0, "First registration", "Registered with RTO Mumbai.", "rto", "v-honda-rc", "verified", null, "u-seller", iso(95)],
     ["h-ho2", "v-honda", "service", "2023-12-31T00:00:00Z", 47000, "Scheduled service", "Full service completed.", "service_center", "v-honda-service", "verified", null, "u-seller", iso(50)],
   ];
-  const ih = conn.prepare("INSERT INTO history_events VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
+  const ih = conn.prepare("INSERT OR IGNORE INTO history_events VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
   history.forEach((h) => ih.run(...h));
 
   const damages: [string, string, string, string, string, string, string, string, string, string, string | null, string | null, string, string][] = [
@@ -1022,11 +1073,11 @@ function seed(conn: DatabaseSync) {
     ["d-c2", "v-camry", "bonnet", "Bonnet has stone chips.", "Minor", "Not repaired", "", "2024-01-10", "pending", "[]", null, null, "u-seller2", iso(20)],
     ["d-t1", "v-tata", "front_bumper", "Front bumper cracked; repair invoice not provided.", "Moderate", "Not repaired", "", "2023-09-09", "pending", "[]", null, null, "u-seller", iso(30)],
   ];
-  const idmg = conn.prepare("INSERT INTO damage_records VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
+  const idmg = conn.prepare(DAMAGE_BASE_INSERT_SQL);
   damages.forEach((d) => idmg.run(...d));
 
   // Verification runs (results are derived deterministically by the service).
-  const irun = conn.prepare("INSERT INTO verification_runs VALUES (?,?,?,?,?,?)");
+  const irun = conn.prepare("INSERT OR IGNORE INTO verification_runs VALUES (?,?,?,?,?,?)");
   for (const v of vehicles) {
     irun.run(`run-${v[0]}`, v[0], "done", iso(2), iso(1), JSON.stringify({ checks: 10, passed: 7, findings: 0 }));
   }
@@ -1042,11 +1093,11 @@ function seed(conn: DatabaseSync) {
     ["v-toyota", "no_record", "Demo theft registry", iso(1), JSON.stringify({ note: "Mock adapter — demo data source" })],
     ["v-honda", "no_record", "Demo theft registry", iso(1), JSON.stringify({ note: "Mock adapter — demo data source" })],
   ];
-  const itheft = conn.prepare("INSERT INTO theft_checks VALUES (?,?,?,?,?)");
+  const itheft = conn.prepare("INSERT OR IGNORE INTO theft_checks VALUES (?,?,?,?,?)");
   theft.forEach((t) => itheft.run(...t));
 
   // QR tokens (revocable, signed).
-  const iqr = conn.prepare("INSERT INTO qr_tokens VALUES (?,?,?,?,?,?)");
+  const iqr = conn.prepare("INSERT OR IGNORE INTO qr_tokens VALUES (?,?,?,?,?,?)");
   for (const v of vehicles) {
     const jti = `jti-${v[0]}`;
     iqr.run(jti, v[0], signQrToken(v[0], jti), null, v[1], iso(30));
@@ -1062,14 +1113,14 @@ function seed(conn: DatabaseSync) {
     ["rep-7", "v-seller", "u-seller", "AI risk analysis", "ready", "reports/rep-7.pdf", "RPT-2026-0007", iso(2), iso(4)],
     ["rep-8", "v-seller", "u-seller", "Listing performance", "processing", null, "RPT-2026-0008", null, iso(0, 8)],
   ];
-  const irep = conn.prepare("INSERT INTO reports VALUES (?,?,?,?,?,?,?,?,?,?,?,?)");
+  const irep = conn.prepare("INSERT OR IGNORE INTO reports VALUES (?,?,?,?,?,?,?,?,?,?,?,?)");
   reports.forEach((r) => irep.run(...r, null, "{}", 1));
 
   const disputes: [string, string, string, string, string, string, string | null, string | null, string][] = [
     ["disp-1", "f-s1", "u-seller", "The RC has a typo in the last digit. I have requested a correction from the RTO and attached the receipt.", JSON.stringify(["v-seller-rc"]), "pending", null, null, iso(0, 4)],
     ["disp-2", "f-s2", "u-seller", "The 2023 service invoice confirms 72,450 km. Please re-check.", JSON.stringify(["v-seller-service"]), "resolved", "u-admin", "Invoice matched the claimed reading; finding cleared.", iso(1)],
   ];
-  const idisp = conn.prepare("INSERT INTO disputes VALUES (?,?,?,?,?,?,?,?,?)");
+  const idisp = conn.prepare("INSERT OR IGNORE INTO disputes VALUES (?,?,?,?,?,?,?,?,?)");
   disputes.forEach((d) => idisp.run(...d));
 
   const audit = [
@@ -1077,15 +1128,15 @@ function seed(conn: DatabaseSync) {
     ["a-2", "u-admin", "dispute.resolve", "dispute", "disp-2", JSON.stringify({ status: "pending" }), JSON.stringify({ status: "resolved" }), "127.0.0.1", "seed", iso(1)],
     ["a-3", "u-buyer", "report.request", "report", "rep-1", "{}", JSON.stringify({ status: "ready" }), "127.0.0.1", "seed", iso(2)],
   ];
-  const iaudit = conn.prepare("INSERT INTO audit_logs VALUES (?,?,?,?,?,?,?,?,?,?)");
+  const iaudit = conn.prepare("INSERT OR IGNORE INTO audit_logs VALUES (?,?,?,?,?,?,?,?,?,?)");
   audit.forEach((a) => iaudit.run(...a));
 
   // Listing view events (analytics).
-  const iev = conn.prepare("INSERT INTO listing_events VALUES (?,?,?,?,?)");
+  const iev = conn.prepare("INSERT OR IGNORE INTO listing_events VALUES (?,?,?,?,?)");
   for (let i = 0; i < 15; i++) iev.run(`ev-${i}`, "l-seller", i % 5 === 0 ? "save" : "view", "u-buyer", iso(i % 7));
 
   // Hash chain for every vehicle: history + documents + damage.
-  const ic = conn.prepare("INSERT INTO chain_records VALUES (?,?,?,?,?,?,?,?)");
+  const ic = conn.prepare("INSERT OR IGNORE INTO chain_records VALUES (?,?,?,?,?,?,?,?)");
   for (const v of vehicles) {
     const vid = v[0];
     const payloads = [
@@ -1096,6 +1147,7 @@ function seed(conn: DatabaseSync) {
     const chain = buildChain(payloads);
     chain.forEach((c) => ic.run(vid, c.seq, (c.payload as { entityType: string }).entityType, (c.payload as { entityId: string }).entityId, JSON.stringify(c.payload), c.prevHash, c.recordHash, iso(2)));
   }
+  console.log(`[seed] Demo seeding complete: ${users.length} users (Buyer, Seller, Admin, etc.), ${vehicles.length} vehicles, ${damages.length} damage records successfully initialized.`);
 }
 
 /** Seed demo listing photos into local uploads so seeded rows render real images. */
@@ -1260,23 +1312,29 @@ const DAMAGE_GEOMETRY_COLUMNS: [string, string][] = [
 ];
 
 function ensureDamageGeometry(conn: DatabaseSync) {
-  const cols = all<{ name: string }>("PRAGMA table_info(damage_records)");
+  // NOTE: use `conn` directly. The generic `all()` helper calls getDb(), which
+  // is still initialising here and would recurse. (This function used to be
+  // defined but never called for exactly that reason.)
+  const cols = conn.prepare("PRAGMA table_info(damage_records)").all() as { name: string }[];
   const have = new Set(cols.map((c) => c.name));
   for (const [name, type] of DAMAGE_GEOMETRY_COLUMNS) {
     if (!have.has(name)) conn.exec(`ALTER TABLE damage_records ADD COLUMN ${name} ${type}`);
   }
 
-  const rows = all<{ id: string; zone_id: string; component_id: string | null; local_x: number | null }>(
-    "SELECT id, zone_id, component_id, local_x FROM damage_records"
-  );
+  const rows = conn.prepare("SELECT id, zone_id, component_id, local_x FROM damage_records").all() as {
+    id: string; zone_id: string; component_id: string | null; local_x: number | null;
+  }[];
   const upd = conn.prepare(
     "UPDATE damage_records SET component_id = ?, local_x = ?, local_y = ?, local_z = ?, position_source = ? WHERE id = ?"
   );
   let backfilled = 0;
   for (const r of rows) {
+    // Category-specific component ids (motorcycle/scooter/EV registries) are
+    // authoritative. Never overwrite them with a car-registry guess, and never
+    // invent 3D coordinates for an asset that does not exist.
+    if (r.component_id) continue;
     const comp = getComponentById(mapZoneToComponentId(r.zone_id || ""));
     if (!comp) continue;
-    if (r.component_id && r.local_x !== null) continue;
     const [x, y, z] = comp.defaultHotspotAnchor;
     upd.run(comp.id, x, y, z, comp.available ? "measured_component_anchor" : "unmapped_component", r.id);
     backfilled += 1;
@@ -1311,6 +1369,12 @@ export function getDb(): DatabaseSync {
   seed(conn);
   seedDemoPhotos(conn);
   g.__tdFkReport = upgradeCoreForeignKeys(conn, dbFile);
+  // Additive multi-category step runs AFTER the FK rebuild so no table is
+  // dropped or recreated underneath the live 69-vehicle evidence history.
+  // SCHEMA_VERSION stays at 3 on purpose: migrate() is destructive.
+  ensureDamageGeometry(conn);
+  g.__tdMultiCategory = ensureMultiCategorySchema(conn);
+  g.__tdMultiCategoryDemo = seedMultiCategoryDemo(conn);
   // Mark the schema only after a successful seed so a failed seed is retried.
   conn.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`);
   g.__tdDb = conn;
@@ -1389,18 +1453,18 @@ export function getAllVehicles(): VehicleRow[] {
 }
 export function createVehicle(v: VehicleRow) {
   run(
-    `INSERT INTO vehicles VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    VEHICLE_INSERT_SQL,
     v.id, v.owner_id, v.make, v.model, v.variant, v.year, v.reg_no, v.vin, v.fuel, v.transmission,
     v.category, v.color, v.ownership_count, v.location, v.km_claimed, v.last_verified_km, v.asking_price,
     v.status, v.base_value, v.condition_score, v.trustdrive_id, v.qr_token, v.description, v.condition,
-    v.created_at, v.updated_at
+    v.created_at, v.updated_at, v.vehicle_category_id ?? categoryForVehicle(v).id
   );
 }
 export function updateVehicle(id: string, fields: Partial<VehicleRow>) {
   const allowed = [
     "make", "model", "variant", "year", "reg_no", "vin", "fuel", "transmission", "category", "color",
     "ownership_count", "location", "km_claimed", "last_verified_km", "asking_price", "status", "base_value",
-    "condition_score", "description", "condition",
+    "condition_score", "description", "condition", "vehicle_category_id",
   ];
   const entries = Object.entries(fields).filter(([k, v]) => allowed.includes(k) && v !== undefined);
   if (!entries.length) return;
@@ -1420,6 +1484,50 @@ export function softDeleteUser(id: string) {
 export function softDeleteDocument(id: string) {
   run("UPDATE documents SET deleted_at = ? WHERE id = ? AND deleted_at IS NULL",
       new Date().toISOString(), id);
+}
+
+// ---- Multi-category specifications & battery evidence ---------------------
+export function getVehicleSpecs(vehicleId: string): Record<string, unknown> {
+  const row = one<{ specs: string }>("SELECT specs FROM vehicle_specs WHERE vehicle_id = ?", vehicleId);
+  if (!row) return {};
+  try { return JSON.parse(row.specs) as Record<string, unknown>; } catch { return {}; }
+}
+
+/** Seller-entered category fields. Only stored, never promoted to "verified"
+ *  facts — a seller declaration stays a claim until a document corroborates it. */
+export function upsertVehicleSpecs(vehicleId: string, categoryId: string, specs: Record<string, unknown>, specVersion: string) {
+  const now = new Date().toISOString();
+  run(
+    `INSERT INTO vehicle_specs (vehicle_id, category_id, specs, spec_version, created_at, updated_at)
+     VALUES (?,?,?,?,?,?)
+     ON CONFLICT(vehicle_id) DO UPDATE SET specs = excluded.specs, category_id = excluded.category_id,
+       spec_version = excluded.spec_version, updated_at = excluded.updated_at`,
+    vehicleId, categoryId, JSON.stringify(specs), specVersion, now, now
+  );
+}
+
+export function getBatteryRecords(vehicleId: string) {
+  return all<{
+    id: string; vehicle_id: string; kind: string; soh_percent: number | null;
+    capacity_kwh: number | null; serial: string | null; measured_at: string;
+    source_document_id: string | null; status: string; notes: string; created_at: string;
+  }>("SELECT * FROM battery_records WHERE vehicle_id = ? ORDER BY measured_at DESC", vehicleId);
+}
+
+/** Battery State of Health may only be recorded with a source document. */
+export function addBatteryRecord(row: {
+  id: string; vehicle_id: string; kind: string; soh_percent: number | null;
+  capacity_kwh: number | null; serial: string | null; measured_at: string;
+  source_document_id: string | null; status: string; notes: string;
+}) {
+  if (row.soh_percent !== null && !row.source_document_id) {
+    throw new Error("Battery State of Health requires a source battery health report.");
+  }
+  run(
+    "INSERT INTO battery_records VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+    row.id, row.vehicle_id, row.kind, row.soh_percent, row.capacity_kwh, row.serial,
+    row.measured_at, row.source_document_id, row.status, row.notes, new Date().toISOString()
+  );
 }
 
 // ---- Documents ------------------------------------------------------------
@@ -1514,6 +1622,19 @@ export function updateListing(id: string, fields: Partial<ListingRow>) {
   if (!entries.length) return;
   const sets = entries.map(([k]) => `${k} = ?`).join(", ");
   run(`UPDATE listings SET ${sets}, updated_at = ? WHERE id = ?`, ...entries.map(([, v]) => v as string | number | null), new Date().toISOString(), id);
+}
+
+/**
+ * Count one buyer-facing view of a published listing. The seller KPI reads this
+ * column, so it has to move when the listing is actually opened; a draft or a
+ * paused listing is not a view and stays untouched.
+ */
+export function recordListingView(listingId: string) {
+  run(
+    "UPDATE listings SET views = views + 1, updated_at = ? WHERE id = ? AND status = 'published'",
+    new Date().toISOString(),
+    listingId
+  );
 }
 export function getListingImages(listingId: string) {
   return all<{ id: string; listing_id: string; file_key: string; position: number; kind: string }>(
@@ -1673,9 +1794,10 @@ export function getDamageRecord(id: string): DamageRow | undefined {
   return one<DamageRow>("SELECT * FROM damage_records WHERE id = ?", id);
 }
 export function createDamage(d: DamageRow) {
-  run("INSERT INTO damage_records VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+  run(DAMAGE_WRITE_INSERT_SQL,
     d.id, d.vehicle_id, d.zone_id, d.description, d.severity, d.repair_status, d.repair_details,
-    d.inspection_date, d.status, d.photo_keys, d.repair_invoice_doc_id, d.supersedes_id, d.created_by, d.created_at);
+    d.inspection_date, d.status, d.photo_keys, d.repair_invoice_doc_id, d.supersedes_id, d.created_by, d.created_at,
+    d.component_id ?? null, d.damage_type ?? null, d.position_source ?? null);
 }
 export function getChain(vehicleId: string) {
   return all<{ seq: number; entity_type: string; entity_id: string; payload: string; prev_hash: string; record_hash: string; created_at: string }>(

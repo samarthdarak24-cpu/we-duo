@@ -2,6 +2,7 @@ import { replaceDocumentForActor } from "@/lib/server/data";
 import { fail, ok, requireRole } from "@/lib/server/http";
 import { MAX_DOC_BYTES, saveUpload } from "@/lib/server/files";
 import { getDocument } from "@/lib/server/db";
+import { runDocumentOcr } from "@/lib/server/document-ocr";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,5 +43,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
   const result = replaceDocumentForActor(guard.user.sub, params.id, input);
   if (!result.ok) return fail(result.code === "NOT_FOUND" ? 404 : 403, result.code, result.message);
-  return ok(result);
+  // A replacement is a new document row; run the same real extraction on it.
+  const ocr = result.id && input.fileKey ? await runDocumentOcr(result.id) : null;
+  return ok({ ...result, ocr });
 }

@@ -22,6 +22,8 @@ export interface VehicleCardView {
   location: string;
   ownershipCount?: number;
   condition?: string;
+  categoryId?: string;
+  categoryLabel?: string;
   trustScore: number;
   coverage?: number;
   band?: string;
@@ -30,6 +32,12 @@ export interface VehicleCardView {
   saved: boolean;
   findings?: number;
   hasAccident?: boolean;
+}
+
+function categoryIcon(categoryId?: string): string {
+  if (!categoryId) return "CircleDot";
+  if (/scooter|motorcycle|bike/i.test(categoryId)) return "Bike";
+  return "Car";
 }
 
 export function VehicleCard({ v, showSave = true }: { v: VehicleCardView; showSave?: boolean }) {
@@ -120,6 +128,11 @@ export function VehicleCard({ v, showSave = true }: { v: VehicleCardView; showSa
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border pt-2.5 text-[11.5px] text-muted">
+          {v.categoryLabel && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-surface-tint px-2 py-0.5 text-[10.5px] font-semibold text-ink">
+              <Icon name={categoryIcon(v.categoryId)} size={12} /> {v.categoryLabel}
+            </span>
+          )}
           <span className="inline-flex items-center gap-1">
             <Icon name="Fuel" size={12} /> {v.fuel}
           </span>

@@ -1,0 +1,339 @@
+{
+  "runId": "MW5ATBQ1",
+  "base": "http://127.0.0.1:3100",
+  "vehicleId": "v-1793989151346",
+  "regNo": "MH12QA7132",
+  "vin": "MAT3989149185KLJS",
+  "sellerId": "u-seller",
+  "listingId": "l-1793989218038",
+  "generatedAt": "2026-11-06T18:25:03.164Z",
+  "features": [
+    {
+      "feature": "RC upload + OCR",
+      "status": "PASS",
+      "total": 11,
+      "failed": 0,
+      "checks": [
+        {
+          "label": "upload returns 201 + document id",
+          "ok": true,
+          "detail": "HTTP 201 id=doc-1793989171647"
+        },
+        {
+          "label": "OCR really ran (status processed)",
+          "ok": true,
+          "detail": "{\"status\":\"processed\",\"engine\":\"rapidocr\",\"method\":\"rapidocr-onnx-crnn\",\"isOcr\":true,\"confidence\":0.778,\"flags\":[],\"reviewId\":null,\"fieldsStored\":8,\"documentStatus\":\"verified\"}"
+        },
+        {
+          "label": "engine + OCR method reported",
+          "ok": true,
+          "detail": "rapidocr / rapidocr-onnx-crnn / isOcr=true"
+        },
+        {
+          "label": "confidence reported",
+          "ok": true,
+          "detail": "0.778"
+        },
+        {
+          "label": "extracted fields stored",
+          "ok": true,
+          "detail": "8 rows"
+        },
+        {
+          "label": "documents row persisted with python source",
+          "ok": true,
+          "detail": "status=verified"
+        },
+        {
+          "label": "extracted registration number matches",
+          "ok": true,
+          "detail": "{\"registration_number\":\"MH12QA7132\",\"vin\":\"MAT3989149185KLJS\",\"owner_name\":null,\"vehicle_model\":\"Model\",\"policy_number\":null,\"dates\":[\"01/04/2021\",\"31/12/2030\"],\"odometer_km\":45000,\"invoice_amount\":null,\"service_details\":\"GOVERNMENT OF MAHARASHTRA\\nREGISTRATION CERTIFICATE\\nRegistration Number\\nMH12QA7132\\nChassis Number (VIN)\\nMAT3989149185KLJS\\nOwner Name\\nSamarth Deshmukh\\nVehicle Model\\nHonda City\\nFuel Type\\nPetrol\\nRegistration Date\\n01/04/2021\\nValid Till\\n31/12/2030\\nOdometer\\n45000 km\",\"category_id\":\"passenger_car\",\"identifier_label\":\"VIN (17 characters)\",\"primary_identifier\":\"MAT3989149185KLJS\",\"chassis_number\":null,\"frame_number\":null,\"engine_number\":null,\"motor_number\":null,\"battery_serial\":null,\"battery_capacity_kwh\":null}"
+        },
+        {
+          "label": "extracted VIN matches the vehicle",
+          "ok": true,
+          "detail": "MAT3989149185KLJS"
+        },
+        {
+          "label": "document_extractions rows persisted",
+          "ok": true,
+          "detail": "8 rows"
+        },
+        {
+          "label": "UI shows the real OCR engine after refresh",
+          "ok": true,
+          "detail": "rapidocr"
+        },
+        {
+          "label": "UI shows extracted registration value",
+          "ok": true,
+          "detail": "MH12QA7132"
+        }
+      ],
+      "vehicleId": "v-1793989151346",
+      "documentId": "doc-1793989171647",
+      "ocr": {
+        "status": "processed",
+        "engine": "rapidocr",
+        "method": "rapidocr-onnx-crnn",
+        "isOcr": true,
+        "confidence": 0.778,
+        "flags": [],
+        "reviewId": null,
+        "fieldsStored": 8,
+        "documentStatus": "verified"
+      },
+      "evidence": "qa/live-browser/shots-six/feat1-rc-ocr.png"
+    },
+    {
+      "feature": "Mileage detection",
+      "status": "PASS",
+      "total": 6,
+      "failed": 0,
+      "checks": [
+        {
+          "label": "first reading accepted",
+          "ok": true,
+          "detail": "HTTP 201"
+        },
+        {
+          "label": "rollback reading accepted + flagged",
+          "ok": true,
+          "detail": "{\"ok\":true,\"id\":\"m-1793989179251\",\"flagged\":true}"
+        },
+        {
+          "label": "ODOMETER_ROLLBACK finding persisted",
+          "ok": true,
+          "detail": "Odometer rollback detected"
+        },
+        {
+          "label": "mileage API returns both readings",
+          "ok": true,
+          "detail": "52000@2024-01-15, 41000@2025-02-20"
+        },
+        {
+          "label": "API exposes the rollback flag",
+          "ok": true,
+          "detail": "[false,true]"
+        },
+        {
+          "label": "seller UI renders the rollback finding",
+          "ok": true,
+          "detail": "Odometer rollback detected"
+        }
+      ],
+      "vehicleId": "v-1793989151346",
+      "findingId": "f-1793989179252",
+      "evidence": "qa/live-browser/shots-six/feat2-mileage-rollback.png"
+    },
+    {
+      "feature": "AI investigation",
+      "status": "PASS",
+      "total": 9,
+      "failed": 0,
+      "checks": [
+        {
+          "label": "investigation endpoint returns 200",
+          "ok": true,
+          "detail": "HTTP 200"
+        },
+        {
+          "label": "real Python agent answered",
+          "ok": true,
+          "detail": "python-intelligence"
+        },
+        {
+          "label": "orchestrator reported honestly",
+          "ok": true,
+          "detail": "langgraph"
+        },
+        {
+          "label": "category node set executed",
+          "ok": true,
+          "detail": "15 nodes executed"
+        },
+        {
+          "label": "findings + citations returned",
+          "ok": true,
+          "detail": "2 findings / 6 citations"
+        },
+        {
+          "label": "human-review state returned",
+          "ok": true,
+          "detail": "{\"required\":true,\"id\":\"review-1a0e6cfae277\",\"policy\":\"High-impact unresolved findings are held for authorised human review; no automated decision is final.\"}"
+        },
+        {
+          "label": "ai_runs row persisted",
+          "ok": true,
+          "detail": "langgraph-conditional"
+        },
+        {
+          "label": "UI renders the executed-node timeline",
+          "ok": true,
+          "detail": "15 nodes"
+        },
+        {
+          "label": "UI labels the orchestrator that actually ran",
+          "ok": true,
+          "detail": "langgraph"
+        }
+      ],
+      "vehicleId": "v-1793989151346",
+      "runId": "airun-574c5fe0-f451-4dde-a030-3b32c159f24d",
+      "orchestrator": "langgraph",
+      "evidence": "qa/live-browser/shots-six/feat3-ai-investigation.png"
+    },
+    {
+      "feature": "Damage inspection",
+      "status": "PASS",
+      "total": 4,
+      "failed": 0,
+      "checks": [
+        {
+          "label": "damage endpoint returns 201",
+          "ok": true,
+          "detail": "HTTP 201"
+        },
+        {
+          "label": "damage record persisted in SQLite",
+          "ok": true,
+          "detail": "d-1793989213056 zone=front_bumper"
+        },
+        {
+          "label": "damage is linked to a real component zone",
+          "ok": true,
+          "detail": "front_bumper"
+        },
+        {
+          "label": "seller UI shows the saved damage text",
+          "ok": true,
+          "detail": "MW5ATBQ1"
+        }
+      ],
+      "vehicleId": "v-1793989151346",
+      "damageId": "d-1793989213056",
+      "evidence": "qa/live-browser/shots-six/feat4-damage-record.png"
+    },
+    {
+      "feature": "Marketplace",
+      "status": "PASS",
+      "total": 9,
+      "failed": 0,
+      "checks": [
+        {
+          "label": "listing draft created",
+          "ok": true,
+          "detail": "HTTP 200 id=l-1793989218038"
+        },
+        {
+          "label": "three photos uploaded",
+          "ok": true,
+          "detail": "HTTP 201 {\"data\":{\"uploaded\":3,\"listingId\":\"l-1793989218038\",\"images\":[{\"id\":\"img-86117d5b-e268-4cdd-b8f1-8693d67d2dab\",\"position\":1,\"key\":\"photos/v-1793989151346/dc6f4a6e-f682-4959-89df-ad"
+        },
+        {
+          "label": "listing published",
+          "ok": true,
+          "detail": "200 {\"data\":{\"ok\":true,\"status\":\"published\"}}"
+        },
+        {
+          "label": "listings row is published in SQLite",
+          "ok": true,
+          "detail": "published"
+        },
+        {
+          "label": "published vehicle appears in buyer marketplace API",
+          "ok": true,
+          "detail": "q=MH12QA7132 → 1 items"
+        },
+        {
+          "label": "buyer vehicle page renders the listing",
+          "ok": true,
+          "detail": "MH12QA7132"
+        },
+        {
+          "label": "3D viewer lists the damage record",
+          "ok": true,
+          "detail": "Recorded Defects"
+        },
+        {
+          "label": "3D hotspot exists for the stored damage",
+          "ok": true,
+          "detail": "hotspot button"
+        },
+        {
+          "label": "hotspot opens the matching damage detail",
+          "ok": true,
+          "detail": "MW5ATBQ1"
+        }
+      ],
+      "vehicleId": "v-1793989151346",
+      "listingId": "l-1793989218038",
+      "evidence": "qa/live-browser/shots-six/feat5-marketplace-3d.png"
+    },
+    {
+      "feature": "Buyer inquiries",
+      "status": "PASS",
+      "total": 10,
+      "failed": 0,
+      "checks": [
+        {
+          "label": "contact form opens from the listing",
+          "ok": true,
+          "detail": "visible"
+        },
+        {
+          "label": "buyer inquiry returns 201",
+          "ok": true,
+          "detail": "HTTP 201 id=q-1793989445140"
+        },
+        {
+          "label": "inquiry persisted in SQLite",
+          "ok": true,
+          "detail": "open"
+        },
+        {
+          "label": "buyer message persisted",
+          "ok": true,
+          "detail": "Is the front-door damage repaired? Ref MW5ATBQ1"
+        },
+        {
+          "label": "seller inbox shows the buyer message",
+          "ok": true,
+          "detail": "MW5ATBQ1"
+        },
+        {
+          "label": "seller reply returns 201",
+          "ok": true,
+          "detail": "HTTP 201"
+        },
+        {
+          "label": "buyer receives the seller reply",
+          "ok": true,
+          "detail": "2 messages"
+        },
+        {
+          "label": "PDF report generated",
+          "ok": true,
+          "detail": "HTTP 201 id=rep-1793989494948"
+        },
+        {
+          "label": "PDF download is a real PDF",
+          "ok": true,
+          "detail": "45266 bytes"
+        },
+        {
+          "label": "reports row persisted",
+          "ok": true,
+          "detail": "ready"
+        }
+      ],
+      "vehicleId": "v-1793989151346",
+      "listingId": "l-1793989218038",
+      "inquiryId": "q-1793989445140",
+      "evidence": "qa/live-browser/shots-six/feat6-seller-inbox-reply.png"
+    }
+  ],
+  "consoleErrors": [
+    "Warning: Extra attributes from the server: %s%s style \n    at input\n    at div\n    at DocumentsManager (webpack-internal:///(app-pages-browser)/./components/seller/DocumentsManager.tsx:45:11)\n    at div\n    at div\n    at main\n    at div\n    at div\n    at PortalShell (Server)\n    at SellerDocumentsPage (Server)\n    at InnerLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/di"
+  ]
+}

@@ -53,7 +53,7 @@ erDiagram
     findings ||--o{ disputes : "seller dispute"
     vehicles ||--o{ trust_scores : "versioned score"
     vehicles ||--o{ ai_analysis : "analysis payloads"
-    vehicles ||--o{ agent_investigations : "12-node investigations"
+    vehicles ||--o{ agent_investigations : "15/16-node conditional investigations"
     vehicles ||--o{ reports : "PDF"
     vehicles ||--o{ qr_tokens : "public verification"
     reports  ||--o{ report_access : "consent"

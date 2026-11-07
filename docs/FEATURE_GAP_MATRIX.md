@@ -23,7 +23,7 @@ Legend for API: **N** = Next.js `/api/v1/*`, **B** = FastAPI `/api/backend/*`,
 | Inspections / damage / accidents | ✅ | `routers/vehicles.py` | N, B, V | `vehicle_inspections`, `damage_records`, `accident_records` | `/seller/verification` | backend | — |
 | Verification center / runs | ✅ | `routers/vehicles.py` | N, B, V | `verification_runs`, `verification_results`, `verification_evidence` | `/seller/verification` | `test_backend` | — |
 | AI fraud findings | ✅ | `detectors.py`, `explain.py` | N, I | `findings`, `ai_analysis`, `trust_scores` | `/seller/fraud` | `test_detectors` | — |
-| AI investigations (12-node) | ✅ | `ai-investigations/route.ts`, `InvestigationPanel.tsx` | N | `ai_runs` | `/seller/fraud`, `/buyer/risk` | tsc | run + history + citations |
+| AI investigations (15/16-node conditional) | ✅ | `ai-investigations/route.ts`, `InvestigationPanel.tsx` | N | `ai_runs` | `/seller/fraud`, `/buyer/risk` | tsc | run + history + citations |
 | Provider checks | ✅ | `provider-checks/route.ts`, `ProviderChecksPanel.tsx` | N | `provider_checks` | `/seller/vehicles/[id]`, `/vehicle/[id]`, admin run | tsc | `unavailable` when unconfigured |
 | Admin user management | ✅ | `admin/users/[id]/route.ts`, `AdminUsers.tsx` | N | `users` | `/admin/users` | tsc | soft delete |
 | 3D inspection + damage hotspots | ✅ | `Viewer3D.tsx`, `routers/vehicles.py` | N | `damage_records` | `/seller/vehicles/[id]` | RTL/manual | exploded view omitted (single-mesh GLB) |
@@ -56,7 +56,7 @@ Legend for API: **N** = Next.js `/api/v1/*`, **B** = FastAPI `/api/backend/*`,
 | Audit log | ✅ | `repository.audit`, `routers/audit.py` | N, B | `audit_logs` | `test_backend` | — |
 | Hash chain / integrity | ✅ | `explain.py`, `routers/main.py` | N, I | `chain_records` | `test_chain` | on-chain anchoring not implemented |
 | Trust score (versioned, additive) | ✅ | `explain.py` | N, B, V, I | `trust_scores` | `test_detectors` | — |
-| 12-node investigator | ✅ | `agent.py` | V, I | `agent_investigations`, `human_review_queue` | `test_pipeline` | LangGraph activates when installed |
+| 15/16-node conditional investigator | ✅ | `agent.py` | V, I | `agent_investigations`, `human_review_queue` | `test_pipeline` | LangGraph activates when installed |
 | Human review queue | ✅ | `agent.py`, `routers/main.py` | B, I | `human_review_queue` | `test_api` | — |
 | Background jobs | ✅ | `worker.py`, `tasks.py` | B, I | `background_jobs` | `test_pipeline` | Celery needs `TD_BROKER_URL` |
 | Rate limiting | ✅ | `lib/server/ratelimit.ts` (13 routes), `app/ratelimit.py` | N, B, V | — | `test_security` | in-process only; gateway limit for multi-instance |

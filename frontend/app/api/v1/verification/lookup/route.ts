@@ -22,7 +22,15 @@ export async function POST(req: Request) {
     if (!stored || stored.revoked_at) {
       return fail(410, "QR_REVOKED", "This QR code has been revoked. Ask the seller for the current code.");
     }
-    const result = lookupVehicle("tdid", payload.vid);
+    // signQrToken() stores the internal vehicle id (e.g. "v-bmw") in payload.vid,
+    // not a TD-xxxxxxx TrustDrive id. Resolve by tdid first (for tokens minted
+    // with a public id), then by any identifier, then by the stored token row.
+    // Without these fallbacks every valid QR token 404s on this endpoint while
+    // GET /api/v1/verify/:token succeeds — see QA22 feature 15.
+    const result =
+      lookupVehicle("tdid", payload.vid) ??
+      lookupVehicle("any", payload.vid) ??
+      (stored.vehicle_id ? lookupVehicle("any", stored.vehicle_id) : null);
     if (!result) return fail(404, "NO_RECORD", "No TrustDrive record for this QR code.");
     return ok({ via: "qr", ...result });
   }

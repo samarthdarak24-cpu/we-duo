@@ -112,6 +112,23 @@ Production: set `TD_SEED_DEMO=0` and provide `ADMIN_EMAIL` / `ADMIN_PASSWORD`
 Postgres is supported by the **FastAPI service only** today. Do not point the  
 two runtimes at different databases — the Next.js data layer is SQLite-only.
 
+### E1. Rate limiting, signed downloads and checkpoints
+
+- Rate limits are stored in the shared `rate_limit_hits` table inside the same
+  SQLite file, so a restart or a second Next.js process does not reset the
+  allowance. The in-memory map is only a fallback when the DB is unavailable.
+  A Postgres split deployment must move this table to Redis/gateway.
+- Signed report/document downloads are HMAC tokens. In production
+  `DOWNLOAD_SIGNING_SECRET` (or `QR_SIGNING_SECRET`) **must** be set; otherwise
+  tokens are refused (fail closed). Local demo runs with `TD_ENV=local`.
+  Rotation: deploy the new secret to all instances, keep the old one only for
+  the 15-minute token TTL, then remove it.
+- LangGraph checkpoints are durable by default:
+  `TD_CHECKPOINT_BACKEND=sqlite` and
+  `TD_CHECKPOINT_DB=.data/langgraph-checkpoints.db`. Set the backend to
+  `memory` for a deliberately non-durable run. A slim install without
+  `langgraph-checkpoint-sqlite` reports `durable_checkpointing=false`.
+
 ---
 
 ## F. Redis and workers
@@ -135,7 +152,7 @@ unreachable the worker reports it; jobs stay in the database.
 
 | Capability   | Default                           | Needs                                                            |
 | ------------ | --------------------------------- | ---------------------------------------------------------------- |
-| OCR (images) | PaddleOCR 3.7 → RapidOCR fallback | `paddleocr`/`paddlepaddle` optional; RapidOCR is in requirements |
+| OCR (images) | RapidOCR (active); PaddleOCR optional | `paddleocr`/`paddlepaddle` optional; RapidOCR is in requirements |
 | PDF text     | PyMuPDF                           | installed                                                        |
 | Damage       | YOLO11m (MIT)                     | `ultralytics` + `models/car_damage.pt`                           |
 | Anomaly      | rules + IForest/LOF + XGBoost     | installed                                                        |
@@ -152,6 +169,18 @@ TD_LLM_MODEL=Qwen/Qwen2.5-0.5B-Instruct
 
 No key is required. The assistant falls back to the deterministic, cited answer  
 when the model is unavailable or its output fails the four gates.
+
+Durable investigation threads:
+
+```env
+TD_CHECKPOINT_BACKEND=sqlite
+TD_CHECKPOINT_DB=.data/langgraph-checkpoints.db
+```
+
+`GET /health` confirms the active backend (`checkpoint_backend`,
+`durable_checkpointing`). Without the optional `langgraph-checkpoint-sqlite`
+package the service reports the memory fallback rather than pretending to be
+durable.
 
 Smoke test:
 

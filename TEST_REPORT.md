@@ -9,15 +9,18 @@ the two roles operate on **one shared backend** with correct permissions and per
 ## 1. Test suites in the repo
 
 ### 1.1 Frontend — Vitest (`cd frontend && npm test`)
-- **11 test files passed, 84 tests passed, 0 failed**.
+- **12 test files passed, 124 tests passed, 0 failed**.
 - Engine (trust score, detectors), chain/hash integrity, DB intelligence, Zod validation,
   React Testing Library (RTL) component tests for primary flows (incl. loading/error/
   success states of the 8-action Listing Features bar), vehicle 3D inspection component mapping,
-  and the end-to-end **`tests/seller-buyer-workflow.test.ts`** cross-role test suite.
+  the end-to-end **`tests/seller-buyer-workflow.test.ts`** cross-role test suite, and the
+  **`tests/multicategory.test.ts`** suite (44 tests) covering the shared taxonomy, additive
+  migration, six demo vehicles, category-aware verification engine, strict API resolution and
+  Buyer marketplace category filtering.
 - Run: `npm test` (root delegates to `frontend`).
 
 ### 1.2 Backend — Pytest (`cd backend && python -m pytest -q`)
-- **100 tests passed, 0 failed, 0 skipped** (100% pass rate; YOLO damage adapter running on real car damage weights pulled via git LFS, and RapidOcr ONNX CRNN text extraction backend active).
+- **126 tests passed, 0 failed, 0 skipped** (100% pass rate; YOLO damage adapter running on real car damage weights pulled via git LFS, and RapidOcr ONNX CRNN text extraction backend active).
 - Comprehensive coverage across: intelligence (OCR/detectors/investigator), backend contracts,
   security (RBAC, rate limit, signed URLs, hardcoded secret regression), and model adapters (YOLO, XGBoost).
 - Run: `npm run intel:test` (root delegates to `backend`).
@@ -117,8 +120,8 @@ A comprehensive 16-step integration test (`frontend/tests/seller-buyer-workflow.
 | RBAC: non-owner inquiry → 403 | ✅ |
 | Evidence tables populated from seed | ✅ |
 | Seller dashboard uses real user id | ✅ |
-| Pytest backend suite | ✅ 98 passed, 0 failed, 2 skipped |
-| Vitest frontend suite | ✅ 11 test files passed, 84 passed, 0 failed |
+| Pytest backend suite | ✅ 126 passed, 0 failed, 0 skipped |
+| Vitest frontend suite | ✅ 12 test files passed, 124 passed, 0 failed |
 | Production build (`npm run build`) | ✅ 51/51 routes generated without errors |
 | TypeScript check (`npx tsc --noEmit`) | ✅ 0 errors |
 | Cross-role workflow test | ✅ 15/15 passed (`seller-buyer-workflow.test.ts`) |

@@ -18,7 +18,8 @@ import {
   getUserById,
   getVehicle,
 } from "./db";
-import { computeVehicleTrust, getChainStatus, getInsights } from "./data";
+import { computeVehicleTrust, getChainStatus, getInsights, theftAssessment } from "./data";
+import { matchTrustDriveKb } from "./trustdrive-kb";
 
 export interface AiCitation {
   kind: "vehicle" | "document" | "finding" | "mileage" | "history" | "damage" | "pricing" | "chain" | "theft" | "report" | "listing";
@@ -39,7 +40,7 @@ export interface AiAnswer {
   confidence: number;
   followUps: string[];
   actions: AiAction[];
-  model: "grounded-rules-v1";
+  model: "grounded-rules-v1" | "rules-v1";
   disclaimer: string;
 }
 
@@ -49,6 +50,23 @@ const DISCLAIMER =
 const money = (n: number) => `₹${Math.round(n).toLocaleString("en-IN")}`;
 const title = (v: ReturnType<typeof getVehicle>) => (v ? `${v.year} ${v.make} ${v.model}${v.variant ? ` ${v.variant}` : ""}` : "this vehicle");
 const list = (items: string[], max = 4) => items.slice(0, max).join("; ");
+
+function isSmallTalk(question: string) {
+  const s = question.toLowerCase().trim();
+  if (!s) return false;
+  return (
+    /^(hi|hii|hiii|hello|hey|heyya|heya|gm|yo|sup|howdy|hiya|good (morning|afternoon|evening))\b/.test(s) ||
+    /^(thanks|thank you|thx|ty|cheers|nice|cool|great|awesome|amazing|ok|okay|k|sure|got it|gotcha|understood|perfect|love it)\b/.test(s) ||
+    /^(who are you|what are you|are you (?:a )?(?:bot|ai|human|assistant)|your name|what's your name)\b/.test(s)
+  );
+}
+
+function smallTalkReply(vehicleTitle?: string) {
+  const greeting = vehicleTitle
+    ? `Hi! I'm the TrustDrive assistant for the ${vehicleTitle}.`
+    : "Hi! I'm the TrustDrive assistant.";
+  return `${greeting} I can answer questions about a vehicle's records — trust score, mileage, damage, documents — or about how TrustDrive works. What would you like to know?`;
+}
 
 function detectIntent(question: string) {
   const q = question.toLowerCase();
@@ -68,13 +86,14 @@ function detectIntent(question: string) {
 
 export function suggestedQuestions(vehicleId?: string) {
   const base = [
+    "What is TrustDrive?",
     "What is the trust score and why?",
     "Is there any accident or damage record?",
     "Does the mileage look consistent?",
     "Which documents are verified?",
     "What should I do next before buying?",
   ];
-  return vehicleId ? base : ["How does TrustDrive verify a vehicle?", "What does the trust score mean?", ...base.slice(0, 3)];
+  return vehicleId ? base : ["What is TrustDrive?", "How does TrustDrive verify a vehicle?", "What does the trust score mean?", ...base.slice(2, 5)];
 }
 
 function citationsFor(vehicleId: string) {
@@ -110,6 +129,32 @@ export function askVehicleAssistant(input: { vehicleId?: string; question: strin
 
   if (!question) {
     return base("prompt", "Ask a question about a vehicle, its documents, mileage, findings or price.", [], [], suggestedQuestions(vehicle?.id));
+  }
+
+  if (isSmallTalk(question)) {
+    return base("smalltalk", smallTalkReply(vehicle ? title(vehicle) : undefined), [], [], suggestedQuestions(vehicle?.id), 0.95);
+  }
+
+  // On a vehicle report the assistant must answer from THAT car's records, not
+  // from the generic project KB. Questions like "What is the trust score and
+  // why?" (a visible suggested question) need the real, cited score. Only
+  // conceptual / project questions keep the instant KB answer.
+  const conceptual = /\bwhat (?:is|are) trust\s?drive\b/i.test(question)
+    || /\bwhat does\b.*\bmean\b/i.test(question)
+    || /\bhow (?:does|do|is|are)\b.*\b(?:work|calculated|computed|checked|verified|made|mean)\b/i.test(question)
+    || /\b(?:3d studio|inspection studio|evidence graph|data sources|get started|sign up|disclaimers|limits)\b/i.test(question);
+  const dataIntent = vehicle ? detectIntent(question) !== "summary" : false;
+  const kb = !dataIntent || conceptual ? matchTrustDriveKb(question) : null;
+  if (kb) {
+    const tail = vehicle ? ` For the ${title(vehicle)} on this page, just ask about its specific records any time.` : "";
+    return base(
+      "project",
+      kb.answer + tail,
+      [],
+      (kb.links ?? []).map((l) => ({ label: l.label, href: l.href })),
+      ["What does the trust score mean?", "How is mileage checked?", "What are the 3D studio modes?"],
+      0.92
+    );
   }
 
   if (!vehicle) {
@@ -221,15 +266,21 @@ export function askVehicleAssistant(input: { vehicleId?: string; question: strin
 
   if (intent === "theft") {
     const t = ctx.theft;
+    const check = theftAssessment(t);
     const text =
-      t?.status === "no_record"
-        ? `No theft record was found for ${title(vehicle)} in the supported source (${t.source}, checked ${new Date(t.checked_at).toLocaleDateString("en-IN")}).`
-        : t?.status === "unavailable"
-        ? `The theft source (${t.source}) was unavailable, so this check is incomplete — not a pass.`
-        : t
-        ? `A theft record was found in ${t.source}. Treat this as a serious open issue and request the seller's clarification before proceeding.`
-        : `No theft check has been run for ${title(vehicle)}.`;
-    return base("theft", text, t ? [{ kind: "theft", id: vehicle.id, label: "Theft check", detail: `${t.status} · ${t.source}` }] : [], reportAction, ["What does 'no record' mean?", "Which sources are checked?"], t?.status === "unavailable" ? 0.45 : 0.82);
+      check.status === "verified"
+        ? `No theft record was found for ${title(vehicle)} in the configured source (${check.source}${t ? `, checked ${new Date(t.checked_at).toLocaleDateString("en-IN")}` : ""}).`
+        : check.status === "unavailable"
+          ? `${check.note} This check is incomplete — not a pass.`
+          : `A theft record was found in ${check.source}. Treat this as a serious open issue and request the seller's clarification before proceeding.`;
+    return base(
+      "theft",
+      text,
+      t ? [{ kind: "theft", id: vehicle.id, label: "Theft check", detail: `${check.status} · ${check.source}` }] : [],
+      reportAction,
+      ["What does 'no record' mean?", "Which sources are checked?"],
+      check.status === "unavailable" ? 0.45 : check.status === "suspicious" ? 0.9 : 0.82
+    );
   }
 
   if (intent === "history") {

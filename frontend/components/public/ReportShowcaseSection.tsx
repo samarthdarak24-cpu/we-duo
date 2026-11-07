@@ -48,13 +48,13 @@ export function ReportShowcaseSection() {
 
             <div className="flex items-center gap-3">
               <a
-                href="/api/v1/reports/rep-1/download"
+                href="/api/v1/public/sample-report"
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#111315] border border-[#23262A] hover:border-[#C5A46D] text-[12px] font-semibold text-white transition-colors"
               >
                 <Icon name="Download" size={14} className="text-[#C5A46D]" />
-                <span>Download Real PDF</span>
+                <span>Download sample PDF (demo)</span>
               </a>
               <Link
                 href="/vehicle/v-bmw"

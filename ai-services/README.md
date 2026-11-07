@@ -18,7 +18,7 @@ storage and schema logic.
 | Damage detection | `app/intelligence/damage/yolo.py`, `models/car_damage.pt` |
 | Retrieval / embeddings | `app/intelligence/retrieval/embeddings.py` |
 | Scoring | `app/intelligence/scoring/`, `lib/server/engine.ts` |
-| LangGraph agent | `app/agent.py` (12 nodes), `app/intelligence/rules/` |
+| LangGraph agent | `app/agent.py` (15/16 conditional nodes), `app/intelligence/rules/` |
 | Explanation + LLM | `app/explain.py`, `app/llm.py`, `app/integrations/llm/` |
 | Integrity / blockchain | `app/blockchain/` |
 | Model evaluation | `app/intelligence/evaluation/metrics.py`, `scripts/eval_llm.py` |

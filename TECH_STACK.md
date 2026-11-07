@@ -46,7 +46,7 @@
 
 | Checklist item | Status | Decision |
 | --- | --- | --- |
-| LangGraph | ✅ `1.2.14` | 12-node investigator with checkpointer + human-in-the-loop interrupt |
+| LangGraph | ✅ `1.2.14` | 15/16-node conditional investigator (EV adds `EVBatteryAnalysisNode`) with checkpointer + human-in-the-loop interrupt |
 | LangChain | ⚠️ **not installed** | LangGraph 1.x + a thin provider adapter covers everything needed; LangChain would add ~40 packages for no capability gain. |
 | LLM provider adapter | ✅ | `services/intelligence/app/llm.py` — OpenAI/Anthropic-compatible HTTP through `TD_LLM_*`; offline it returns *no conclusion* rather than a fabricated one. `anthropic@2.3.0` is already present in the environment. |
 | PaddleOCR | ⚠️ adapter | `app/ocr.py` exposes `OcrBackend`. `PaddleOcrBackend` activates when `paddleocr`+`paddlepaddle` import; otherwise `PdfTextBackend` (PyMuPDF, real text layer) and `OpenCVPreprocessBackend` run. Output always carries `method` and `engine` so a fallback is never presented as OCR. |

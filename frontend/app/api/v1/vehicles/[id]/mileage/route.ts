@@ -28,9 +28,11 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   if (!guard.ok) return guard.response;
   const body = (await req.json().catch(() => null)) as { date?: string; km?: number; source?: string; documentId?: string } | null;
   if (!body) return fail(400, "VALIDATION_FAILED", "A JSON body is required.");
+  // No defaults here: filling in "now" or 0 would place an odometer reading the
+  // seller never submitted at the end of the timeline and mark it a rollback.
   const result = addMileageForVehicle(guard.user.sub, params.id, {
-    date: body.date ?? (body as any).readingDate ?? new Date().toISOString(),
-    km: Number(body.km ?? (body as any).reading ?? 0),
+    date: body.date ?? (body as any).readingDate,
+    km: body.km ?? (body as any).reading,
     source: body.source,
     documentId: body.documentId,
   });

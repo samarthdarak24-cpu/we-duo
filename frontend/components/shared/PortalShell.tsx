@@ -2,6 +2,7 @@ import { Sidebar, MobileNav, type PromoProps } from "./Sidebar";
 import { Topbar } from "./Topbar";
 import { AiAssistant } from "./AiAssistant";
 import { adminNav, buyerNav, sellerNav } from "@/lib/seed";
+import { liveNavBadges } from "@/lib/server/nav-badges";
 
 export interface PortalProfile {
   name: string;
@@ -34,7 +35,14 @@ export function PortalShell({
   hideAssistant?: boolean;
   children: React.ReactNode;
 }) {
-  const nav = portal === "buyer" ? buyerNav : portal === "seller" ? sellerNav : adminNav;
+  const seedNav = portal === "buyer" ? buyerNav : portal === "seller" ? sellerNav : adminNav;
+  // Replace the static demo badges with counts from the shared database.
+  const badges = liveNavBadges(portal, unread);
+  const nav = seedNav.map((item) =>
+    badges[item.label] === undefined ? item : { ...item, badge: badges[item.label] }
+  );
+  // Only the pre-loaded rows are samples; the database and every action are live.
+  const hasSeedData = process.env.TD_SEED_DEMO !== "0";
   return (
     <div className="app-shell">
       <a
@@ -43,10 +51,17 @@ export function PortalShell({
       >
         Skip to content
       </a>
-      <Sidebar portal={portal} nav={nav} activeLabel={activeLabel} promo={promos[portal]} />
+      <Sidebar portal={portal} nav={nav} activeLabel={activeLabel} promo={promos[portal]} demo={hasSeedData} />
       <MobileNav nav={nav} activeLabel={activeLabel} />
       <div className="flex min-w-0 flex-col">
-        <Topbar variant={portal} profile={profile} title={title} selector={selector} unread={unread} />
+        <Topbar
+          variant={portal}
+          profile={profile}
+          title={title}
+          selector={selector}
+          unread={unread}
+          demo={hasSeedData}
+        />
         <main id="portal-main" className="portal-canvas flex-1 min-w-0">
           <div className="mx-auto w-full max-w-[1600px] px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
             <div className="td-page">{children}</div>

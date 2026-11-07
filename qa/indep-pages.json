@@ -1,0 +1,362 @@
+[
+  {
+    "url": "/seller",
+    "role": "seller",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 4104,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/seller/add-vehicle",
+    "role": "seller",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 2054,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/seller/vehicles",
+    "role": "seller",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 13356,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/seller/documents",
+    "role": "seller",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 5274,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/seller/history",
+    "role": "seller",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 4455,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/seller/verification",
+    "role": "seller",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 5157,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/seller/fraud",
+    "role": "seller",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 4574,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/seller/listings",
+    "role": "seller",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 3568,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/seller/inquiries",
+    "role": "seller",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 7965,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/seller/reports",
+    "role": "seller",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 6586,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/seller/notifications",
+    "role": "seller",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 2309,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/seller/settings",
+    "role": "seller",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 1968,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/buyer",
+    "role": "buyer",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 2846,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/buyer/explore",
+    "role": "buyer",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 6968,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/buyer/search",
+    "role": "buyer",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 3206,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/buyer/saved",
+    "role": "buyer",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 648,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/buyer/compare",
+    "role": "buyer",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 2605,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/buyer/history",
+    "role": "buyer",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 1443,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/buyer/risk",
+    "role": "buyer",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 2224,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/buyer/reports",
+    "role": "buyer",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 1771,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/buyer/verification",
+    "role": "buyer",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 722,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/buyer/inquiries",
+    "role": "buyer",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 1807,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/buyer/notifications",
+    "role": "buyer",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 1344,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/buyer/settings",
+    "role": "buyer",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 1640,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/admin/queue",
+    "role": "admin",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 1300,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/admin/kyc",
+    "role": "admin",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 599,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/admin/users",
+    "role": "admin",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 2048,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/admin/audit",
+    "role": "admin",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 684,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/admin/notifications",
+    "role": "admin",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 514,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/admin/settings",
+    "role": "admin",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 1539,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/",
+    "role": "anonymous",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 15235,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/marketplace",
+    "role": "anonymous",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 4605,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/about",
+    "role": "anonymous",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 3153,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/technology",
+    "role": "anonymous",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 7399,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/faq",
+    "role": "anonymous",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 2392,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/resources",
+    "role": "anonymous",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 3433,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/contact",
+    "role": "anonymous",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 2398,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/login",
+    "role": "anonymous",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 620,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/register",
+    "role": "anonymous",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 846,
+    "pageErrors": [],
+    "ok": true
+  },
+  {
+    "url": "/forgot-password",
+    "role": "anonymous",
+    "viewport": "1440x900",
+    "status": 200,
+    "textLen": 570,
+    "pageErrors": [],
+    "ok": true
+  }
+]

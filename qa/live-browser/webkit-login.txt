@@ -1,0 +1,5 @@
+email matches=1 formEmailInputs=1
+values after fill: email="samarth@trustdrive.dev" password="demo1234"
+LOGIN_RESPONSE 200 {"data":{"tokenType":"Bearer","expiresIn":604800,"sessionId":"sess-c87152d3-549f-4a2b-b65e-fe867e528596","user":{"id":"u-seller","name":"Samarth Darak","role":"seller","initials":"SD","emailVerified":true}}}
+final url=http://127.0.0.1:3001/seller
+body=Skip to content | Overview | Vehicles | Add | Documents | History | TRUSTDRIVE | TRUSTDRIVE | / | SELLER WORKSPACE | Seller portfolio | BMW 3 Series | · | MH01AB1234 | 9+ | SD | SELLER WORKSPACE | Portfolio overview | Welcome back, Samarth. Track verification, clear blockers and keep every listing evidence-ready. | 24 vehicles | 6 live | 14 open findings | Add vehicle | Open vehicle | Total vehicles | 24 | In your portfolio | Active listings | 6 | Published on marketplace | Pending verification | 16 | Documents or checks awaiting review | Buyer inquiries | 2

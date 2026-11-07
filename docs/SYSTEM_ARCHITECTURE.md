@@ -100,7 +100,7 @@ activated only when `TD_BROKER_URL` is present — no duplicate business logic.
 | DB unavailable | `/health/ready` returns 503; writes fail loudly |
 | OCR engine absent | PDF text layer / OpenCV path runs; payload names the engine; no "verified" claim |
 | LLM not configured | Deterministic evidence-only answer; `llm_status` explains why |
-| LangGraph absent | Same 12 nodes run sequentially; `orchestrator: "sequential-fallback"` |
+| LangGraph absent | Same 15/16 conditional nodes run sequentially; `orchestrator: "sequential-fallback"` |
 | Celery broker absent | DB-backed worker; `worker.backend = "db-backed"` |
 | Report PDF missing | 404 with an explicit message; hash drift → 409 |
 | Model load failure (3D) | Procedural car fallback; WebGL unsupported → accessible message |

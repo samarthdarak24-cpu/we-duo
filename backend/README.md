@@ -1,7 +1,7 @@
 # TrustDrive Intelligence Service
 
 Additive Python runtime that **shares the same database** as the Next.js app.
-It owns document intelligence, fraud/anomaly detection, the 12-node
+It owns document intelligence, fraud/anomaly detection, the 15/16-node conditional
 investigation agent, deterministic trust-score explanation and background jobs.
 It does **not** replace the Next.js REST API, authentication or portals.
 
@@ -77,7 +77,7 @@ Every response names its **active** engine and method:
 | LLM | **local Qwen2.5-0.5B / SmolLM2-360M** with 4 output gates (`TD_LLM_PROVIDER=local`); deterministic answer is primary | OpenAI-compatible HTTP via `TD_LLM_*` |
 | Anomaly ML | deterministic rules; Isolation Forest + LOF; **XGBoost synthetic-demo model** (not used by findings) | XGBoost on a real labelled corpus |
 | Damage CV | **YOLO11m (MIT, 6 classes) + OpenCV signals** + inspector validation | severity verdicts (never produced) |
-| Agent | sequential fallback running the same 12 nodes | LangGraph + checkpointer when installed |
+| Agent | sequential fallback running the same 15/16 conditional nodes | LangGraph + checkpointer when installed |
 | Jobs | DB-backed `background_jobs` worker | Celery + Redis when `TD_BROKER_URL` is set |
 | Storage | `.data/uploads` | S3/MinIO via `TD_S3_*` |
 
@@ -93,7 +93,7 @@ unchanged — **not** that the original document was genuine.
 | GET | `/api/intelligence/capabilities` | versions, weights, entity counts |
 | POST | `/api/intelligence/documents/process` | 18-step document workflow (sync or queued) |
 | POST/GET | `/api/intelligence/fraud/detect`, `/fraud/{vehicleId}` | mileage + document findings |
-| POST | `/api/intelligence/investigate` | 12-node investigator |
+| POST | `/api/intelligence/investigate` | 15/16-node conditional investigator |
 | GET | `/api/intelligence/trust-score/{vehicleId}` | additive explainable score |
 | GET/POST | `/api/intelligence/jobs` | queue + status |
 | POST | `/api/intelligence/jobs/run-one` | process one job |

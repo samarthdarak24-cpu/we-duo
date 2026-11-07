@@ -46,11 +46,13 @@ export function Sidebar({
   nav,
   activeLabel,
   promo,
+  demo = false,
 }: {
   portal: "buyer" | "seller" | "admin";
   nav: NavItem[];
   activeLabel?: string;
   promo: PromoProps;
+  demo?: boolean;
 }) {
   const pathname = usePathname();
   const shellRef = useRef<HTMLElement | null>(null);
@@ -188,9 +190,15 @@ export function Sidebar({
           </Link>
         </div>
 
-        <div className="sidebar-footer-copy mt-3 flex items-center gap-2 px-1 text-[10px] text-[#6B727B]">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#2F8B59]" />
-          Demo workspace · seeded data
+        {/* The workspace is a real, writable database — not a static demo.
+            Only some pre-loaded rows are samples; those carry their own
+            "demo" labels on the record/photo/theft-source they belong to. */}
+        <div className="sidebar-footer-copy mt-3 px-1 text-[10px] text-[#6B727B]">
+          <div className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#2F8B59]" />
+            Live database · changes persist
+          </div>
+          {demo && <div className="mt-1 pl-3.5 leading-snug">Sample records included (labelled demo)</div>}
         </div>
       </div>
     </aside>

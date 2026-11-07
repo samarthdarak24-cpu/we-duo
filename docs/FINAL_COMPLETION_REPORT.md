@@ -87,7 +87,7 @@ All **24** required entities exist; 5 are canonical views over historical tables
 - Active: PDF text layer, **RapidOCR image OCR**, OpenCV preprocessing,
   deterministic mileage/document rules, Isolation Forest + LOF, **XGBoost
   (synthetic-demo model, not used by findings)**, additive trust score, keyword
-  retrieval, LangGraph 12-node investigator with checkpointer, **YOLO11m damage
+  retrieval, LangGraph 15/16-node conditional investigator with checkpointer, **YOLO11m damage
   detection** (MIT weights, six classes) and a **local LLM** (Qwen2.5-0.5B /
   SmolLM2-360M) with four output guardrails.
 - **Grounded chat:** `POST /api/intelligence/chat` powers the in-app assistant,

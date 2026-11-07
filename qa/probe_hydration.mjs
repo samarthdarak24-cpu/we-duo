@@ -1,0 +1,20 @@
+import { newContext, BASE, waitForHydration, closeAll } from "./live/harness.mjs";
+const ctx = await newContext();
+const page = await ctx.newPage();
+page.on("console", m => { if (m.type() === "error" && /hydrat|Extra attributes/i.test(m.text())) console.log("CONSOLE:", m.text().slice(0, 240)); });
+await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });
+await waitForHydration(page, "#login-email");
+await page.locator("#login-email").fill("rohan@trustdrive.dev");
+await page.locator("#login-password").fill("demo1234");
+await page.locator('form button[type="submit"]').evaluate(el => el.click());
+await page.waitForURL(/\/buyer/, { timeout: 45000 }).catch(() => {});
+await page.waitForTimeout(1500);
+const info = await page.evaluate(() => {
+  const i = document.querySelector("header input");
+  return i ? { outer: i.outerHTML.slice(0, 400), style: i.getAttribute("style") } : null;
+});
+console.log("LIVE DOM:", JSON.stringify(info, null, 2));
+const html = await ctx.request.get(`${BASE}/buyer`).then(r => r.text()).catch(() => "");
+const m = html.match(/<input[^>]*role="search"[^>]*>|<input[^>]*type="search"[^>]*>/i);
+console.log("SSR INPUT:", m ? m[0].slice(0, 500) : "not found");
+await closeAll();

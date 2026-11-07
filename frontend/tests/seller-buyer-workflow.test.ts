@@ -55,7 +55,7 @@ describe("Complete Seller to Buyer Cross-Role Workflow", () => {
       condition: "Excellent",
     });
 
-    expect(draft.ok).toBe(true);
+    expect(draft.ok, JSON.stringify(draft)).toBe(true);
     if (!draft.ok) return;
     expect(draft.id).toBeDefined();
     expect(draft.listingId).toBeDefined();

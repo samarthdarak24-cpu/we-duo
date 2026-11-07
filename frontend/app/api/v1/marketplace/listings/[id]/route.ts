@@ -10,10 +10,15 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   // Accept either a listing id or a vehicle id.
   const byListing = params.id.startsWith("l-") ? params.id : null;
   const vehicleId = byListing ? null : params.id;
-  const { getListing } = await import("@/lib/server/db");
+  const { getListing, getVehicle, recordListingView } = await import("@/lib/server/db");
   const listing = byListing ? getListing(byListing) : null;
   const id = listing?.vehicle_id ?? vehicleId ?? params.id;
   const detail = getVehicleDetail(id, auth?.sub);
   if (!detail) return fail(404, "NOT_FOUND", "Listing not found");
+  // A seller opening their own page is not a buyer view, so it must not inflate
+  // the listing statistics shown in the Seller overview.
+  const row = listing ?? getListing(`l-${id}`);
+  const ownerId = getVehicle(id)?.owner_id;
+  if (row && row.status === "published" && auth?.sub !== ownerId) recordListingView(row.id);
   return ok(detail);
 }

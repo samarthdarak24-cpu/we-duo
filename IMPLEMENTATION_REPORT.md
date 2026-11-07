@@ -58,7 +58,7 @@ tokens** as the Next.js app (one account, one token, two runtimes):
 - **history** — list/add + **append-only corrections** that never overwrite a verified row.
 - **mileage** — list/add; a rollback is auto-flagged and creates a real finding.
 - **verification** — run the engine, persist runs/results/evidence, trust score, lookup, QR verify.
-- **ai_analysis** — persisted analysis + the 12-node investigator.
+- **ai_analysis** — persisted analysis + the 15/16-node conditional investigator.
 - **damage/inspections** — damage zones, inspections, accidents, photos.
 - **listings** — create/update, publish/pause/resume/sold transitions, stats, signed revocable share links.
 - **search** — brand, price, year, km, location, fuel, transmission, verified-only, sort, pagination.
@@ -85,7 +85,7 @@ append-only.
   recommended review action.
 - **ML**: Isolation Forest + Local Outlier Factor on (year, km, delta) with  
   scikit-learn; exact additive attribution instead of SHAP.
-- **12-node investigator**: VehicleResolver → RecordRetrieval →  
+- **15/16-node conditional investigator**: VehicleResolver → RecordRetrieval →  
   DocumentAnalysis → MileageAnalysis → DamageAnalysis → VerificationRules →  
   AnomalyDetection → EvidenceCorrelation → ConflictDetection → Explanation →  
   HumanReview → ResultPersistence. LangGraph + checkpointer when installed,  
@@ -135,7 +135,7 @@ security, testing, deployment docs, Dockerfiles, Compose, CI, `.env.example`.
 | Unit + component             | `npm test`                                      | **10 files, 69 tests passed**                                                                                                                                                                                                           |
 | Next.js production build     | `NEXT_DIST_DIR=.next_verify13 npm run build`    | **exit 0** · BUILD_ID `n2Zi3X7dEmceONjKyy8Vx` · 51 pages                                                                                                                                                            |
 | Python service               | `python -m pytest -q`                           | **88 passed**                                                                                                                                                          |
-| Real-DB smoke (intelligence) | service against a copy of `.data/trustdrive.db` | 51 tables · 13 vehicles · 80 documents · fraud finding · trust 86 · 12-node agent `awaiting_review` · 18-step PDF extraction (reg + 72,450 km, confidence 0.83) · review queue → resolved · job `queued → succeeded` · trust persisted |
+| Real-DB smoke (intelligence) | service against a copy of `.data/trustdrive.db` | 51 tables · 13 vehicles · 80 documents · fraud finding · trust 86 · 15/16-node conditional agent `awaiting_review` · 18-step PDF extraction (reg + 72,450 km, confidence 0.83) · review queue → resolved · job `queued → succeeded` · trust persisted |
 | Real-DB smoke (backend)      | `/api/backend/*` against a copy of the real DB  | real scrypt logins for seller/buyer/admin · 7 seller vehicles · 12 marketplace listings · save · inquiry + reply · **real PDF report** · share → public verify `valid` · audit admin 200 / seller 403 · **137 OpenAPI paths**          |
 
 **Failed tests:** none.

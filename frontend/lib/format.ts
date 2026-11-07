@@ -19,6 +19,19 @@ export function formatKm(km: number): string {
   return new Intl.NumberFormat("en-IN").format(km) + " km";
 }
 
+const MONTHS_UTC = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/**
+ * Calendar date from UTC parts so server markup equals client markup.
+ * `toLocaleDateString()` reads the runtime locale and zone, which differs
+ * between the render and hydration pass and breaks React hydration.
+ */
+export function formatDateUTC(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return `${d.getUTCDate()} ${MONTHS_UTC[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+}
+
 /** Relative time label (e.g. "2h ago", "4h ago"). */
 export function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();

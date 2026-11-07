@@ -62,7 +62,31 @@ def _resolve_secret() -> str:
     return secrets.token_hex(32)
 
 
-SECRET = _resolve_secret()
+# SEC-001: the signing secret must reflect the environment that `config._load_dotenv()`
+# applies at startup. Resolving it at import time froze the fallback file secret
+# (`.data/jwt-secret`) *before* `.env.local`'s JWT_SECRET was loaded, so the backend
+# rejected every token the Next.js frontend minted (and vice versa). Resolve lazily
+# instead: the first signature/verification happens well after startup, by which
+# point `JWT_SECRET` is in os.environ and the two runtimes share one secret.
+_SECRET_CACHE: str | None = None
+
+
+def _secret() -> str:
+    global _SECRET_CACHE
+    if _SECRET_CACHE is None:
+        _SECRET_CACHE = _resolve_secret()
+    return _SECRET_CACHE
+
+
+def signing_secret() -> str:
+    """Public accessor for code that needs the shared signing secret.
+
+    Resolved lazily so `.env`/`.env.local` are loaded before the first use.
+    Do not capture the return value at import time.
+    """
+    return _secret()
+
+
 ROLES = ("buyer", "seller", "admin")
 TOKEN_TTL = 7 * 24 * 60 * 60
 
@@ -93,7 +117,7 @@ def _unb64(text: str) -> bytes:
 
 
 def _sign(data: str) -> str:
-    return _b64(hmac.new(SECRET.encode(), data.encode(), hashlib.sha256).digest())
+    return _b64(hmac.new(_secret().encode(), data.encode(), hashlib.sha256).digest())
 
 
 def sign_token(sub: str, role: str, name: str, sid: str | None = None,

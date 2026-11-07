@@ -71,6 +71,9 @@ import {
   getUserByEmail,
   getUserById,
   getUsersByRole,
+  getVehicleSpecs,
+  getBatteryRecords,
+  upsertVehicleSpecs,
   revokeQrTokens,
   trackListingEvent,
   updateDispute,
@@ -84,6 +87,11 @@ import {
   updateVehicle,
   type VehicleRow,
 } from "./db";
+import {
+  getLatestTrustScore,
+  getTrustScoreHistory,
+  recordTrustScore,
+} from "./db-intelligence";
 import {
   BAND_LABEL,
   DOC_WEIGHTS,
@@ -104,6 +112,121 @@ import { canonical, sha256, verifyChain, type ChainRecord } from "./chain";
 import { newJti, signQrToken } from "./qr";
 import { isValidReg, isValidVin, normalizeReg, normalizeVin } from "./validate";
 import { VEHICLE_COMPONENT_REGISTRY, mapZoneToComponentId } from "@/lib/vehicle-registry";
+import {
+  categoryForVehicle,
+  isAllowedDocument,
+  categoryLabel,
+  categoryMatrix,
+  componentIdsForCategory,
+  damageDetectorForCategory,
+  documentLabel,
+  documentsForCategory,
+  fieldsForCategory,
+  getCategory,
+  isElectric,
+  resolveCategoryId,
+  labelsForCategory,
+  mileageRulesForCategory,
+  modelAssetForCategory,
+  pucApplicable,
+  validateIdentity as validateCategoryIdentity,
+  trustWeightsForCategory,
+  agentNodesForCategory,
+  CATEGORY_SPEC_VERSION,
+  TRUST_VERSION,
+} from "@/lib/vehicle-categories";
+
+// ---------------------------------------------------------------------------
+// Multi-category helpers. `vehicles.vehicle_category_id` is authoritative; for
+// legacy rows the shared taxonomy resolves free-text `category` + `fuel`.
+// ---------------------------------------------------------------------------
+export function categoryIdForVehicle(vehicleId: string): string {
+  return categoryForVehicle(getVehicle(vehicleId) ?? {}).id;
+}
+
+export function primaryDocumentTypes(vehicleId: string) {
+  const cid = categoryIdForVehicle(vehicleId);
+  const docs = documentsForCategory(cid).map((d) => d.id);
+  return {
+    categoryId: cid,
+    rc: docs.includes("rc_2w") ? "rc_2w" : "rc",
+    insurance: docs.includes("insurance_2w") ? "insurance_2w" : "insurance",
+    service: docs.includes("service_2w") ? "service_2w" : "service",
+    pucRequired: pucApplicable(cid),
+  };
+}
+
+/** Normalised component definition shared by the 3D endpoint, the damage
+ *  endpoint and the hotspot mapper. Car profiles keep the measured GLB registry;
+ *  all other profiles expose their category registry with interactions OFF. */
+export interface CategoryComponentDef {
+  id: string;
+  label: string;
+  category: string;
+  available: boolean;
+  unavailableReason: string | null;
+  primaryNode: string | null;
+  associatedNodes: string[];
+  defaultHotspotAnchor: [number, number, number] | null;
+  explosionVector: [number, number, number] | null;
+  source: "measured-glb" | "category-registry";
+}
+
+function humanizeComponentId(id: string): string {
+  return id
+    .split("_")
+    .map((w) => (w.length <= 2 ? w.toUpperCase() : w[0].toUpperCase() + w.slice(1)))
+    .join(" ");
+}
+
+export function componentsForVehicle(vehicleId: string): {
+  categoryId: string;
+  assetStatus: string;
+  interactionsAvailable: boolean;
+  defs: CategoryComponentDef[];
+} {
+  const v = getVehicle(vehicleId);
+  const categoryId = categoryForVehicle(v ?? {}).id;
+  const asset = modelAssetForCategory(categoryId);
+  const hasGlb = asset.status === "available" && !!asset.url;
+  if (hasGlb) {
+    return {
+      categoryId,
+      assetStatus: asset.status,
+      interactionsAvailable: true,
+      defs: VEHICLE_COMPONENT_REGISTRY.map((c) => ({
+        id: c.id,
+        label: c.label,
+        category: c.category,
+        available: c.available,
+        unavailableReason: c.unavailableReason ?? null,
+        primaryNode: c.primaryNode ?? null,
+        associatedNodes: c.associatedNodes,
+        defaultHotspotAnchor: c.defaultHotspotAnchor,
+        explosionVector: c.explosionVector,
+        source: "measured-glb" as const,
+      })),
+    };
+  }
+  const reason = `No licensed 3D asset exists for ${categoryLabel(categoryId)}. A labelled category schematic is shown; 3D hotspot interactions are unavailable and no car GLB is substituted.`;
+  return {
+    categoryId,
+    assetStatus: asset.status,
+    interactionsAvailable: false,
+    defs: componentIdsForCategory(categoryId).map((id) => ({
+      id,
+      label: humanizeComponentId(id),
+      category: "category_registry",
+      available: false,
+      unavailableReason: reason,
+      primaryNode: null,
+      associatedNodes: [],
+      defaultHotspotAnchor: null,
+      explosionVector: null,
+      source: "category-registry" as const,
+    })),
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -132,6 +255,8 @@ export interface VehicleCardView {
   location: string;
   ownershipCount: number;
   condition: string;
+  categoryId?: string;
+  categoryLabel?: string;
   trustScore: number;
   coverage: number;
   band: TrustBand;
@@ -151,6 +276,8 @@ export interface MarketplaceFilters {
   kmMax?: number;
   fuel?: string;
   transmission?: string;
+  /** Taxonomy id (e.g. `electric_scooter`) or vehicle class (`two_wheeler`). */
+  category?: string;
   location?: string;
   ownershipMax?: number;
   condition?: string;
@@ -167,7 +294,7 @@ export interface MarketplaceFilters {
 // ---------------------------------------------------------------------------
 export function computeVehicleTrust(vehicleId: string): TrustResult {
   const docs = getDocuments(vehicleId);
-  const coverage = computeCompleteness(docs.map((d) => ({ type: d.type, status: d.status })));
+  const coverage = computeCompleteness(docs.map((d) => ({ type: d.type, status: d.status })), categoryIdForVehicle(vehicleId));
   const findings: FindingInput[] = getFindings(vehicleId).map((f) => ({
     code: f.code,
     severity: f.severity as Severity,
@@ -183,6 +310,68 @@ export function computeVehicleTrust(vehicleId: string): TrustResult {
     evidenceCoverage: coverage,
     coverage: coverageLabel(coverage),
   };
+}
+
+export interface TrustSnapshotResult {
+  id: string;
+  created: boolean;
+  computedAt: string;
+  trust: TrustResult;
+}
+
+const TRUST_METHOD = "deterministic-weighted-evidence-coverage";
+
+/**
+ * Persist an append-only trust snapshot, but only when the scored state changed.
+ *
+ * The score itself is always computed deterministically from stored evidence;
+ * this function never lets an LLM or a client supply a value. Identical
+ * re-computations are deduplicated so a read endpoint cannot bloat the history,
+ * while a document/finding change produces a new immutable row. `trust_scores`
+ * triggers reject UPDATE/DELETE, so verified history cannot be rewritten.
+ */
+export function ensureTrustScoreSnapshot(vehicleId: string, computedBy?: string | null): TrustSnapshotResult {
+  const trust = computeVehicleTrust(vehicleId);
+  const categoryId = categoryIdForVehicle(vehicleId);
+  const weights = trustWeightsForCategory(categoryId).weights;
+  const factors = JSON.stringify(trust.breakdown);
+  const unverified = JSON.stringify(
+    getDocuments(vehicleId)
+      .filter((d) => d.status !== "verified")
+      .map((d) => ({ type: d.type, status: d.status }))
+  );
+  const weightsJson = JSON.stringify(weights);
+  const latest = getLatestTrustScore(vehicleId);
+  if (
+    latest &&
+    latest.score === trust.trustScore &&
+    latest.band === trust.band &&
+    latest.version === TRUST_VERSION &&
+    latest.evidence_coverage === trust.evidenceCoverage &&
+    latest.weights_json === weightsJson &&
+    latest.factors_json === factors &&
+    latest.unverified_json === unverified
+  ) {
+    return { id: latest.id, created: false, computedAt: latest.computed_at, trust };
+  }
+  const computedAt = new Date().toISOString();
+  const id = recordTrustScore({
+    vehicle_id: vehicleId,
+    score: trust.trustScore,
+    band: trust.band,
+    version: TRUST_VERSION,
+    method: TRUST_METHOD,
+    weights_json: weightsJson,
+    factors_json: factors,
+    positive_json: "[]",
+    negative_json: factors,
+    unverified_json: unverified,
+    missing_policy: "missing_is_unverified_not_clean",
+    evidence_coverage: trust.evidenceCoverage,
+    computedAt,
+    computedBy: computedBy ?? null,
+  });
+  return { id, created: true, computedAt, trust };
 }
 
 function statusForFinding(sev: string, code: string): string {
@@ -223,41 +412,79 @@ export function getMeByEmail(email: string) {
   return u ? getMe(u.id) : null;
 }
 
+// ---------------------------------------------------------------------------
+// Honesty helpers: a check may only report `verified` when a real, authoritative
+// source produced the result. Demo/seed adapters and absent evidence stay
+// `unavailable` — missing data is unverified coverage, never a clean history.
+// ---------------------------------------------------------------------------
+const DEMO_SOURCE = /demo|mock|sample|fixture|not configured|unavailable/i;
+
+export function theftAssessment(theft: ReturnType<typeof getTheft>) {
+  if (!theft) {
+    return {
+      status: "unavailable",
+      note: "No theft registry is configured — this check could not be completed.",
+      source: "Not configured",
+    };
+  }
+  if (theft.status === "unavailable") {
+    return {
+      status: "unavailable",
+      note: "The theft source was unavailable — this check could not be completed.",
+      source: theft.source,
+    };
+  }
+  if (DEMO_SOURCE.test(theft.source ?? "")) {
+    return {
+      status: "unavailable",
+      note: `Only a demo theft source ("${theft.source}") returned data — this is not a real registry check.`,
+      source: theft.source,
+    };
+  }
+  if (theft.status === "no_record") {
+    return { status: "verified", note: "No theft record in the configured source.", source: theft.source };
+  }
+  return { status: "suspicious", note: "A theft record was returned — needs investigation.", source: theft.source };
+}
+
 export function getInsights(vehicleId: string) {
   const docs = getDocuments(vehicleId);
   const findings = getFindings(vehicleId);
-  const coverage = computeCompleteness(docs.map((d) => ({ type: d.type, status: d.status })));
+  const coverage = computeCompleteness(docs.map((d) => ({ type: d.type, status: d.status })), categoryIdForVehicle(vehicleId));
   const mileageFinding = findings.find((f) => f.code.startsWith("MILEAGE") || f.code === "ODOMETER_ROLLBACK");
   const accidentFinding = findings.find((f) => f.code === "ACCIDENT" || f.code.includes("DAMAGE"));
-  const theft = getTheft(vehicleId);
+  const theftCheck = theftAssessment(getTheft(vehicleId));
+  const readings = getMileage(vehicleId);
+  const independentMileage = readings.filter((m) => Number(m.verified) === 1 && Number(m.is_seller_claim) !== 1);
+  const majorDamage = getDamage(vehicleId).filter((d) => d.severity !== "Minor" || d.status === "verified");
   return [
     {
       label: "Theft record",
-      detail:
-        theft?.status === "no_record"
-          ? "No theft record found in supported sources"
-          : theft?.status === "unavailable"
-          ? "Theft source unavailable — this check could not be completed"
-          : "Theft record found in a supported source — needs investigation",
-      status: theft?.status === "no_record" ? "verified" : theft?.status === "unavailable" ? "unavailable" : "suspicious",
+      detail: theftCheck.note,
+      status: theftCheck.status,
     },
     {
       label: "Accident history",
-      detail: accidentFinding
-        ? "Damage records found in available sources — needs investigation"
-        : "No accident records found in available sources",
-      status: accidentFinding ? "suspicious" : "verified",
+      detail:
+        accidentFinding || majorDamage.length
+          ? "Damage or accident records found in available sources — needs investigation"
+          : "No independent accident source is configured — unverified coverage, not a proven clean history",
+      status: accidentFinding || majorDamage.length ? "suspicious" : "unavailable",
     },
     {
       label: "Odometer check",
-      detail: mileageFinding ? "Reading flagged for review" : "Reading consistent with service history",
-      status: mileageFinding ? "suspicious" : "verified",
+      detail: mileageFinding
+        ? "Reading flagged for review"
+        : independentMileage.length === 0
+          ? "Only seller-declared mileage exists — no independent reading to compare against"
+          : "Readings consistent with available service history",
+      status: mileageFinding ? "suspicious" : independentMileage.length === 0 ? "pending" : "verified",
     },
     {
       label: "Documents",
       detail:
         coverage >= 100
-          ? "RC, insurance and PUC verified"
+          ? "Required document weight is machine-checked"
           : `${100 - coverage}% of required document weight needs attention`,
       status: coverage >= 100 ? "verified" : "pending",
     },
@@ -386,7 +613,7 @@ export function getSellerStats(ownerId: string) {
   const listings = vehicles.map((v) => getListingByVehicle(v.id)).filter((l): l is NonNullable<typeof l> => !!l);
   const inquiries = getInquiriesBySeller(ownerId);
   const runs = vehicles.map((v) => getLatestRun(v.id)).filter((r): r is NonNullable<typeof r> => !!r);
-  const coverage = vehicles.map((v) => computeCompleteness(getDocuments(v.id).map((d) => ({ type: d.type, status: d.status }))));
+  const coverage = vehicles.map((v) => computeCompleteness(getDocuments(v.id).map((d) => ({ type: d.type, status: d.status })), categoryForVehicle(v).id));
   const gates = vehicles.map((v) => buildPublishGate(v.id));
   const days = 1000 * 60 * 60 * 24;
   return {
@@ -425,11 +652,13 @@ function vehicleMini(v: VehicleRow) {
 function buildSellerVehicle(v: VehicleRow) {
   const findings = getFindings(v.id);
   const docs = getDocuments(v.id);
-  const coverage = computeCompleteness(docs.map((d) => ({ type: d.type, status: d.status })));
+  const coverage = computeCompleteness(docs.map((d) => ({ type: d.type, status: d.status })), categoryForVehicle(v).id);
   const listing = getListingByVehicle(v.id);
   const pricing = getPricing(v.id);
   const mileage = getMileage(v.id);
   const theft = getTheft(v.id);
+
+  const theftCheck = theftAssessment(theft);
 
   const alerts = [
     ...findings.map((f) => ({
@@ -440,11 +669,8 @@ function buildSellerVehicle(v: VehicleRow) {
     })),
     {
       title: "Theft record",
-      detail:
-        theft?.status === "no_record"
-          ? "No theft record found in supported sources"
-          : "Theft source unavailable — this check could not be completed",
-      status: theft?.status === "no_record" ? "verified" : "unavailable",
+      detail: theftCheck.note,
+      status: theftCheck.status,
     },
   ];
 
@@ -518,11 +744,14 @@ function relativeTime(iso: string): string {
 
 export function hotspotsFor(vehicleId: string) {
   const damage = getDamage(vehicleId);
-  return VEHICLE_COMPONENT_REGISTRY.map((comp) => {
+  const { categoryId, interactionsAvailable, defs } = componentsForVehicle(vehicleId);
+  // The car GLB has a measured mesh->component alias table. Applying that table
+  // to a scooter would silently translate a scooter zone into a car component.
+  const aliases = interactionsAvailable;
+  return defs.map((comp) => {
     const records = damage.filter((d) => {
-      if (d.zone_id === comp.id) return true;
-      const canonical = mapZoneToComponentId(d.zone_id);
-      return canonical === comp.id;
+      if (d.component_id === comp.id || d.zone_id === comp.id) return true;
+      return aliases && mapZoneToComponentId(d.zone_id) === comp.id;
     });
 
     return {
@@ -530,7 +759,9 @@ export function hotspotsFor(vehicleId: string) {
       label: comp.label,
       componentId: comp.id,
       category: comp.category,
+      categoryId,
       available: comp.available,
+      interactionsAvailable,
       unavailableReason: comp.unavailableReason,
       position: comp.defaultHotspotAnchor,
       explosionVector: comp.explosionVector,
@@ -601,7 +832,13 @@ export function getVehicleReport(vehicleId: string, viewerId?: string) {
     listing,
     theft: getTheft(vehicleId),
     chain: getChainStatus(vehicleId),
-    coverage: computeCompleteness(docs.map((d) => ({ type: d.type, status: d.status }))),
+    coverage: computeCompleteness(docs.map((d) => ({ type: d.type, status: d.status })), categoryIdForVehicle(vehicleId)),
+    category: {
+      id: categoryForVehicle(getVehicle(vehicleId) ?? {}).id,
+      label: categoryLabel(categoryIdForVehicle(vehicleId)),
+      identifierLabel: labelsForCategory(categoryIdForVehicle(vehicleId)).primaryIdentifier,
+      odometerLabel: labelsForCategory(categoryIdForVehicle(vehicleId)).odometer,
+    },
     saved: !!(viewerId && listing && getSavedRow(viewerId, listing.id)),
   };
 }
@@ -706,6 +943,8 @@ export function getMarketplace(filters: MarketplaceFilters = {}, viewerId?: stri
         variant: v.variant,
         year: v.year,
         regNo: v.reg_no,
+        vin: v.vin,
+        trustdriveId: v.trustdrive_id,
         km: v.km_claimed,
         price: v.asking_price,
         fuel: v.fuel,
@@ -714,6 +953,12 @@ export function getMarketplace(filters: MarketplaceFilters = {}, viewerId?: stri
         ownershipCount: v.ownership_count,
         condition: v.condition,
         category: v.category,
+        categoryId: categoryForVehicle(v).id,
+        categoryLabel: categoryLabel(categoryForVehicle(v).id),
+        primaryIdentifierLabel: labelsForCategory(categoryForVehicle(v).id).primaryIdentifier,
+        odometerLabel: labelsForCategory(categoryForVehicle(v).id).odometer,
+        isElectric: isElectric(categoryForVehicle(v).id),
+        model3dStatus: modelAssetForCategory(categoryForVehicle(v).id).status,
         trustScore: trust.trustScore,
         coverage: trust.evidenceCoverage,
         band: trust.band,
@@ -731,10 +976,21 @@ export function getMarketplace(filters: MarketplaceFilters = {}, viewerId?: stri
   const q = filters.q?.trim().toLowerCase();
   if (q) {
     items = items.filter((i) =>
-      `${i.make} ${i.model} ${i.variant} ${i.location} ${i.fuel} ${i.transmission}`.toLowerCase().includes(q)
+      `${i.make} ${i.model} ${i.variant} ${i.regNo} ${i.vin} ${i.trustdriveId} ${i.location} ${i.fuel} ${i.transmission}`
+        .toLowerCase()
+        .includes(q)
     );
   }
   if (filters.make) items = items.filter((i) => i.make.toLowerCase() === filters.make!.toLowerCase());
+  if (filters.category) {
+    const wanted = filters.category.toLowerCase();
+    const classes: Record<string, string> = { two_wheeler: "two_wheeler", four_wheeler: "four_wheeler" };
+    items = items.filter((i) => {
+      if (i.categoryId.toLowerCase() === wanted) return true;
+      const cat = getCategory(i.categoryId);
+      return !!cat && (classes[wanted] === cat.class || cat.label.toLowerCase() === wanted);
+    });
+  }
   if (filters.priceMin != null) items = items.filter((i) => i.price >= filters.priceMin!);
   if (filters.priceMax != null) items = items.filter((i) => i.price <= filters.priceMax!);
   if (filters.yearMin != null) items = items.filter((i) => i.year >= filters.yearMin!);
@@ -856,7 +1112,7 @@ export function getCompareVehicles(ids: string[], userId = "u-buyer") {
         ownership: v.ownership_count,
         price: v.asking_price,
         trustScore: trust.trustScore,
-        coverage: computeCompleteness(docs.map((d) => ({ type: d.type, status: d.status }))),
+        coverage: computeCompleteness(docs.map((d) => ({ type: d.type, status: d.status })), categoryForVehicle(v).id),
         findings: getFindings(v.id).filter((f) => f.status !== "cleared").length,
         market: pricing?.estimate ?? v.asking_price,
         damage: getDamage(v.id).length,
@@ -914,6 +1170,8 @@ export function getSellerVehicles(ownerId = "u-seller") {
       trustScore: trust.trustScore,
       band: trust.band,
       coverage: trust.evidenceCoverage,
+      categoryId: categoryForVehicle(v).id,
+      categoryLabel: categoryLabel(categoryForVehicle(v).id),
       listingStatus: listing?.status ?? "draft",
       listingId: listing?.id ?? null,
       findings: getFindings(v.id).filter((f) => f.status !== "cleared").length,
@@ -1114,10 +1372,11 @@ function buildPublishGate(vehicleId: string) {
   const photos = listing ? getListingImages(listing.id).length : 0;
   const findings = getFindings(vehicleId);
   const docs = getDocuments(vehicleId);
+  const cat = primaryDocumentTypes(vehicleId);
   const gate = publishGate({
     photoCount: photos,
     criticalVinMismatch: findings.some((f) => f.status !== "cleared" && (f.code === "VIN_MISMATCH" || f.code === "DOCUMENT_MISMATCH") && (f.severity === "high" || f.severity === "critical")),
-    rcMissing: !docs.some((d) => d.type === "rc" && d.status === "verified"),
+    rcMissing: !docs.some((d) => (d.type === cat.rc || d.type === "rc") && d.status === "verified"),
     requiredFieldsMissing: !requiredFieldsComplete(v),
     askingPrice: v.asking_price,
     insuranceExpired: findings.some((f) => f.status !== "cleared" && f.code === "INSURANCE_EXPIRED"),
@@ -1131,16 +1390,57 @@ function buildPublishGate(vehicleId: string) {
 // ---------------------------------------------------------------------------
 // Documents / history / mileage / damage / verification
 // ---------------------------------------------------------------------------
+const DOC_META_KEYS = new Set([
+  "method",
+  "confidence",
+  "confidences",
+  "engine",
+  "is_ocr",
+  "flags",
+  "comparison",
+  "workflow",
+  "version",
+  "source",
+  "warning",
+  "expiry",
+  "duplicate_of",
+  "review_id",
+  "pages",
+]);
+
 export function getDocumentsView(vehicleId: string) {
   const docs = getDocuments(vehicleId);
-  return docs.map((d) => ({
-    ...d,
-    consent: !!d.consent,
-    extractedFields: safeJson<Record<string, unknown>>(d.extracted, {}),
-    shortHash: d.sha256.slice(0, 12),
-    duplicate: getDuplicateDocumentCount(d.sha256) > 1,
-    canReplace: d.status !== "verified",
-  }));
+  return docs.map((d) => {
+    const parsed = safeJson<Record<string, unknown>>(d.extracted, {});
+    const nestedFields =
+      parsed.fields && typeof parsed.fields === "object" && !Array.isArray(parsed.fields)
+        ? (parsed.fields as Record<string, unknown>)
+        : null;
+    // Legacy/seed rows store a flat field map; new rows nest `fields` beside the
+    // engine metadata so one extractor row can be written per real field.
+    const extractedFields =
+      nestedFields ??
+      Object.fromEntries(Object.entries(parsed).filter(([key]) => !DOC_META_KEYS.has(key)));
+    const flags = Array.isArray(parsed.flags) ? parsed.flags.map(String) : [];
+    return {
+      ...d,
+      consent: !!d.consent,
+      extractedFields,
+      ocr: {
+        ran: parsed.source === "python-intelligence",
+        engine: typeof parsed.engine === "string" ? parsed.engine : null,
+        method: typeof parsed.method === "string" ? parsed.method : null,
+        isOcr: parsed.is_ocr === true,
+        confidence: typeof parsed.confidence === "number" ? parsed.confidence : null,
+        flags,
+        reviewId: typeof parsed.review_id === "string" ? parsed.review_id : null,
+        workflow: Array.isArray(parsed.workflow) ? parsed.workflow : [],
+      },
+      shortHash: d.sha256.slice(0, 12),
+      duplicate: getDuplicateDocumentCount(d.sha256) > 1,
+      canReplace: d.status !== "verified",
+    };
+  });
 }
 
 export function getVerificationChecks(vehicleId: string) {
@@ -1149,23 +1449,88 @@ export function getVerificationChecks(vehicleId: string) {
   const has = (code: string) => findings.some((f) => f.code === code && f.status !== "cleared");
   const mileageBad = findings.some((f) => f.status !== "cleared" && (f.code.startsWith("MILEAGE") || f.code === "ODOMETER_ROLLBACK"));
   const chain = getChainStatus(vehicleId);
-  const theft = getTheft(vehicleId);
+  const theftCheck = theftAssessment(getTheft(vehicleId));
   const ds = (t: string) => docStatus(docs, t);
   const duplicate = docs.some((d) => getDuplicateDocumentCount(d.sha256) > 1);
   const run = getLatestRun(vehicleId);
+  const vehicle = getVehicle(vehicleId);
+  const parsedDocs = docs.map((d) => safeJson<Record<string, unknown>>(d.extracted, {}));
+  const docsJson = JSON.stringify(parsedDocs).toLowerCase();
+  const vinObserved = !!vehicle?.vin && docsJson.includes(vehicle.vin.toLowerCase());
+  const machineRead = parsedDocs.some((p) => p.source === "python-intelligence");
+  const independentMileage = getMileage(vehicleId).filter(
+    (m) => Number(m.verified) === 1 && Number(m.is_seller_claim) !== 1
+  );
+  // Category-aware document checks: a two-wheeler has an RC/insurance issued
+  // for that class, and an electric vehicle has no PUC at all.
+  const cat = primaryDocumentTypes(vehicleId);
+  const idLabel = labelsForCategory(cat.categoryId).primaryIdentifier;
+  const batteryDocs = ["battery_health", "battery_warranty", "battery_inspection"];
 
   return [
-    { key: "registration_match", label: "Registration match", status: ds("rc") === "verified" ? "verified" : "pending", note: "RC vs vehicle record", source: "RTO" },
-    { key: "vin_match", label: "VIN / chassis match", status: has("DOCUMENT_MISMATCH") || has("VIN_MISMATCH") ? "needs_correction" : "verified", note: has("DOCUMENT_MISMATCH") || has("VIN_MISMATCH") ? "VIN differs across documents" : "VIN matches", source: "Document OCR" },
-    { key: "rc", label: "RC verification", status: ds("rc"), note: "RTO source", source: "RTO" },
-    { key: "insurance", label: "Insurance validity", status: ds("insurance"), note: "Policy status", source: "Insurer" },
-    { key: "puc", label: "PUC validity", status: ds("puc"), note: "Emission certificate", source: "PUC portal" },
-    { key: "consistency", label: "Document consistency", status: has("DOCUMENT_MISMATCH") || has("MANIPULATION") ? "needs_correction" : "verified", note: "Cross-document fields", source: "Rules engine" },
-    { key: "duplicates", label: "Duplicate documents", status: duplicate ? "suspicious" : "verified", note: duplicate ? "A file hash appears on another vehicle" : "No duplicates found", source: "SHA-256" },
-    { key: "mileage", label: "Mileage consistency", status: mileageBad ? "suspicious" : "verified", note: mileageBad ? "Reading flagged" : "Consistent", source: "Rules engine" },
-    { key: "ownership", label: "Ownership consistency", status: ds("ownership"), note: "Ownership chain", source: "RTO" },
+    {
+      key: "registration_match",
+      label: "Registration match",
+      status: ds(cat.rc) === "verified" ? "verified" : ds(cat.rc) === "unavailable" ? "unavailable" : "pending",
+      note: ds(cat.rc) === "unavailable" ? `No ${documentLabel(cat.rc)} on file — nothing to compare` : "RC vs vehicle record",
+      source: documentLabel(cat.rc),
+    },
+    {
+      key: "vin_match",
+      label: `${idLabel} match`,
+      status:
+        has("DOCUMENT_MISMATCH") || has("VIN_MISMATCH")
+          ? "needs_correction"
+          : vinObserved
+            ? "verified"
+            : "unavailable",
+      note:
+        has("DOCUMENT_MISMATCH") || has("VIN_MISMATCH")
+          ? "VIN differs across documents"
+          : vinObserved
+            ? "VIN found in extracted document fields"
+            : "No extracted document field contains the VIN — not checked",
+      source: "Document extraction",
+    },
+    { key: "rc", label: `${documentLabel(cat.rc)} verification`, status: ds(cat.rc), note: ds(cat.rc) === "unavailable" ? "No RC uploaded" : "Automated field checks", source: "Document extraction" },
+    { key: "insurance", label: "Insurance validity", status: ds(cat.insurance), note: ds(cat.insurance) === "unavailable" ? "No insurance document" : "Policy fields extracted", source: "Insurer document" },
+    cat.pucRequired
+      ? { key: "puc", label: "PUC validity", status: ds("puc"), note: ds("puc") === "unavailable" ? "No PUC document" : "Emission certificate fields", source: "PUC document" }
+      : { key: "puc", label: "PUC validity", status: "not_applicable", note: "No combustion engine — a PUC certificate does not apply to this vehicle.", source: "Category rules" },
+    // Only electric profiles expose a battery check; the legacy car check list
+    // keeps its original length so existing verification evidence is unchanged.
+    ...(cat.categoryId.includes("electric")
+      ? [{ key: "battery_evidence", label: "Battery evidence", status: batteryDocs.some((t) => ds(t) === "verified") ? "verified" : "unavailable", note: batteryDocs.some((t) => ds(t) === "verified") ? "At least one battery document is verified; State of Health is never inferred from photographs or distance." : "No battery health, warranty or inspection report on file — battery condition is unverified.", source: "Battery documents" }]
+      : []),
+    {
+      key: "consistency",
+      label: "Document consistency",
+      status: has("DOCUMENT_MISMATCH") || has("MANIPULATION") ? "needs_correction" : machineRead ? "verified" : "unavailable",
+      note:
+        has("DOCUMENT_MISMATCH") || has("MANIPULATION")
+          ? "Cross-document fields conflict"
+          : machineRead
+            ? "Cross-document fields compared"
+            : "No machine-read document to compare yet",
+      source: "Rules engine",
+    },
+    {
+      key: "duplicates",
+      label: "Duplicate documents",
+      status: duplicate ? "suspicious" : docs.length === 0 ? "unavailable" : "verified",
+      note: duplicate ? "A file hash appears on another vehicle" : docs.length === 0 ? "No documents on file" : "No duplicate file hash found",
+      source: "SHA-256",
+    },
+    {
+      key: "mileage",
+      label: "Mileage consistency",
+      status: mileageBad ? "suspicious" : independentMileage.length === 0 ? "unavailable" : "verified",
+      note: mileageBad ? "Reading flagged" : independentMileage.length === 0 ? "Only seller-declared readings — no independent source" : "Consistent with independent readings",
+      source: "Rules engine",
+    },
+    { key: "ownership", label: "Ownership consistency", status: ds("ownership"), note: ds("ownership") === "unavailable" ? "No ownership document" : "Ownership chain", source: "Ownership document" },
     { key: "chain", label: "Record integrity (hash)", status: chain.intact ? "verified" : "suspicious", note: chain.intact ? `Hash chain intact (${chain.records} records)` : `Chain broken at record ${chain.brokenAt}`, source: "Hash chain" },
-    { key: "theft", label: "Theft check", status: theft?.status === "no_record" ? "verified" : theft?.status === "unavailable" ? "unavailable" : "suspicious", note: theft?.status === "no_record" ? "No record in supported sources" : "Source unavailable", source: theft?.source ?? "Registry" },
+    { key: "theft", label: "Theft check", status: theftCheck.status, note: theftCheck.note, source: theftCheck.source },
     { key: "run", label: "Latest verification run", status: run?.status === "done" ? "verified" : "pending", note: run ? `Run ${run.id}` : "Not run yet", source: "Pipeline" },
   ] as { key: string; label: string; status: string; note: string; source: string }[];
 }
@@ -1197,9 +1562,16 @@ export function getMileageView(vehicleId: string) {
 }
 
 export function getDamageView(vehicleId: string) {
+  const hotspots = hotspotsFor(vehicleId);
   return getDamage(vehicleId).map((d) => ({
     ...d,
-    zone: hotspotsFor(vehicleId).find((h) => h.id === d.zone_id || h.id === mapZoneToComponentId(d.zone_id))?.label ?? d.zone_id,
+    // Only the vehicle's own category registry may resolve a zone label.
+    // The car mesh alias table is never applied to a two-wheeler record.
+    zone:
+      hotspots.find((h) => h.id === d.component_id)?.label ??
+      hotspots.find((h) => h.id === d.zone_id)?.label ??
+      d.zone_id,
+    componentValidForCategory: !!d.component_id && hotspots.some((h) => h.id === d.component_id),
   }));
 }
 
@@ -1587,14 +1959,38 @@ export interface VehicleInput {
   price?: number | string;
   description?: string;
   condition?: string;
+  /** New taxonomy id, e.g. `petrol_scooter`. When present, category-specific
+   *  identifier rules replace the car VIN rule. Omitted for legacy callers. */
+  categoryId?: string;
+  /** Category-specific fields (motor number, battery capacity, tyre condition…).
+   *  Stored as seller declarations until a document corroborates them. */
+  specs?: Record<string, unknown>;
 }
 
 export function createVehicleDraft(ownerId: string, input: VehicleInput) {
   const reg = normalizeReg(String(input.regNo ?? ""));
   const vin = normalizeVin(String(input.vin ?? ""));
   if (!input.make || !input.model || !reg) return { ok: false as const, code: "VALIDATION_FAILED", message: "Make, model and registration are required." };
-  if (!isValidReg(reg)) return { ok: false as const, code: "VALIDATION_FAILED", message: "Registration must look like MH01AB1234." };
-  if (vin && !isValidVin(vin)) return { ok: false as const, code: "VALIDATION_FAILED", message: "VIN must be 17 characters and must not contain I, O or Q." };
+  const categoryId = input.categoryId
+    ? resolveCategoryId(input.categoryId)
+    : categoryForVehicle({ category: input.category, fuel: input.fuel }).id;
+  if (input.categoryId) {
+    // Category-aware path: a scooter frame number is NOT a 17-character VIN,
+    // and an electric vehicle is never asked for an engine number.
+    const check = validateCategoryIdentity(categoryId, {
+      // `vin` is the shared primary-identifier column. For two-wheelers it holds
+      // a chassis / frame number, NOT a 17-character car VIN.
+      regNo: reg,
+      primaryIdentifier: vin ?? "",
+      engineNumber: String(input.specs?.engine_number ?? ""),
+      motorNumber: String(input.specs?.motor_number ?? ""),
+    });
+    if (!check.ok) return { ok: false as const, code: "VALIDATION_FAILED", message: check.errors.join(" ") };
+  } else {
+    // Legacy car path — unchanged so existing sellers and QA22 stay valid.
+    if (!isValidReg(reg)) return { ok: false as const, code: "VALIDATION_FAILED", message: "Registration must look like MH01AB1234." };
+    if (vin && !isValidVin(vin)) return { ok: false as const, code: "VALIDATION_FAILED", message: "VIN must be 17 characters and must not contain I, O or Q." };
+  }
   const existingReg = getVehicleByReg(reg);
   if (existingReg) return { ok: false as const, code: "DUPLICATE_REG", message: `Registration ${reg} is already registered${existingReg.owner_id === ownerId ? " to your account" : ""}.`, existingId: existingReg.id };
   const existingVin = vin ? getVehicleByVin(vin) : undefined;
@@ -1603,6 +1999,8 @@ export function createVehicleDraft(ownerId: string, input: VehicleInput) {
   const id = `v-${Date.now()}`;
   const year = Number(input.year) || new Date().getFullYear();
   const trustdriveId = `TD-${id.slice(-6).toUpperCase()}${Math.floor(Math.random() * 90 + 10)}`;
+  const cat = getCategory(categoryId);
+  const electric = isElectric(categoryId);
   const row: VehicleRow = {
     id,
     owner_id: ownerId,
@@ -1611,10 +2009,13 @@ export function createVehicleDraft(ownerId: string, input: VehicleInput) {
     variant: input.variant?.trim() ?? "",
     year,
     reg_no: reg,
-    vin: vin ?? "",
-    fuel: input.fuel || "Petrol",
-    transmission: input.transmission || "Manual",
-    category: input.category || "Sedan",
+    // An unknown identifier stays unknown (NULL). Writing "" here collided with
+    // every other VIN-less draft on the UNIQUE column, turning a legitimate
+    // second draft into HTTP 500.
+    vin: vin ?? null,
+    fuel: input.fuel || (electric ? "Electric" : "Petrol"),
+    transmission: input.transmission || (cat?.class === "two_wheeler" && electric ? "Direct drive" : "Manual"),
+    category: input.category || cat?.label || "Sedan",
     color: input.color || "",
     ownership_count: Number(input.ownershipCount) || 1,
     location: input.location || "",
@@ -1630,8 +2031,12 @@ export function createVehicleDraft(ownerId: string, input: VehicleInput) {
     condition: input.condition || "Good",
     created_at: now,
     updated_at: now,
+    vehicle_category_id: categoryId,
   };
   createVehicle(row);
+  if (input.specs && Object.keys(input.specs).length) {
+    upsertVehicleSpecs(id, categoryId, input.specs, CATEGORY_SPEC_VERSION);
+  }
   const listingId = `l-${id}`;
   createListing({
     id: listingId,
@@ -1664,26 +2069,47 @@ export function createVehicleDraft(ownerId: string, input: VehicleInput) {
   return { ok: true as const, id, listingId };
 }
 
-export function updateVehicleForOwner(ownerId: string, vehicleId: string, fields: Partial<VehicleRow>) {
+export function updateVehicleForOwner(
+  ownerId: string,
+  vehicleId: string,
+  fields: Partial<VehicleRow> & { specs?: Record<string, unknown>; categoryId?: string },
+) {
   const v = getVehicle(vehicleId);
   if (!v) return { ok: false as const, code: "NOT_FOUND", message: "Vehicle not found." };
   if (v.owner_id !== ownerId) return { ok: false as const, code: "FORBIDDEN", message: "You do not own this vehicle." };
-  if (fields.reg_no) {
-    const reg = normalizeReg(fields.reg_no);
-    if (!isValidReg(reg)) return { ok: false as const, code: "VALIDATION_FAILED", message: "Invalid registration number." };
-    const existing = getVehicleByReg(reg);
-    if (existing && existing.id !== vehicleId) return { ok: false as const, code: "DUPLICATE_REG", message: "Registration already exists.", existingId: existing.id };
-    fields.reg_no = reg;
+
+  const { specs, categoryId, ...row } = fields;
+  const effectiveCategoryId = categoryId || v.vehicle_category_id || categoryForVehicle(v).id;
+
+  // Category-aware identity check. A two-wheeler frame number is NOT a 17-char
+  // car VIN, and an electric vehicle has no engine number — the car-only
+  // isValidVin rule must never run for those categories.
+  // Only identity-bearing edits are validated here: an incomplete draft that
+  // has no identifier yet must still accept a colour/location/price edit,
+  // because publishing — not PATCH — is where required fields are enforced.
+  const touchesIdentity =
+    row.reg_no !== undefined ||
+    row.vin !== undefined ||
+    categoryId !== undefined ||
+    specs?.engine_number !== undefined ||
+    specs?.motor_number !== undefined;
+  const check = touchesIdentity
+    ? validateCategoryIdentity(effectiveCategoryId, {
+        regNo: row.reg_no ?? v.reg_no,
+        primaryIdentifier: row.vin ?? v.vin ?? "",
+        engineNumber: specs?.engine_number ? String(specs.engine_number) : "",
+        motorNumber: specs?.motor_number ? String(specs.motor_number) : "",
+      })
+    : { ok: true as const, errors: [] as string[], normalized: { reg: normalizeReg(v.reg_no), identifier: normalizeVin(v.vin ?? "") ?? "" } };
+  if (!check.ok) return { ok: false as const, code: "VALIDATION_FAILED", message: check.errors.join(" ") };
+  if (row.reg_no) row.reg_no = check.normalized.reg;
+  if (row.vin) row.vin = check.normalized.identifier;
+
+  updateVehicle(vehicleId, row);
+  if (specs && Object.keys(specs).length) {
+    upsertVehicleSpecs(vehicleId, effectiveCategoryId, specs, CATEGORY_SPEC_VERSION);
   }
-  if (fields.vin) {
-    const vin = normalizeVin(fields.vin);
-    if (!vin || !isValidVin(vin)) return { ok: false as const, code: "VALIDATION_FAILED", message: "Invalid VIN." };
-    const existing = getVehicleByVin(vin);
-    if (existing && existing.id !== vehicleId) return { ok: false as const, code: "DUPLICATE_VIN", message: "VIN already exists.", existingId: existing.id };
-    fields.vin = vin;
-  }
-  updateVehicle(vehicleId, fields);
-  appendChainRecord(vehicleId, "vehicle_update", vehicleId, { fields: Object.keys(fields), at: new Date().toISOString() });
+  appendChainRecord(vehicleId, "vehicle_update", vehicleId, { fields: Object.keys(row), specs: !!specs, at: new Date().toISOString() });
   return { ok: true as const, id: vehicleId };
 }
 
@@ -1705,8 +2131,13 @@ export function addDocumentForVehicle(
   const v = getVehicle(vehicleId);
   if (!v) return { ok: false as const, code: "NOT_FOUND", message: "Vehicle not found." };
   if (v.owner_id !== actorId) return { ok: false as const, code: "FORBIDDEN", message: "You do not own this vehicle." };
-  const allowed = ["rc", "insurance", "puc", "service", "repair", "inspection", "accident_claim", "ownership"];
-  if (!allowed.includes(input.type)) return { ok: false as const, code: "VALIDATION_FAILED", message: "Unknown document type." };
+  // Category-aware document allowlist: a two-wheeler may upload rc_2w / insurance_2w /
+  // service_2w / engine_chassis, an EV may upload battery_* docs, and every category
+  // still permits the shared default document set. This replaces the old car-only list.
+  const catId = v.vehicle_category_id || categoryForVehicle(v).id;
+  if (!isAllowedDocument(catId, input.type)) {
+    return { ok: false as const, code: "VALIDATION_FAILED", message: "Document type is not valid for this vehicle category." };
+  }
   const now = new Date().toISOString();
   const id = `doc-${Date.now()}`;
   const content = input.content || `${vehicleId}:${input.type}:${now}`;
@@ -1807,14 +2238,21 @@ export function setDocumentConsent(actorId: string, documentId: string, consent:
   return { ok: true as const };
 }
 
-export function reverifyDocument(actorId: string, documentId: string) {
+export function reverifyDocument(
+  actorId: string,
+  documentId: string,
+  options: { runChecks?: boolean } = {}
+) {
   const d = getDocument(documentId);
   if (!d) return { ok: false as const, code: "NOT_FOUND", message: "Document not found." };
   const v = getVehicle(d.vehicle_id);
   if (!v || v.owner_id !== actorId) return { ok: false as const, code: "FORBIDDEN", message: "You do not own this vehicle." };
   updateDocument(documentId, { status: "pending", status_reason: null });
+  if (options.runChecks === false) {
+    return { ok: true as const, runId: null, vehicleId: d.vehicle_id };
+  }
   const run = startVerificationRun(actorId, d.vehicle_id);
-  return { ok: true as const, runId: run.runId };
+  return { ok: true as const, runId: run.runId, vehicleId: d.vehicle_id };
 }
 
 // ---------------------------------------------------------------------------
@@ -1869,22 +2307,35 @@ export function requestHistoryCorrection(actorId: string, eventId: string, input
   return { ok: true as const, id };
 }
 
-export function addMileageForVehicle(actorId: string, vehicleId: string, input: { date: string; km: number; source?: string; documentId?: string }) {
+export function addMileageForVehicle(actorId: string, vehicleId: string, input: { date?: string; km?: number; source?: string; documentId?: string }) {
   const v = getVehicle(vehicleId);
   if (!v || v.owner_id !== actorId) return { ok: false as const, code: "FORBIDDEN", message: "You do not own this vehicle." };
   const km = Number(input.km);
-  if (!input.date || !Number.isFinite(km) || km < 0) return { ok: false as const, code: "VALIDATION_FAILED", message: "A valid date and non-negative km are required." };
-  const previous = getMileage(vehicleId).slice(-1)[0];
-  const flagged = !!previous && km < previous.km;
+  const when = input.date ? new Date(input.date) : null;
+  if (!input.date || !when || Number.isNaN(when.getTime()) || !Number.isFinite(km) || km < 0) {
+    return { ok: false as const, code: "VALIDATION_FAILED", message: "A valid date and non-negative km are required." };
+  }
+  const readings = getMileage(vehicleId); // ORDER BY date ASC
+  const whenIso = when.toISOString();
+  // Compare with the readings that sit on either SIDE of this date. Using only
+  // the newest row would flag a correct back-fill (an older invoice showing
+  // lower mileage) as an odometer rollback.
+  const earlier = readings.filter((r) => r.date <= whenIso).slice(-1)[0];
+  const later = readings.find((r) => r.date > whenIso);
+  const rollbackBefore = !!earlier && km < earlier.km;
+  const rollbackAfter = !!later && km > later.km;
+  const flagged = rollbackBefore || rollbackAfter;
+  const against = rollbackBefore ? earlier! : later!;
+  const direction = rollbackBefore ? "lower" : "higher";
   const now = new Date().toISOString();
   const id = `m-${Date.now()}`;
   createMileage({
     id,
     vehicle_id: vehicleId,
-    year: input.date.slice(0, 4),
+    year: whenIso.slice(0, 4),
     km,
     source: input.source || "seller_submitted",
-    date: new Date(input.date).toISOString(),
+    date: whenIso,
     flagged: flagged ? 1 : 0,
     verified: 0,
     is_seller_claim: 1,
@@ -1898,16 +2349,23 @@ export function addMileageForVehicle(actorId: string, vehicleId: string, input: 
       code: "ODOMETER_ROLLBACK",
       severity: "critical",
       title: "Odometer rollback detected",
-      explanation: `The submitted reading of ${km.toLocaleString("en-IN")} km is lower than the previous reading of ${previous!.km.toLocaleString("en-IN")} km.`,
+      explanation: `The submitted reading of ${km.toLocaleString("en-IN")} km is ${direction} than the ${
+        rollbackBefore ? "earlier" : "later"
+      } reading of ${against.km.toLocaleString("en-IN")} km, so the odometer timeline is inconsistent.`,
       recommendation: "Provide a service invoice or cluster-replacement receipt that explains the change.",
-      evidence: JSON.stringify({ fromKm: previous!.km, toKm: km, date: input.date }),
+      evidence: JSON.stringify({
+        fromKm: rollbackBefore ? against.km : km,
+        toKm: rollbackBefore ? km : against.km,
+        date: whenIso,
+        comparedReadingDate: against.date,
+      }),
       responsible_doc: null,
       points: 40,
       status: "open",
       created_at: now,
     });
   }
-  appendChainRecord(vehicleId, "mileage", id, { km, date: input.date, source: input.source ?? "seller_submitted" });
+  appendChainRecord(vehicleId, "mileage", id, { km, date: whenIso, source: input.source ?? "seller_submitted" });
   return { ok: true as const, id, flagged };
 }
 
@@ -1915,12 +2373,38 @@ export function addDamageForVehicle(actorId: string, vehicleId: string, input: {
   const v = getVehicle(vehicleId);
   if (!v || v.owner_id !== actorId) return { ok: false as const, code: "FORBIDDEN", message: "You do not own this vehicle." };
   if (!input.zoneId || !input.description) return { ok: false as const, code: "VALIDATION_FAILED", message: "Zone and description are required." };
+
+  // A damage record must point at a real component in THIS vehicle's category
+  // registry. A car door id must never be attached to a scooter, and a scooter
+  // panel id must never be silently translated through the car mesh alias table.
+  const { categoryId, interactionsAvailable, defs } = componentsForVehicle(vehicleId);
+  const known = new Set(defs.map((d) => d.id));
+  const requested = String(input.zoneId).trim();
+  const norm = requested.toLowerCase().replace(/[-\s]/g, "_");
+  let componentId = known.has(requested) ? requested : known.has(norm) ? norm : "";
+  if (!componentId && interactionsAvailable) {
+    const aliased = mapZoneToComponentId(requested);
+    if (known.has(aliased)) componentId = aliased;
+  }
+  if (!componentId) {
+    return {
+      ok: false as const,
+      code: "INVALID_COMPONENT",
+      message: `'${requested}' is not a component of ${categoryLabel(categoryId)}. Choose one of the category's registered components.`,
+      categoryId,
+      validComponents: defs.map((d) => d.id),
+    };
+  }
+
   const now = new Date().toISOString();
   const id = `d-${Date.now()}`;
   createDamage({
     id,
     vehicle_id: vehicleId,
-    zone_id: input.zoneId,
+    zone_id: componentId,
+    component_id: componentId,
+    damage_type: "visible_damage",
+    position_source: interactionsAvailable ? "component_registry_anchor" : "seller_submitted",
     description: input.description,
     severity: input.severity || "Minor",
     repair_status: input.repairStatus || "Not repaired",
@@ -1933,8 +2417,8 @@ export function addDamageForVehicle(actorId: string, vehicleId: string, input: {
     created_by: actorId,
     created_at: now,
   });
-  appendChainRecord(vehicleId, "damage", id, { zone: input.zoneId, severity: input.severity });
-  return { ok: true as const, id };
+  appendChainRecord(vehicleId, "damage", id, { zone: componentId, severity: input.severity, categoryId, provenance: "seller_reported" });
+  return { ok: true as const, id, componentId, categoryId };
 }
 
 export function requestDamageCorrection(actorId: string, damageId: string, input: { description: string; repairStatus?: string }) {
@@ -1964,7 +2448,7 @@ export function startVerificationRun(actorId: string, vehicleId: string) {
   const runId = `run-${Date.now()}`;
   createRun({ id: runId, vehicle_id: vehicleId, status: "processing", started_at: now, finished_at: null, summary: "{}" });
   // Deterministic re-check of the mileage series (design §9.5).
-  const analysis = analyzeMileageSeries(getMileage(vehicleId));
+  const analysis = analyzeMileageSeries(getMileage(vehicleId), categoryForVehicle(v).id);
   let created = 0;
   for (const f of analysis) {
     if (getFindings(vehicleId).some((x) => x.code === f.code && x.status !== "cleared")) continue;
@@ -2011,10 +2495,16 @@ export function startVerificationRun(actorId: string, vehicleId: string) {
     read: 0,
     created_at: now,
   });
+  // Verification changed the evidence base: persist the resulting deterministic
+  // score as immutable history (deduplicates if nothing actually moved).
+  ensureTrustScoreSnapshot(vehicleId, actorId);
   return { ok: true as const, runId, summary, checks };
 }
 
-function analyzeMileageSeries(readings: ReturnType<typeof getMileage>) {
+function analyzeMileageSeries(readings: ReturnType<typeof getMileage>, categoryId = "passenger_car") {
+  const rules = mileageRulesForCategory(categoryId);
+  const electric = isElectric(categoryId);
+  const odometerLabel = labelsForCategory(categoryId).odometer;
   const sorted = [...readings].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   const out: { code: string; severity: Severity; title: string; explanation: string; points: number; evidence: Record<string, unknown> }[] = [];
   for (let i = 1; i < sorted.length; i++) {
@@ -2023,22 +2513,23 @@ function analyzeMileageSeries(readings: ReturnType<typeof getMileage>) {
     const days = Math.max(1, (new Date(curr.date).getTime() - new Date(prev.date).getTime()) / 86400000);
     const delta = curr.km - prev.km;
     if (delta < 0) {
+      const severe = Math.abs(delta) > rules.rollbackToleranceKm;
       out.push({
         code: "ODOMETER_ROLLBACK",
-        severity: Math.abs(delta) > 5000 ? "critical" : "high",
-        title: "Odometer rollback detected",
-        explanation: `Reading fell from ${prev.km.toLocaleString("en-IN")} km to ${curr.km.toLocaleString("en-IN")} km.`,
-        points: Math.abs(delta) > 5000 ? 40 : 30,
-        evidence: { fromKm: prev.km, toKm: curr.km, fromDate: prev.date, toDate: curr.date },
+        severity: severe ? "critical" : "high",
+        title: `${odometerLabel} rollback detected`,
+        explanation: `Reading fell from ${prev.km.toLocaleString("en-IN")} km to ${curr.km.toLocaleString("en-IN")} km. This can indicate a rollback, an ${odometerLabel.toLowerCase()} replacement or a data-entry error; it is a warning, not proof of fraud.${electric ? " Battery State of Health is never used as a distance reading." : ""}`,
+        points: severe ? 40 : 30,
+        evidence: { fromKm: prev.km, toKm: curr.km, fromDate: prev.date, toDate: curr.date, categoryId, rulesVersion: TRUST_VERSION },
       });
-    } else if (delta / days > 400) {
+    } else if (delta / days > rules.dailyMaxKm) {
       out.push({
         code: "MILEAGE_JUMP",
         severity: "medium",
-        title: "Mileage inconsistency detected",
-        explanation: `+${delta.toLocaleString("en-IN")} km in ${Math.round(days)} days exceeds the expected rate.`,
+        title: `${odometerLabel} inconsistency detected`,
+        explanation: `+${delta.toLocaleString("en-IN")} km in ${Math.round(days)} days exceeds the ${rules.dailyMaxKm} km/day ceiling for ${categoryLabel(categoryId)}.`,
         points: 12,
-        evidence: { deltaKm: delta, days: Math.round(days) },
+        evidence: { deltaKm: delta, days: Math.round(days), categoryId, dailyMaxKm: rules.dailyMaxKm },
       });
     }
   }

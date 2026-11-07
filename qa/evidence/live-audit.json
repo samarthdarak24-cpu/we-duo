@@ -1,0 +1,614 @@
+seller vehicle: v-bmw seller listing:  
+
+buyer public vehicle: v-1793959415934 
+
+[
+ {
+  "label": "public:health",
+  "path": "/api/v1/health/ready",
+  "method": "GET",
+  "status": 200,
+  "shape": "-",
+  "note": "EMPTY/NULL"
+ },
+ {
+  "label": "public:marketplace",
+  "path": "/api/v1/marketplace/listings",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{items,total,page,pageSize,hasMore}",
+  "note": ""
+ },
+ {
+  "label": "public:search",
+  "path": "/api/v1/marketplace/search?q=petrol",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{items,total,page,pageSize,hasMore,suggestions}",
+  "note": ""
+ },
+ {
+  "label": "SELLER me",
+  "path": "/api/v1/me",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{id,name,role,email,initials,phone}",
+  "note": ""
+ },
+ {
+  "label": "SELLER users/me",
+  "path": "/api/v1/users/me",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{user}",
+  "note": ""
+ },
+ {
+  "label": "SELLER seller:overview",
+  "path": "/api/v1/seller/overview",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{vehicle,stats,recentVehicles,vehicles,alerts,completeness}",
+  "note": ""
+ },
+ {
+  "label": "SELLER seller:vehicles",
+  "path": "/api/v1/seller/vehicles",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{items,page}",
+  "note": ""
+ },
+ {
+  "label": "SELLER seller:listings",
+  "path": "/api/v1/seller/listings",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{items,page}",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:detail",
+  "path": "/api/v1/vehicles/v-bmw",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{vehicle,seller,trust,pricing,insights,documents}",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:documents",
+  "path": "/api/v1/vehicles/v-bmw/documents",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{items,page,nearDuplicates}",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:docs-completeness",
+  "path": "/api/v1/vehicles/v-bmw/documents/completeness",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{percent,items}",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:history",
+  "path": "/api/v1/vehicles/v-bmw/history",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{items,page}",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:mileage",
+  "path": "/api/v1/vehicles/v-bmw/mileage",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{readings,verifiedKm,claimedKm,crossModal}",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:verification",
+  "path": "/api/v1/vehicles/v-bmw/verification",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{run,results}",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:findings",
+  "path": "/api/v1/vehicles/v-bmw/findings",
+  "method": "GET",
+  "status": 200,
+  "shape": "array(3)",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:damage",
+  "path": "/api/v1/vehicles/v-bmw/damage",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{hotspots,records}",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:components",
+  "path": "/api/v1/vehicles/v-bmw/components",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{vehicleId,vin,components,availability}",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:3d-model",
+  "path": "/api/v1/vehicles/v-bmw/3d-model",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{vehicleId,vin,make,model,year,assetUrl}",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:trust",
+  "path": "/api/v1/vehicles/v-bmw/trust",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{trustScore,riskScore,band,breakdown,bandLabel,evidenceCoverage}",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:trust-score",
+  "path": "/api/v1/vehicles/v-bmw/trust-score",
+  "method": "GET",
+  "status": 404,
+  "shape": "-",
+  "note": "EMPTY/NULL"
+ },
+ {
+  "label": "SELLER vehicle:risk",
+  "path": "/api/v1/vehicles/v-bmw/risk",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{vehicle,trust,riskScore,band,bandLabel,findings}",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:pricing",
+  "path": "/api/v1/vehicles/v-bmw/pricing",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{low,estimate,high,confidence}",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:theft",
+  "path": "/api/v1/vehicles/v-bmw/theft",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{status,source,checkedAt,available,note,details}",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:claims",
+  "path": "/api/v1/vehicles/v-bmw/claims",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{items}",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:chain",
+  "path": "/api/v1/vehicles/v-bmw/chain",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{vehicleId,records,intact,latestHash,entries}",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:insights",
+  "path": "/api/v1/vehicles/v-bmw/insights",
+  "method": "GET",
+  "status": 200,
+  "shape": "array(4)",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:alerts",
+  "path": "/api/v1/vehicles/v-bmw/alerts",
+  "method": "GET",
+  "status": 200,
+  "shape": "array(4)",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:near-dup",
+  "path": "/api/v1/vehicles/v-bmw/near-duplicates",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{vehicleId,method,version,compared,candidates,note}",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:evidence-graph",
+  "path": "/api/v1/vehicles/v-bmw/evidence-graph",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{vehicleId,generatedAt,method,rulesetVersion,modelVersion,nodes}",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:provider-checks",
+  "path": "/api/v1/vehicles/v-bmw/provider-checks",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{items,configured,note}",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:ai/explain",
+  "path": "/api/v1/vehicles/v-bmw/ai/explain",
+  "method": "GET",
+  "status": 405,
+  "shape": "-",
+  "note": "EMPTY/NULL"
+ },
+ {
+  "label": "SELLER vehicle:ai-investigations",
+  "path": "/api/v1/vehicles/v-bmw/ai-investigations",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{items,engine,note}",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:report",
+  "path": "/api/v1/vehicles/v-bmw/report",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{vehicle,seller,trust,pricing,insights,documents}",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:verify",
+  "path": "/api/v1/vehicles/v-bmw/verify",
+  "method": "GET",
+  "status": 405,
+  "shape": "-",
+  "note": "EMPTY/NULL"
+ },
+ {
+  "label": "SELLER vehicle:photos",
+  "path": "/api/v1/vehicles/v-bmw/photos",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{listingId,cover,images}",
+  "note": ""
+ },
+ {
+  "label": "SELLER vehicle:save",
+  "path": "/api/v1/vehicles/v-bmw/save",
+  "method": "GET",
+  "status": 405,
+  "shape": "-",
+  "note": "EMPTY/NULL"
+ },
+ {
+  "label": "SELLER chain:byId",
+  "path": "/api/v1/chain/v-bmw",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{vehicleId,records,intact,latestHash,entries}",
+  "note": ""
+ },
+ {
+  "label": "SELLER listing:stats",
+  "path": "/api/v1/seller/listings//stats",
+  "method": "GET",
+  "status": 308,
+  "shape": "-",
+  "note": "EMPTY/NULL"
+ },
+ {
+  "label": "SELLER listing:share",
+  "path": "/api/v1/seller/listings//share",
+  "method": "GET",
+  "status": 308,
+  "shape": "-",
+  "note": "EMPTY/NULL"
+ },
+ {
+  "label": "SELLER inquiries",
+  "path": "/api/v1/inquiries",
+  "method": "GET",
+  "status": 200,
+  "shape": "array(29)",
+  "note": ""
+ },
+ {
+  "label": "SELLER notifications",
+  "path": "/api/v1/notifications",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{items,unread,mode,page}",
+  "note": ""
+ },
+ {
+  "label": "SELLER reports",
+  "path": "/api/v1/reports",
+  "method": "GET",
+  "status": 200,
+  "shape": "array(15)",
+  "note": ""
+ },
+ {
+  "label": "SELLER alerts:evaluate",
+  "path": "/api/v1/alerts/evaluate",
+  "method": "GET",
+  "status": 405,
+  "shape": "-",
+  "note": "EMPTY/NULL"
+ },
+ {
+  "label": "SELLER ai:health",
+  "path": "/api/v1/ai/health",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{mode,externalModel,grounded,capabilities,limits,disclaimer}",
+  "note": ""
+ },
+ {
+  "label": "SELLER ai:stack",
+  "path": "/api/v1/ai/stack",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{connected,database,ocr,intelligence,llm,agent}",
+  "note": ""
+ },
+ {
+  "label": "SELLER saved",
+  "path": "/api/v1/saved",
+  "method": "GET",
+  "status": 403,
+  "shape": "ERR:FORBIDDEN_ROLE",
+  "note": "You do not have access to this resource."
+ },
+ {
+  "label": "SELLER saved-searches",
+  "path": "/api/v1/saved-searches",
+  "method": "GET",
+  "status": 403,
+  "shape": "ERR:FORBIDDEN_ROLE",
+  "note": "You do not have access to this resource."
+ },
+ {
+  "label": "SELLER compare",
+  "path": "/api/v1/compare",
+  "method": "GET",
+  "status": 405,
+  "shape": "-",
+  "note": "EMPTY/NULL"
+ },
+ {
+  "label": "SELLER verification:lookup",
+  "path": "/api/v1/verification/lookup?vehicleId=v-bmw",
+  "method": "GET",
+  "status": 405,
+  "shape": "-",
+  "note": "EMPTY/NULL"
+ },
+ {
+  "label": "BUYER buyer:overview",
+  "path": "/api/v1/buyer/overview",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{activity,recommended,savedCount,reportVehicle,reportVehicleId,insights}",
+  "note": ""
+ },
+ {
+  "label": "BUYER buyer:recommended",
+  "path": "/api/v1/buyer/recommended",
+  "method": "GET",
+  "status": 200,
+  "shape": "array(4)",
+  "note": ""
+ },
+ {
+  "label": "BUYER marketplace:detail",
+  "path": "/api/v1/marketplace/listings/",
+  "method": "GET",
+  "status": 308,
+  "shape": "-",
+  "note": "EMPTY/NULL"
+ },
+ {
+  "label": "BUYER vehicle:detail",
+  "path": "/api/v1/vehicles/v-1793959415934",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{vehicle,seller,trust,pricing,insights,documents}",
+  "note": ""
+ },
+ {
+  "label": "BUYER vehicle:mileage",
+  "path": "/api/v1/vehicles/v-1793959415934/mileage",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{readings,verifiedKm,claimedKm,crossModal}",
+  "note": ""
+ },
+ {
+  "label": "BUYER vehicle:findings",
+  "path": "/api/v1/vehicles/v-1793959415934/findings",
+  "method": "GET",
+  "status": 200,
+  "shape": "array(1)",
+  "note": ""
+ },
+ {
+  "label": "BUYER vehicle:verification",
+  "path": "/api/v1/vehicles/v-1793959415934/verification",
+  "method": "GET",
+  "status": 404,
+  "shape": "ERR:NO_RUN",
+  "note": "No verification run exists for this vehicle."
+ },
+ {
+  "label": "BUYER vehicle:history",
+  "path": "/api/v1/vehicles/v-1793959415934/history",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{items,page}",
+  "note": ""
+ },
+ {
+  "label": "BUYER vehicle:damage",
+  "path": "/api/v1/vehicles/v-1793959415934/damage",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{hotspots,records}",
+  "note": ""
+ },
+ {
+  "label": "BUYER vehicle:3d-model",
+  "path": "/api/v1/vehicles/v-1793959415934/3d-model",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{vehicleId,vin,make,model,year,assetUrl}",
+  "note": ""
+ },
+ {
+  "label": "BUYER vehicle:trust",
+  "path": "/api/v1/vehicles/v-1793959415934/trust",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{trustScore,riskScore,band,breakdown,bandLabel,evidenceCoverage}",
+  "note": ""
+ },
+ {
+  "label": "BUYER vehicle:pricing",
+  "path": "/api/v1/vehicles/v-1793959415934/pricing",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{low,estimate,high,confidence,note}",
+  "note": ""
+ },
+ {
+  "label": "BUYER vehicle:theft",
+  "path": "/api/v1/vehicles/v-1793959415934/theft",
+  "method": "GET",
+  "status": 404,
+  "shape": "ERR:NOT_FOUND",
+  "note": "No theft check recorded"
+ },
+ {
+  "label": "BUYER vehicle:risk",
+  "path": "/api/v1/vehicles/v-1793959415934/risk",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{vehicle,trust,riskScore,band,bandLabel,findings}",
+  "note": ""
+ },
+ {
+  "label": "BUYER vehicle:chain",
+  "path": "/api/v1/vehicles/v-1793959415934/chain",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{vehicleId,records,intact,latestHash,entries}",
+  "note": ""
+ },
+ {
+  "label": "BUYER vehicle:evidence-graph",
+  "path": "/api/v1/vehicles/v-1793959415934/evidence-graph",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{vehicleId,generatedAt,method,rulesetVersion,modelVersion,nodes}",
+  "note": ""
+ },
+ {
+  "label": "BUYER vehicle:provider-checks",
+  "path": "/api/v1/vehicles/v-1793959415934/provider-checks",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{items,configured,note}",
+  "note": ""
+ },
+ {
+  "label": "BUYER vehicle:ai-investigations",
+  "path": "/api/v1/vehicles/v-1793959415934/ai-investigations",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{items,engine,note}",
+  "note": ""
+ },
+ {
+  "label": "BUYER vehicle:report",
+  "path": "/api/v1/vehicles/v-1793959415934/report",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{vehicle,seller,trust,pricing,insights,documents}",
+  "note": ""
+ },
+ {
+  "label": "BUYER saved",
+  "path": "/api/v1/saved",
+  "method": "GET",
+  "status": 200,
+  "shape": "array(0)",
+  "note": "EMPTY/NULL"
+ },
+ {
+  "label": "BUYER inquiries",
+  "path": "/api/v1/inquiries",
+  "method": "GET",
+  "status": 200,
+  "shape": "array(4)",
+  "note": ""
+ },
+ {
+  "label": "BUYER notifications",
+  "path": "/api/v1/notifications",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{items,unread,mode,page}",
+  "note": ""
+ },
+ {
+  "label": "BUYER reports:vehicle",
+  "path": "/api/v1/reports/vehicle/v-1793959415934",
+  "method": "GET",
+  "status": 405,
+  "shape": "-",
+  "note": "EMPTY/NULL"
+ },
+ {
+  "label": "ADMIN admin:queue",
+  "path": "/api/v1/admin/queue",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{disputes,listings,documents,counts}",
+  "note": ""
+ },
+ {
+  "label": "ADMIN admin:kyc",
+  "path": "/api/v1/admin/kyc",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{items,counts}",
+  "note": ""
+ },
+ {
+  "label": "ADMIN admin:audit",
+  "path": "/api/v1/admin/audit",
+  "method": "GET",
+  "status": 200,
+  "shape": "obj{items,page,facets}",
+  "note": ""
+ },
+ {
+  "label": "ADMIN admin:disputes",
+  "path": "/api/v1/admin/disputes",
+  "method": "GET",
+  "status": 404,
+  "shape": "-",
+  "note": "EMPTY/NULL"
+ }
+]

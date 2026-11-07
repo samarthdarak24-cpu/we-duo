@@ -1,0 +1,1121 @@
+[
+  {
+    "id": "F01",
+    "name": "Buyer dashboard overview",
+    "spec": "6.1 Overview — explored, saved, recent, pending reports, recommendations, active inquiries, quick verify",
+    "route": "/buyer",
+    "status": "PASS",
+    "fatal": null,
+    "notes": [
+      "PASS  personalised buyer heading rendered",
+      "PASS  live activity chips rendered",
+      "PASS  saved chip matches DB count (4)",
+      "PASS  recommendations section rendered",
+      "PASS  quick-verify CTA rendered",
+      "recommended save controls: 1",
+      "PASS  Explore vehicles CTA navigates to live marketplace UI"
+    ],
+    "screenshot": "qa/live-browser/qa-2026-11-06/buyer/features/F01-buyer-dashboard-overview.png",
+    "apiCalls": [],
+    "consoleErrors": [],
+    "dbBefore": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 52,
+      "ai_runs": 7,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbAfter": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 52,
+      "ai_runs": 7,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbDelta": {},
+    "finalUrl": "http://localhost:3000/buyer"
+  },
+  {
+    "id": "F02",
+    "name": "Explore marketplace + save/unsave",
+    "spec": "6.2 Explore — published listings, save/unsave, open details, verification status",
+    "route": "/buyer/explore",
+    "status": "PASS",
+    "fatal": null,
+    "notes": [
+      "PASS  13 published listing cards rendered from DB",
+      "PASS  unsaved vehicles expose a Save vehicle control",
+      "PASS  POST /api/v1/saved/:id returned 2xx from the UI click",
+      "PASS  card flips to Remove from saved in the UI",
+      "restored: toggled the same card back to unsaved"
+    ],
+    "screenshot": "qa/live-browser/qa-2026-11-06/buyer/features/F02-explore-marketplace-save-unsave.png",
+    "apiCalls": [
+      {
+        "method": "POST",
+        "status": 201,
+        "url": "/api/v1/saved/l-1793959435134"
+      },
+      {
+        "method": "DELETE",
+        "status": 200,
+        "url": "/api/v1/saved/l-1793959435134"
+      }
+    ],
+    "consoleErrors": [],
+    "dbBefore": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 52,
+      "ai_runs": 7,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbAfter": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 52,
+      "ai_runs": 7,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbDelta": {},
+    "finalUrl": "http://localhost:3000/buyer/explore"
+  },
+  {
+    "id": "F03",
+    "name": "Search and filters",
+    "spec": "6.3 Search — make/price/year/mileage/fuel/transmission/verification/accident/trust + sort via URL state",
+    "route": "/buyer/search",
+    "status": "PASS",
+    "fatal": null,
+    "notes": [
+      "PASS  shareable URL state applied (q=BMW&make=BMW&sort=highest_trust)",
+      "PASS  filtered results render BMW listings"
+    ],
+    "screenshot": "qa/live-browser/qa-2026-11-06/buyer/features/F03-search-and-filters.png",
+    "apiCalls": [],
+    "consoleErrors": [],
+    "dbBefore": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 52,
+      "ai_runs": 7,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbAfter": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 52,
+      "ai_runs": 7,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbDelta": {},
+    "finalUrl": "http://localhost:3000/buyer/search"
+  },
+  {
+    "id": "F04",
+    "name": "Saved searches",
+    "spec": "6.3 / 6.13 — persist named search with alerts, list and delete",
+    "route": "/buyer/search",
+    "status": "FAIL",
+    "fatal": null,
+    "notes": [
+      "PASS  POST /api/v1/saved-searches returned 2xx",
+      "FAIL  success confirmation rendered in UI",
+      "PASS  newly saved search appears in the saved-searches list",
+      "PASS  DELETE /api/v1/saved-searches returned 2xx (cleanup)"
+    ],
+    "screenshot": "qa/live-browser/qa-2026-11-06/buyer/features/F04-saved-searches.png",
+    "apiCalls": [
+      {
+        "method": "POST",
+        "status": 201,
+        "url": "/api/v1/saved-searches"
+      },
+      {
+        "method": "DELETE",
+        "status": 200,
+        "url": "/api/v1/saved-searches"
+      }
+    ],
+    "consoleErrors": [],
+    "dbBefore": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 52,
+      "ai_runs": 7,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbAfter": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 52,
+      "ai_runs": 7,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbDelta": {},
+    "finalUrl": "http://localhost:3000/buyer/search"
+  },
+  {
+    "id": "F05",
+    "name": "Full vehicle report + detail tabs",
+    "spec": "6.4 / 6.6 — identity, specs, seller, verification, history, documents, damage, AI, pricing",
+    "route": "/vehicle/v-bmw",
+    "status": "FAIL",
+    "fatal": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'History', exact: true }).first()\u001b[22m\n",
+    "notes": [
+      "PASS  vehicle identity from DB rendered"
+    ],
+    "screenshot": "qa/live-browser/qa-2026-11-06/buyer/features/F05-full-vehicle-report-detail-tabs.png",
+    "apiCalls": [
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/v1/vehicles/v-bmw/provider-checks"
+      },
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/v1/vehicles/v-bmw/provider-checks"
+      }
+    ],
+    "consoleErrors": [],
+    "dbBefore": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 52,
+      "ai_runs": 7,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbAfter": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 52,
+      "ai_runs": 7,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbDelta": {},
+    "finalUrl": "http://localhost:3000/vehicle/v-bmw"
+  },
+  {
+    "id": "F06",
+    "name": "Verify a vehicle (registration / TrustDrive ID)",
+    "spec": "6.5 Verify — permitted reg/VIN/TrustDrive ID/QR lookup with scoped result",
+    "route": "/buyer/verification",
+    "status": "FAIL",
+    "fatal": null,
+    "notes": [
+      "PASS  POST /api/v1/verification/lookup returned 200",
+      "PASS  registration lookup resolves the correct DB vehicle in the UI",
+      "FAIL  TrustDrive ID quick-example lookup also resolves"
+    ],
+    "screenshot": "qa/live-browser/qa-2026-11-06/buyer/features/F06-verify-a-vehicle-registration-trustdrive-id.png",
+    "apiCalls": [
+      {
+        "method": "POST",
+        "status": 200,
+        "url": "/api/v1/verification/lookup"
+      },
+      {
+        "method": "POST",
+        "status": 404,
+        "url": "/api/v1/verification/lookup"
+      }
+    ],
+    "consoleErrors": [
+      "console: Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "dbBefore": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 52,
+      "ai_runs": 7,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbAfter": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 52,
+      "ai_runs": 7,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbDelta": {},
+    "finalUrl": "http://localhost:3000/buyer/verification"
+  },
+  {
+    "id": "F07",
+    "name": "Trust score and evidence coverage",
+    "spec": "6.7 — score + version + coverage + verified sources + open findings + explanation",
+    "route": "/vehicle/v-bmw",
+    "status": "FAIL",
+    "fatal": null,
+    "notes": [
+      "FAIL  trust score from deterministic engine rendered",
+      "PASS  score band (Caution) rendered",
+      "PASS  evidence coverage KPI rendered",
+      "PASS  record-integrity KPI rendered",
+      "PASS  score disclaimer/limitation rendered",
+      "PASS  deterministic-engine explainer control present"
+    ],
+    "screenshot": "qa/live-browser/qa-2026-11-06/buyer/features/F07-trust-score-and-evidence-coverage.png",
+    "apiCalls": [
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/v1/vehicles/v-bmw/provider-checks"
+      },
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/v1/vehicles/v-bmw/provider-checks"
+      }
+    ],
+    "consoleErrors": [],
+    "dbBefore": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 52,
+      "ai_runs": 7,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbAfter": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 52,
+      "ai_runs": 7,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbDelta": {},
+    "finalUrl": "http://localhost:3000/vehicle/v-bmw"
+  },
+  {
+    "id": "F08",
+    "name": "Vehicle history timeline",
+    "spec": "6.6 / 6.9 — chronological events with date, type, source, evidence and status filters",
+    "route": "/buyer/history",
+    "status": "PASS",
+    "fatal": null,
+    "notes": [
+      "PASS  history events from DB rendered",
+      "PASS  Verified status filter applied",
+      "PASS  event search filters the timeline",
+      "PASS  event detail drawer opens with linked evidence"
+    ],
+    "screenshot": "qa/live-browser/qa-2026-11-06/buyer/features/F08-vehicle-history-timeline.png",
+    "apiCalls": [],
+    "consoleErrors": [],
+    "dbBefore": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 52,
+      "ai_runs": 7,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbAfter": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 52,
+      "ai_runs": 7,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbDelta": {},
+    "finalUrl": "http://localhost:3000/buyer/history"
+  },
+  {
+    "id": "F09",
+    "name": "Mileage / odometer analysis",
+    "spec": "6.9 — chronological readings with source, normalised value, flagged/verified/claim status",
+    "route": "/vehicle/v-bmw",
+    "status": "FAIL",
+    "fatal": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'History', exact: true }).first()\u001b[22m\n",
+    "notes": [],
+    "screenshot": "qa/live-browser/qa-2026-11-06/buyer/features/F09-mileage-odometer-analysis.png",
+    "apiCalls": [
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/v1/vehicles/v-bmw/provider-checks"
+      },
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/v1/vehicles/v-bmw/provider-checks"
+      }
+    ],
+    "consoleErrors": [],
+    "dbBefore": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 52,
+      "ai_runs": 7,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbAfter": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 52,
+      "ai_runs": 7,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbDelta": {},
+    "finalUrl": "http://localhost:3000/vehicle/v-bmw"
+  },
+  {
+    "id": "F10",
+    "name": "3D Inspection Studio (inline Three.js)",
+    "spec": "6.8 — 360 orbit, presets, modes, component hotspots, damage linkage; inline on the report page",
+    "route": "/vehicle/v-bmw",
+    "status": "PASS",
+    "fatal": null,
+    "notes": [
+      "PASS  inline WebGL canvas mounts on /vehicle/v-bmw (Three.js chunk loads)",
+      "PASS  loading placeholder is replaced by the real viewer",
+      "PASS  canvas persists across mode switches",
+      "PASS  studio remains inline on the same report page (no new page)"
+    ],
+    "screenshot": "qa/live-browser/qa-2026-11-06/buyer/features/F10-3d-inspection-studio-inline-three-js.png",
+    "apiCalls": [
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/v1/vehicles/v-bmw/provider-checks"
+      },
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/v1/vehicles/v-bmw/provider-checks"
+      }
+    ],
+    "consoleErrors": [],
+    "dbBefore": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 52,
+      "ai_runs": 7,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbAfter": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 52,
+      "ai_runs": 7,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbDelta": {},
+    "finalUrl": "http://localhost:3000/vehicle/v-bmw"
+  },
+  {
+    "id": "F11",
+    "name": "AI Risk Analysis + agent investigation",
+    "spec": "6.10 — grouped findings, evidence/confidence, alternative explanations, on-demand investigation",
+    "route": "/buyer/risk",
+    "status": "PASS",
+    "fatal": null,
+    "notes": [
+      "PASS  risk analysis page rendered",
+      "PASS  findings / risk gauge rendered",
+      "PASS  POST /api/v1/vehicles/:id/ai-investigations returned 2xx (LangGraph/sequential agent)",
+      "PASS  orchestrator / node provenance reported in UI",
+      "PASS  no investigation failure banner"
+    ],
+    "screenshot": "qa/live-browser/qa-2026-11-06/buyer/features/F11-ai-risk-analysis-agent-investigation.png",
+    "apiCalls": [
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/v1/vehicles/v-1793959415934/ai-investigations"
+      },
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/v1/vehicles/v-1793959415934/ai-investigations"
+      },
+      {
+        "method": "POST",
+        "status": 200,
+        "url": "/api/v1/vehicles/v-1793959415934/ai-investigations"
+      },
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/v1/vehicles/v-1793959415934/ai-investigations"
+      }
+    ],
+    "consoleErrors": [],
+    "dbBefore": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 52,
+      "ai_runs": 7,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbAfter": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 53,
+      "ai_runs": 8,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbDelta": {
+      "agent_investigations": "52 -> 53",
+      "ai_runs": "7 -> 8"
+    },
+    "finalUrl": "http://localhost:3000/buyer/risk"
+  },
+  {
+    "id": "F12",
+    "name": "Theft and external provider checks",
+    "spec": "6.11 — authorised provider adapter, provider + timestamp + queried fields, honest UNAVAILABLE",
+    "route": "/vehicle/v-bmw",
+    "status": "PASS",
+    "fatal": null,
+    "notes": [
+      "PASS  GET /api/v1/vehicles/:id/provider-checks returned 200 from the page",
+      "PASS  provider-checks panel rendered",
+      "PASS  theft/insurance provider + honest availability wording rendered",
+      "PASS  no false 'clean record' claim"
+    ],
+    "screenshot": "qa/live-browser/qa-2026-11-06/buyer/features/F12-theft-and-external-provider-checks.png",
+    "apiCalls": [
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/v1/vehicles/v-bmw/provider-checks"
+      },
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/v1/vehicles/v-bmw/provider-checks"
+      }
+    ],
+    "consoleErrors": [],
+    "dbBefore": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 53,
+      "ai_runs": 8,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbAfter": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 53,
+      "ai_runs": 8,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbDelta": {},
+    "finalUrl": "http://localhost:3000/vehicle/v-bmw"
+  },
+  {
+    "id": "F13",
+    "name": "Accident and component damage evidence",
+    "spec": "6.6 / 6.8 — accident records, severity, repair state, 3D hotspot linkage",
+    "route": "/vehicle/v-bmw",
+    "status": "PASS",
+    "fatal": null,
+    "notes": [
+      "PASS  damage tab content rendered",
+      "PASS  severity / repair / panel evidence rendered",
+      "PASS  3D hotspot count chip rendered (2 damage panel)"
+    ],
+    "screenshot": "qa/live-browser/qa-2026-11-06/buyer/features/F13-accident-and-component-damage-evidence.png",
+    "apiCalls": [
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/v1/vehicles/v-bmw/provider-checks"
+      },
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/v1/vehicles/v-bmw/provider-checks"
+      }
+    ],
+    "consoleErrors": [],
+    "dbBefore": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 53,
+      "ai_runs": 8,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbAfter": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 53,
+      "ai_runs": 8,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbDelta": {},
+    "finalUrl": "http://localhost:3000/vehicle/v-bmw"
+  },
+  {
+    "id": "F14",
+    "name": "Market price estimate",
+    "spec": "6.4 / matrix L — asking price, market range, comparables, confidence, disclaimer",
+    "route": "/vehicle/v-bmw",
+    "status": "PASS",
+    "fatal": null,
+    "notes": [
+      "PASS  market price section rendered",
+      "PASS  comparable count rendered",
+      "PASS  valuation disclaimer rendered",
+      "PASS  INR price formatting rendered"
+    ],
+    "screenshot": "qa/live-browser/qa-2026-11-06/buyer/features/F14-market-price-estimate.png",
+    "apiCalls": [
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/v1/vehicles/v-bmw/provider-checks"
+      },
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/v1/vehicles/v-bmw/provider-checks"
+      }
+    ],
+    "consoleErrors": [],
+    "dbBefore": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 53,
+      "ai_runs": 8,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbAfter": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 53,
+      "ai_runs": 8,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbDelta": {},
+    "finalUrl": "http://localhost:3000/vehicle/v-bmw"
+  },
+  {
+    "id": "F15",
+    "name": "Compare vehicles",
+    "spec": "6.12 — 2–4 vehicles across 12 attributes with key differences",
+    "route": "/buyer/compare",
+    "status": "PASS",
+    "fatal": null,
+    "notes": [
+      "PASS  vehicle picker checkboxes rendered",
+      "PASS  deterministic key-differences summary rendered",
+      "PASS  comparison attribute rows rendered",
+      "PASS  URL carries >=2 selected vehicle ids"
+    ],
+    "screenshot": "qa/live-browser/qa-2026-11-06/buyer/features/F15-compare-vehicles.png",
+    "apiCalls": [],
+    "consoleErrors": [],
+    "dbBefore": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 53,
+      "ai_runs": 8,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbAfter": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 53,
+      "ai_runs": 8,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbDelta": {},
+    "finalUrl": "http://localhost:3000/buyer/compare?ids=v-1793876471230,v-merc,v-audi"
+  },
+  {
+    "id": "F16",
+    "name": "Saved vehicles / wishlist",
+    "spec": "6.13 — shortlist, price tracking, compare saved, remove",
+    "route": "/buyer/saved",
+    "status": "PASS",
+    "fatal": null,
+    "notes": [
+      "PASS  shortlist header shows live DB count",
+      "PASS  4 saved vehicle cards rendered",
+      "PASS  compare-selected counter updates from checkbox selection",
+      "PASS  remove-from-saved controls rendered"
+    ],
+    "screenshot": "qa/live-browser/qa-2026-11-06/buyer/features/F16-saved-vehicles-wishlist.png",
+    "apiCalls": [],
+    "consoleErrors": [],
+    "dbBefore": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 53,
+      "ai_runs": 8,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbAfter": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 53,
+      "ai_runs": 8,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbDelta": {},
+    "finalUrl": "http://localhost:3000/buyer/saved"
+  },
+  {
+    "id": "F17",
+    "name": "Contact seller / create inquiry",
+    "spec": "6.13 / matrix O — contact seller, request photos/docs/inspection/test drive, negotiate",
+    "route": "/vehicle/v-bmw",
+    "status": "PASS",
+    "fatal": null,
+    "notes": [
+      "PASS  inquiry type chips rendered",
+      "PASS  POST /api/v1/inquiries returned 201 from the UI form",
+      "PASS  new inquiry row persisted in SQLite with the exact submitted message",
+      "PASS  selected inquiry type persisted (test_drive)",
+      "PASS  inquiry RBAC buyer_id persisted",
+      "PASS  UI feedback after submit"
+    ],
+    "screenshot": "qa/live-browser/qa-2026-11-06/buyer/features/F17-contact-seller-create-inquiry.png",
+    "apiCalls": [
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/v1/vehicles/v-bmw/provider-checks"
+      },
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/v1/vehicles/v-bmw/provider-checks"
+      },
+      {
+        "method": "POST",
+        "status": 201,
+        "url": "/api/v1/inquiries"
+      }
+    ],
+    "consoleErrors": [],
+    "dbBefore": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 28,
+      "inquiry_messages": 51,
+      "notifications": 124,
+      "reports": 18,
+      "agent_investigations": 53,
+      "ai_runs": 8,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbAfter": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 29,
+      "inquiry_messages": 52,
+      "notifications": 125,
+      "reports": 18,
+      "agent_investigations": 53,
+      "ai_runs": 8,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbDelta": {
+      "inquiries": "28 -> 29",
+      "inquiry_messages": "51 -> 52",
+      "notifications": "124 -> 125"
+    },
+    "finalUrl": "http://localhost:3000/vehicle/v-bmw"
+  },
+  {
+    "id": "F18",
+    "name": "Inquiry thread / reply / status",
+    "spec": "6.13 / matrix O — track messages, negotiate, request state",
+    "route": "/buyer/inquiries",
+    "status": "FAIL",
+    "fatal": null,
+    "notes": [
+      "PASS  GET /api/v1/inquiries/:id returned 200 for selected thread",
+      "PASS  reply composer rendered",
+      "PASS  POST /api/v1/inquiries/:id/messages returned 201",
+      "PASS  reply persisted in SQLite inquiry_messages",
+      "FAIL  reply appears in the live conversation UI"
+    ],
+    "screenshot": "qa/live-browser/qa-2026-11-06/buyer/features/F18-inquiry-thread-reply-status.png",
+    "apiCalls": [
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/v1/inquiries/q-1793961657494"
+      },
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/v1/inquiries/q-1793961657494"
+      },
+      {
+        "method": "POST",
+        "status": 201,
+        "url": "/api/v1/inquiries/q-1793961657494/messages"
+      }
+    ],
+    "consoleErrors": [],
+    "dbBefore": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 29,
+      "inquiry_messages": 52,
+      "notifications": 125,
+      "reports": 18,
+      "agent_investigations": 53,
+      "ai_runs": 8,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbAfter": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 29,
+      "inquiry_messages": 53,
+      "notifications": 126,
+      "reports": 18,
+      "agent_investigations": 53,
+      "ai_runs": 8,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbDelta": {
+      "inquiry_messages": "52 -> 53",
+      "notifications": "125 -> 126"
+    },
+    "finalUrl": "http://localhost:3000/buyer/inquiries/q-1793961657494"
+  },
+  {
+    "id": "F19",
+    "name": "Generate and download PDF report",
+    "spec": "6.13 / matrix P — generate vehicle report with stable ID and downloadable PDF",
+    "route": "/buyer/reports",
+    "status": "FAIL",
+    "fatal": null,
+    "notes": [
+      "FAIL  POST /api/v1/reports/vehicle/:id returned 201",
+      "PASS  generated report appears in the reports table with chosen type",
+      "FAIL  download link present (/print/report/rep-4)",
+      "PASS  PDF endpoint returned 200",
+      "PASS  PDF payload returned"
+    ],
+    "screenshot": "qa/live-browser/qa-2026-11-06/buyer/features/F19-generate-and-download-pdf-report.png",
+    "apiCalls": [
+      {
+        "method": "GET",
+        "status": 200,
+        "url": "/api/v1/inquiries/q-1793961657494"
+      }
+    ],
+    "consoleErrors": [
+      "pageerror: Invalid or unexpected token"
+    ],
+    "dbBefore": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 29,
+      "inquiry_messages": 53,
+      "notifications": 126,
+      "reports": 18,
+      "agent_investigations": 53,
+      "ai_runs": 8,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbAfter": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 29,
+      "inquiry_messages": 53,
+      "notifications": 126,
+      "reports": 18,
+      "agent_investigations": 53,
+      "ai_runs": 8,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbDelta": {},
+    "finalUrl": "http://localhost:3000/buyer/reports"
+  },
+  {
+    "id": "F20",
+    "name": "Notifications",
+    "spec": "matrix Q — verification updates, replies, price changes; unread filter, mark read",
+    "route": "/buyer/notifications",
+    "status": "FAIL",
+    "fatal": "locator.click: Error: strict mode violation: getByRole('button', { name: /Unread/ }) resolved to 19 elements:\n    1) <button class=\"flex w-full items-start gap-3 p-4 text-left transition bg-info-bg/40 hover:bg-info-bg/70\">…</button> aka getByRole('button', { name: 'Samarth Darak replied to your inquiry Unread Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 6 Nov, 03:20 pm', exact: true })\n    2) <button class=\"flex w-full items-start gap-3 p-4 text-left transition bg-info-bg/40 hover:bg-info-bg/70\">…</button> aka getByRole('button', { name: 'Samarth Darak replied to your inquiry Unread Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 6 Nov, 03:14 pm', exact: true })\n    3) <button class=\"flex w-full items-start gap-3 p-4 text-left transition bg-info-bg/40 hover:bg-info-bg/70\">…</button> aka getByRole('button', { name: 'Samarth Darak replied to your inquiry Unread Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 6 Nov, 03:09 pm', exact: true })\n    4) <button class=\"flex w-full items-start gap-3 p-4 text-left transition bg-info-bg/40 hover:bg-info-bg/70\">…</button> aka getByRole('button', { name: 'Samarth Darak replied to your inquiry Unread Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 6 Nov, 02:46 pm', exact: true })\n    5) <button class=\"flex w-full items-start gap-3 p-4 text-left transition bg-info-bg/40 hover:bg-info-bg/70\">…</button> aka getByRole('button', { name: 'Samarth Darak replied to your inquiry Unread Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 6 Nov, 02:44 pm', exact: true })\n    6) <button class=\"flex w-full items-start gap-3 p-4 text-left transition bg-info-bg/40 hover:bg-info-bg/70\">…</button> aka getByRole('button', { name: 'Samarth Darak replied to your inquiry Unread Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 6 Nov, 02:41 pm', exact: true })\n    7) <button class=\"flex w-full items-start gap-3 p-4 text-left transition bg-info-bg/40 hover:bg-info-bg/70\">…</button> aka getByRole('button', { name: 'Samarth Darak replied to your inquiry Unread Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 5 Nov, 08:55 pm', exact: true })\n    8) <button class=\"flex w-full items-start gap-3 p-4 text-left transition bg-info-bg/40 hover:bg-info-bg/70\">…</button> aka getByRole('button', { name: 'Samarth Darak replied to your inquiry Unread Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 5 Nov, 06:58 pm', exact: true })\n    9) <button class=\"flex w-full items-start gap-3 p-4 text-left transition bg-info-bg/40 hover:bg-info-bg/70\">…</button> aka getByRole('button', { name: 'Samarth Darak replied to your inquiry Unread Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 5 Nov, 06:48 pm', exact: true })\n    10) <button class=\"flex w-full items-start gap-3 p-4 text-left transition bg-info-bg/40 hover:bg-info-bg/70\">…</button> aka getByRole('button', { name: 'Samarth Darak replied to your inquiry Unread Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 5 Nov, 05:39 pm', exact: true })\n    ...\n\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: /Unread/ })\u001b[22m\n",
+    "notes": [
+      "PASS  unread filter shows live DB count"
+    ],
+    "screenshot": "qa/live-browser/qa-2026-11-06/buyer/features/F20-notifications.png",
+    "apiCalls": [],
+    "consoleErrors": [],
+    "dbBefore": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 29,
+      "inquiry_messages": 53,
+      "notifications": 126,
+      "reports": 18,
+      "agent_investigations": 53,
+      "ai_runs": 8,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbAfter": {
+      "saved_vehicles": 4,
+      "saved_searches": 2,
+      "inquiries": 29,
+      "inquiry_messages": 53,
+      "notifications": 126,
+      "reports": 18,
+      "agent_investigations": 53,
+      "ai_runs": 8,
+      "savedForBuyer": 4,
+      "unreadForBuyer": 19,
+      "profileName": "Aditya Darak",
+      "profileCity": "Mumbai"
+    },
+    "dbDelta": {},
+    "finalUrl": "http://localhost:3000/buyer/notifications"
+  }
+]

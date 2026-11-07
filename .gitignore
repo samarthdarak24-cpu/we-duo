@@ -16,6 +16,7 @@ node_modules/
 .next_qa*
 .next_live/
 .next_static
+.next_e2e/
 *.jar
 .td-shots
 dist/

@@ -10,6 +10,7 @@ from __future__ import annotations
 import importlib.util
 import os
 import re
+import time
 from typing import Any
 
 import httpx
@@ -21,12 +22,18 @@ from .logging import emit
 LLM_VERSION = "llm-adapter-1.1.0"
 _LOCAL: dict[str, Any] = {}
 LOCAL_SYSTEM_PROMPT = (
-    "You are a vehicle evidence summariser. Use ONLY the supplied facts. "
-    "Report the anomalies and missing records you see. Do NOT judge whether the "
-    "car is safe, genuine, stolen-free or fraud-free; never recommend buying. "
-    "Cite evidence IDs for every statement and end with a line "
-    "'Sources: <ids>'. If evidence is missing, say 'unavailable'. "
-    "Keep the answer under 120 words."
+    "You are a vehicle evidence summariser. Use ONLY the supplied facts.\n"
+    "STRICT RULES (violating any causes your answer to be discarded):\n"
+    "- Never say the vehicle is 'verified', 'fully verified', or 'verified by "
+    "TrustDrive'. Instead say 'TrustDrive has the following records on file'.\n"
+    "- Never claim the vehicle is safe, genuine, authentic, stolen-free, "
+    "fraud-free, accident-free or has a clean history. Never recommend buying.\n"
+    "- If findings are listed, you MUST report them; never say 'no issues', "
+    "'no anomalies' or 'nothing suspicious'.\n"
+    "- Do not invent numbers, IDs or documents that are not in the facts.\n"
+    "Report the anomalies and missing records you see, cite an evidence ID for "
+    "each statement, and end with a line 'Sources: <ids>'. If evidence is "
+    "missing, say 'unavailable'. Keep the answer under 120 words."
 )
 
 CONTRADICTIONS = [
@@ -136,9 +143,31 @@ def describe() -> dict:
         "provider": provider,
         "model": settings.llm_model if active else None,
         "local_ready": _local_ready(),
+        "loaded": "model" in _LOCAL,
         "version": LLM_VERSION,
         "note": "Offline: no conclusion is generated. Verification is never delegated to an LLM.",
     }
+
+
+def warm() -> dict:
+    """Load the local model ahead of the first request.
+
+    A cold transformers load takes minutes, which pushes the first live
+    investigation past the caller's HTTP timeout and degrades it to the
+    deterministic engine. Warming at boot keeps that cost off the request path.
+    """
+    if not _local_ready():
+        return {"warmed": False, "provider": describe()["provider"], "reason": "no local model configured"}
+    started = time.perf_counter()
+    try:
+        _load_local()
+    except Exception as exc:
+        emit("llm.warm_failed", model=settings.llm_model, error=f"{type(exc).__name__}: {exc}")
+        return {"warmed": False, "provider": "local-transformers", "model": settings.llm_model,
+                "error": f"{type(exc).__name__}: {exc}"}
+    ms = round((time.perf_counter() - started) * 1000, 1)
+    emit("llm.warm", model=settings.llm_model, ms=ms)
+    return {"warmed": True, "provider": "local-transformers", "model": settings.llm_model, "ms": ms}
 
 
 def _draft(facts: dict) -> str:

@@ -1,0 +1,127 @@
+{
+  "runId": "IND-MW6JIYKQ",
+  "executedAt": "2026-11-07T15:11:52.119Z",
+  "base": "http://127.0.0.1:3000",
+  "intel": "http://127.0.0.1:8000",
+  "phases": [
+    "security",
+    "persist"
+  ],
+  "totals": {
+    "checks": 17,
+    "passed": 16,
+    "failed": 1
+  },
+  "jsExceptions": 0,
+  "consoleErrors": 0,
+  "unexpectedConsoleErrors": 0,
+  "unexpectedConsoleSample": [],
+  "pageErrorsSample": [],
+  "screenshots": [
+    "SCREENSHOTS/independent/persist-my-vehicles-after-refresh.png"
+  ],
+  "results": [
+    {
+      "feature": "Access control",
+      "name": "Seller A session established",
+      "status": "PASS",
+      "detail": "url=http://127.0.0.1:3000/seller"
+    },
+    {
+      "feature": "Access control",
+      "name": "Seller B session established",
+      "status": "PASS",
+      "detail": "url=http://127.0.0.1:3000/seller"
+    },
+    {
+      "feature": "Access control",
+      "name": "Seller A cannot read Seller B's vehicle via API",
+      "status": "PASS",
+      "detail": "http=404"
+    },
+    {
+      "feature": "Access control",
+      "name": "Seller A can read own vehicle",
+      "status": "PASS",
+      "detail": "http=200"
+    },
+    {
+      "feature": "Access control",
+      "name": "Seller A cannot mutate Seller B's vehicle",
+      "status": "PASS",
+      "detail": "http=403"
+    },
+    {
+      "feature": "Access control",
+      "name": "Buyer cannot create a seller vehicle",
+      "status": "PASS",
+      "detail": "http=403"
+    },
+    {
+      "feature": "Access control",
+      "name": "Buyer cannot read the admin audit API",
+      "status": "PASS",
+      "detail": "http=403"
+    },
+    {
+      "feature": "Access control",
+      "name": "Private document fixture available",
+      "status": "FAIL",
+      "detail": "no document row"
+    },
+    {
+      "feature": "Access control",
+      "name": "Anonymous buyer overview is rejected",
+      "status": "PASS",
+      "detail": "http=401"
+    },
+    {
+      "feature": "Access control",
+      "name": "Buyer B cannot read Buyer A's inquiry",
+      "status": "PASS",
+      "detail": "http=403"
+    },
+    {
+      "feature": "UI → DB persistence",
+      "name": "Seller session for persistence test",
+      "status": "PASS",
+      "detail": "url=http://127.0.0.1:3000/seller"
+    },
+    {
+      "feature": "UI → DB persistence",
+      "name": "Real wizard POST created a vehicle draft",
+      "status": "PASS",
+      "detail": "http=201 id=v-1794064306012 fieldsFilled=12 error=-"
+    },
+    {
+      "feature": "UI → DB persistence",
+      "name": "Created vehicle exists in the shared SQLite DB",
+      "status": "PASS",
+      "detail": "{\"id\":\"v-1794064306012\",\"reg_no\":\"MH70ZZ7340\",\"vin\":\"96429734TDAB97340\",\"make\":\"Independent\",\"model\":\"QA Sedan\",\"status\":\"draft\",\"owner_id\":\"u-seller\"}"
+    },
+    {
+      "feature": "UI → DB persistence",
+      "name": "DB values match the form submission",
+      "status": "PASS",
+      "detail": "reg=MH70ZZ7340 make=Independent"
+    },
+    {
+      "feature": "UI → DB persistence",
+      "name": "A draft listing was created with the vehicle",
+      "status": "PASS",
+      "detail": "{\"id\":\"l-v-1794064306012\",\"status\":\"draft\"}"
+    },
+    {
+      "feature": "UI → DB persistence",
+      "name": "New vehicle is visible in My Vehicles after reload",
+      "status": "PASS",
+      "detail": "Skip to content TRUSTDRIVE Seller Workspace WORKSPACE Overview My Vehicles Add Vehicle Documents Vehicle History Verification Center AI Fraud Analysis Marketpla"
+    },
+    {
+      "feature": "UI → DB persistence",
+      "name": "Record survives a full browser refresh",
+      "status": "PASS",
+      "detail": "id=v-1794064306012"
+    }
+  ]
+}

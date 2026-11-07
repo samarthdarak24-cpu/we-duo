@@ -10,8 +10,8 @@ Legend: ✅ allowed · ◑ allowed with ownership/consent constraint · ❌ deni
 
 | Role | Seeded accounts |
 | --- | --- |
-| `seller` | `samarth@trustdrive.dev`, `aditya@trustdrive.dev` |
-| `buyer` | `rohan@trustdrive.dev`, `priya@trustdrive.dev`, `arjun@trustdrive.dev` |
+| `seller` | `samarth@trustdrive.dev` (u-seller, individual), `weduo@trustdrive.dev` (u-seller2, dealer) |
+| `buyer` | `aditya@trustdrive.dev` (u-buyer), `rohan@trustdrive.dev`, `priya@trustdrive.dev`, `arjun@trustdrive.dev` |
 | `admin` | `admin@trustdrive.dev` |
 | anonymous | no session |
 

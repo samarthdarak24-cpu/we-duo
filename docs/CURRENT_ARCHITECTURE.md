@@ -9,7 +9,7 @@
 | --- | --- | --- | --- |
 | Web app | Next.js 14 (Node 22) | 3000 | Public site, Seller/Buyer portals, cookie-session REST (`/api/v1/*`), PDF/QR, DB owner |
 | Backend API | FastAPI (Python 3.12+) | 8000 | `/api/v1/*` contract + `/api/backend/*` internal surface, bearer JWT |
-| Intelligence | FastAPI (same process) | 8000 | OCR pipeline, fraud detectors, 12-node agent, trust score |
+| Intelligence | FastAPI (same process) | 8000 | OCR pipeline, fraud detectors, 15/16-node conditional agent, trust score |
 | Worker | Python (`app.worker`) | — | DB-backed `background_jobs` queue; Celery when `TD_BROKER_URL` is set |
 | Database | SQLite file (Postgres target) | — | 51 tables shared by both runtimes |
 | Storage | `.data/uploads` (S3 target) | — | Private documents, report PDFs |
@@ -48,7 +48,7 @@ flowchart LR
 | Validation | Zod (`lib/server/validate.ts`) | Pydantic v2 (`routers/*.py`) |
 | OCR / extraction | — | `app/ocr.py`, `app/extract.py` |
 | Fraud / ML | deterministic `engine.ts` | `app/detectors.py`, `app/explain.py` |
-| Agent | grounded assistant `lib/server/ai.ts` | `app/agent.py` (12 nodes) |
+| Agent | grounded assistant `lib/server/ai.ts` | `app/agent.py` (15/16 conditional nodes) |
 | Reports / PDF | `app/api/v1/reports/*` | `app/routers/reports.py` (PyMuPDF) |
 | Jobs | — | `app/worker.py`, `app/tasks.py` |
 | Migrations | seed in `lib/server/db.ts` | `alembic/` (additive) |

@@ -1,0 +1,725 @@
+{
+  "routes": [
+    {
+      "route": "/api/v1/admin/audit",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/admin/disputes/[id]",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/admin/disputes/[id]/resolve",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/admin/kyc",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/admin/kyc/[userId]",
+      "methods": [
+        "PATCH"
+      ]
+    },
+    {
+      "route": "/api/v1/admin/listings/[id]",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/admin/listings/[id]/suspend",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/admin/queue",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/admin/users/[id]",
+      "methods": [
+        "DELETE"
+      ]
+    },
+    {
+      "route": "/api/v1/ai/assistant",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/ai/health",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/ai/stack",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/alerts/evaluate",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/auth/forgot-password",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/auth/login",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/auth/logout",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/auth/refresh",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/auth/register",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/auth/resend-verification",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/auth/reset-password",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/auth/verify-email",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/buyer/overview",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/buyer/recommended",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/chain/[vehicleId]",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/compare",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/contact",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/damage/[id]/correction",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/documents/[id]",
+      "methods": [
+        "GET",
+        "DELETE"
+      ]
+    },
+    {
+      "route": "/api/v1/documents/[id]/consent",
+      "methods": [
+        "PATCH"
+      ]
+    },
+    {
+      "route": "/api/v1/documents/[id]/extractions",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/documents/[id]/replace",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/documents/[id]/reverify",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/files/[...key]",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/findings/[id]/dispute",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/health/ready",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/history/[id]/correction",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/inquiries",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/inquiries/[id]",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/inquiries/[id]/messages",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/inquiries/[id]/status",
+      "methods": [
+        "PATCH"
+      ]
+    },
+    {
+      "route": "/api/v1/listings/[id]/report-suspicious",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/listings/[id]/stats",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/marketplace/listings",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/marketplace/listings/[id]",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/marketplace/search",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/me",
+      "methods": [
+        "GET",
+        "PATCH"
+      ]
+    },
+    {
+      "route": "/api/v1/me/2fa",
+      "methods": [
+        "POST",
+        "PUT",
+        "DELETE"
+      ]
+    },
+    {
+      "route": "/api/v1/me/avatar",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/me/kyc",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/me/password",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/me/sessions",
+      "methods": [
+        "GET",
+        "DELETE"
+      ]
+    },
+    {
+      "route": "/api/v1/me/sessions/[id]",
+      "methods": [
+        "DELETE"
+      ]
+    },
+    {
+      "route": "/api/v1/newsletter",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/notifications",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/notifications/[id]/read",
+      "methods": [
+        "PATCH"
+      ]
+    },
+    {
+      "route": "/api/v1/notifications/read-all",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/notifications/stream",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/reports",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/reports/[id]",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/reports/[id]/download",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/reports/vehicle/[id]",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/saved",
+      "methods": [
+        "GET",
+        "POST",
+        "DELETE"
+      ]
+    },
+    {
+      "route": "/api/v1/saved-searches",
+      "methods": [
+        "GET",
+        "POST",
+        "DELETE"
+      ]
+    },
+    {
+      "route": "/api/v1/saved/[listingId]",
+      "methods": [
+        "POST",
+        "DELETE"
+      ]
+    },
+    {
+      "route": "/api/v1/seller/listings",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/seller/listings/[id]",
+      "methods": [
+        "GET",
+        "PATCH"
+      ]
+    },
+    {
+      "route": "/api/v1/seller/listings/[id]/[action]",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/seller/listings/[id]/share",
+      "methods": [
+        "POST",
+        "DELETE"
+      ]
+    },
+    {
+      "route": "/api/v1/seller/overview",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/seller/vehicles",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/seller/vehicles/[id]",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ]
+    },
+    {
+      "route": "/api/v1/seller/vehicles/[id]/archive",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/users/me",
+      "methods": [
+        "GET",
+        "DELETE"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/3d-model",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/ai-investigations",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/ai/explain",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/alerts",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/chain",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/claims",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/components",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/damage",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/documents",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/documents/completeness",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/evidence-graph",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/findings",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/history",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/insights",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/mileage",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/near-duplicates",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/photos",
+      "methods": [
+        "GET",
+        "POST",
+        "PATCH",
+        "DELETE"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/pricing",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/provider-checks",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/report",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/risk",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/save",
+      "methods": [
+        "POST",
+        "DELETE"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/theft",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/trust",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/verification",
+      "methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/vehicles/[id]/verify",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/verification-cases/[id]",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/verification/lookup",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "route": "/api/v1/verification/runs/[runId]/stream",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "route": "/api/v1/verify/[token]",
+      "methods": [
+        "GET"
+      ]
+    }
+  ],
+  "pages": [
+    "/",
+    "/about",
+    "/admin/audit",
+    "/admin/kyc",
+    "/admin/notifications",
+    "/admin/queue",
+    "/admin/settings",
+    "/admin/users",
+    "/buyer",
+    "/buyer/compare",
+    "/buyer/explore",
+    "/buyer/history",
+    "/buyer/inquiries",
+    "/buyer/inquiries/[id]",
+    "/buyer/notifications",
+    "/buyer/reports",
+    "/buyer/risk",
+    "/buyer/saved",
+    "/buyer/search",
+    "/buyer/settings",
+    "/buyer/verification",
+    "/contact",
+    "/faq",
+    "/forgot-password",
+    "/inspection",
+    "/login",
+    "/marketplace",
+    "/print/report/[id]",
+    "/register",
+    "/reset-password/[token]",
+    "/resources",
+    "/resources/[slug]",
+    "/seller",
+    "/seller/add-vehicle",
+    "/seller/documents",
+    "/seller/fraud",
+    "/seller/history",
+    "/seller/inquiries",
+    "/seller/inquiries/[id]",
+    "/seller/listings",
+    "/seller/listings/[id]",
+    "/seller/notifications",
+    "/seller/reports",
+    "/seller/settings",
+    "/seller/vehicles",
+    "/seller/vehicles/[id]",
+    "/seller/verification",
+    "/technology",
+    "/vehicle/[id]",
+    "/verification-cases/[id]",
+    "/verify-email/[token]",
+    "/verify/[token]"
+  ]
+}

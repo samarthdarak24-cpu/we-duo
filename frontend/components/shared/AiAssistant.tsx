@@ -243,7 +243,7 @@ export function AiAssistant({
                     <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary [animation-delay:120ms]" />
                     <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary [animation-delay:240ms]" />
                   </span>
-                  Reading stored records…
+                  Thinking…
                 </div>
               )}
               {error && <InlineAlert tone="danger" title="Assistant unavailable" detail={error} />}

@@ -112,11 +112,11 @@ Full machine-readable spec: `GET http://127.0.0.1:8000/openapi.json`.
 
 | Method | Path | Request | Response highlights |
 | --- | --- | --- | --- |
-| GET | `/health` | — | DB status, OCR backends, LLM, 12-node graph, worker |
+| GET | `/health` | — | DB status, OCR backends, LLM, 15/16-node conditional graph, worker |
 | GET | `/api/intelligence/capabilities` | — | versions, weights, entity counts, adapter policy |
 | POST | `/api/intelligence/documents/process` | `{document_id, vehicle_id, path?, doc_type, async}` | 18-step workflow, fields, confidence, flags, duplicate, expiry, review id |
 | POST/GET | `/api/intelligence/fraud/detect`, `/fraud/:vehicleId` | `{vehicle_id}` | mileage + document findings with anomaly type, severity, evidence, method, version, confidence, review action |
-| POST | `/api/intelligence/investigate` | `{vehicle_id, question, thread_id?}` | 12 nodes, orchestrator, evidence IDs, human review, trust explanation |
+| POST | `/api/intelligence/investigate` | `{vehicle_id, question, thread_id?}` | 15/16 conditional nodes, orchestrator, evidence IDs, human review, trust explanation |
 | POST | `/api/intelligence/chat` | `{vehicle_id?, question}` | grounded answer, provider/model, citations, `llm_rejected`, deterministic fallback; used by `/api/v1/ai/assistant` |
 | GET | `/api/intelligence/blockchain/status` | — | `configured:false`, `anchoring_claimed:false`; local SHA-256 chain only |
 | GET | `/api/intelligence/blockchain/integrity/:vehicleId` | — | record count, broken count, `method:"local-sha256-chain"`, explicit "not an on-chain anchor" |

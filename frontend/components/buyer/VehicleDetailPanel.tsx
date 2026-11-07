@@ -21,7 +21,7 @@ export interface VehicleDetailData {
   variant: string;
   year: number;
   regNo: string;
-  vin: string;
+  vin: string | null;
   km: number;
   fuel: string;
   transmission: string;

@@ -1,0 +1,82 @@
+{
+  "runId": "IND-MW6JORVH",
+  "executedAt": "2026-11-07T15:19:24.815Z",
+  "base": "http://127.0.0.1:3000",
+  "intel": "http://127.0.0.1:8000",
+  "phases": [
+    "security"
+  ],
+  "totals": {
+    "checks": 10,
+    "passed": 10,
+    "failed": 0
+  },
+  "jsExceptions": 0,
+  "consoleErrors": 0,
+  "unexpectedConsoleErrors": 0,
+  "unexpectedConsoleSample": [],
+  "pageErrorsSample": [],
+  "screenshots": [],
+  "results": [
+    {
+      "feature": "Access control",
+      "name": "Seller A session established",
+      "status": "PASS",
+      "detail": "url=http://127.0.0.1:3000/seller"
+    },
+    {
+      "feature": "Access control",
+      "name": "Seller B session established",
+      "status": "PASS",
+      "detail": "url=http://127.0.0.1:3000/seller"
+    },
+    {
+      "feature": "Access control",
+      "name": "Seller A cannot read Seller B's vehicle via API",
+      "status": "PASS",
+      "detail": "http=404"
+    },
+    {
+      "feature": "Access control",
+      "name": "Seller A can read own vehicle",
+      "status": "PASS",
+      "detail": "http=200"
+    },
+    {
+      "feature": "Access control",
+      "name": "Seller A cannot mutate Seller B's vehicle",
+      "status": "PASS",
+      "detail": "http=403"
+    },
+    {
+      "feature": "Access control",
+      "name": "Buyer cannot create a seller vehicle",
+      "status": "PASS",
+      "detail": "http=403"
+    },
+    {
+      "feature": "Access control",
+      "name": "Buyer cannot read the admin audit API",
+      "status": "PASS",
+      "detail": "http=403"
+    },
+    {
+      "feature": "Access control",
+      "name": "Anonymous private-document URL is rejected",
+      "status": "PASS",
+      "detail": "http=403 key=documents/v-1793969118878/8edfac51-0993-41f2-a12c-89ebcdf31d4d.pdf"
+    },
+    {
+      "feature": "Access control",
+      "name": "Anonymous buyer overview is rejected",
+      "status": "PASS",
+      "detail": "http=401"
+    },
+    {
+      "feature": "Access control",
+      "name": "Buyer B cannot read Buyer A's inquiry",
+      "status": "PASS",
+      "detail": "http=403"
+    }
+  ]
+}

@@ -11,7 +11,7 @@
    buyer marketplace (12 == SQL 12), no seller-draft leakage, unauth→401, buyer create→403.
 5. **Live `/health`** enumerates actually-installed engines: PaddleOCR, RapidOCR, PyMuPDF text layer,
    OpenCV (OCR); Ultralytics YOLO (`car_damage.pt`, 6 classes); XGBoost (`mileage_xgb.json`, synthetic
-   trained); LangGraph orchestrator with checkpointing + 12 nodes; db-backed worker.
+   trained); LangGraph orchestrator with checkpointing + 15/16 conditional nodes; db-backed worker.
 6. **Source reading** of the Next.js route handlers, `getSellerOverview`, `Viewer3D`/`VehicleViewer3D`,
    security guard — confirming DB-derived KPIs (no hardcoded stats) and a real GLB with DB-driven
    hotspots (no primitive placeholder).

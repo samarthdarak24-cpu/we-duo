@@ -45,8 +45,8 @@ def test_no_hardcoded_jwt_secret_in_either_runtime():
     ]
     for path in files:
         assert PUBLIC_FALLBACK_SECRET not in path.read_text(encoding="utf-8"), path
-    assert security.SECRET != PUBLIC_FALLBACK_SECRET
-    assert len(security.SECRET) >= 32
+    assert security.signing_secret() != PUBLIC_FALLBACK_SECRET
+    assert len(security.signing_secret()) >= 32
 
 
 def test_token_forged_with_the_old_public_secret_is_rejected():
@@ -61,7 +61,7 @@ def test_token_forged_with_the_old_public_secret_is_rejected():
 def test_alg_none_and_garbage_tokens_are_rejected():
     c = TestClient(app)
     for token in [
-        _forge(security.SECRET, "u-admin", "admin", alg="none"),
+        _forge(security.signing_secret(), "u-admin", "admin", alg="none"),
         "x.y.z",
         "eyJhbGciOiJub25lIn0.e30.",
         "",
@@ -72,7 +72,7 @@ def test_alg_none_and_garbage_tokens_are_rejected():
 
 def test_expired_token_is_rejected():
     c = TestClient(app)
-    token = _forge(security.SECRET, "u-admin", "admin", exp=int(time.time()) - 10)
+    token = _forge(security.signing_secret(), "u-admin", "admin", exp=int(time.time()) - 10)
     r = c.get("/api/backend/audit", headers={"Authorization": f"Bearer {token}"})
     assert r.status_code == 401
 

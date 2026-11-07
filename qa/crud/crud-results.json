@@ -1,0 +1,457 @@
+{
+  "base": "http://127.0.0.1:3200",
+  "tag": "CRUDQ493022",
+  "at": "2026-11-06T14:00:36.508Z",
+  "summary": {
+    "total": 22,
+    "pass": 10,
+    "fail": 12,
+    "warn": 0
+  },
+  "created": {
+    "vehicleId": null,
+    "listingId": null,
+    "docId": null,
+    "inquiryId": null
+  },
+  "steps": [
+    {
+      "id": "S-CREATE-vehicle",
+      "feature": "Add Vehicle wizard — create vehicle",
+      "crud": "CREATE",
+      "role": "seller",
+      "status": "FAIL",
+      "detail": "no vehicles row created with reg_no MH3022QR12",
+      "evidence": {},
+      "ms": 7085,
+      "error": "Error: no vehicles row created with reg_no MH3022QR12 |     at assert (file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:121:20) |     at file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:218:3 |     at async step (file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:103:22)",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+      ],
+      "networkErrors": [
+        "GET http://127.0.0.1:3200/buyer/notifications?_rsc=1ee0n :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/explore?_rsc=1ee0n :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/notifications?_rsc=13g3m :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/vehicles?_rsc=13g3m :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/search?_rsc=1ee0n :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/documents?_rsc=13g3m :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/verification?_rsc=1ee0n :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/history?_rsc=1ee0n :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller?_rsc=13g3m :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/risk?_rsc=1ee0n :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/compare?_rsc=1ee0n :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/history?_rsc=13g3m :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/saved?_rsc=1ee0n :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/verification?_rsc=13g3m :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/fraud?_rsc=13g3m :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/?_rsc=1ee0n :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/inquiries?_rsc=1ee0n :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/?_rsc=13g3m :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/reports?_rsc=1ee0n :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/listings?_rsc=13g3m :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/inquiries?_rsc=13g3m :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/settings?_rsc=1ee0n :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/reports?_rsc=13g3m :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/settings?_rsc=13g3m :: net::ERR_ABORTED",
+        "400 POST http://127.0.0.1:3200/api/v1/seller/vehicles"
+      ]
+    },
+    {
+      "id": "S-READ-vehicles",
+      "feature": "My Vehicles — read created vehicle",
+      "crud": "READ",
+      "role": "seller",
+      "status": "FAIL",
+      "detail": "created vehicle is not listed on /seller/vehicles",
+      "evidence": {},
+      "ms": 1517,
+      "error": "Error: created vehicle is not listed on /seller/vehicles |     at assert (file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:121:20) |     at file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:234:3 |     at runNextTicks (node:internal/process/task_queues:65:5)",
+      "consoleErrors": [],
+      "networkErrors": []
+    },
+    {
+      "id": "S-CREATE-doc-OCR",
+      "feature": "Documents — upload RC, OCR extracts fields",
+      "crud": "CREATE",
+      "role": "seller",
+      "status": "FAIL",
+      "detail": "document row never appeared (null)",
+      "evidence": {},
+      "ms": 40554,
+      "error": "Error: document row never appeared (null) |     at assert (file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:121:20) |     at file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:254:3 |     at async step (file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:103:22)",
+      "consoleErrors": [],
+      "networkErrors": [
+        "GET http://127.0.0.1:3200/seller/add-vehicle?_rsc=mtesg :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/history?_rsc=mtesg :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller?_rsc=mtesg :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/verification?_rsc=mtesg :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/fraud?_rsc=mtesg :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/?_rsc=mtesg :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/listings?_rsc=mtesg :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/inquiries?_rsc=mtesg :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/reports?_rsc=mtesg :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/notifications?_rsc=mtesg :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/settings?_rsc=mtesg :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/vehicles?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/history?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/verification?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/fraud?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/listings?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/inquiries?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/reports?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/notifications?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/settings?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/documents?_rsc=259l3 :: net::ERR_ABORTED"
+      ]
+    },
+    {
+      "id": "S-READ-doc-display",
+      "feature": "Documents — extracted OCR fields displayed",
+      "crud": "READ",
+      "role": "seller",
+      "status": "PASS",
+      "detail": "OCR section rendered (reg number on page: false)",
+      "evidence": {
+        "detail": "OCR section rendered (reg number on page: false)",
+        "regVisible": false
+      },
+      "ms": 3968,
+      "consoleErrors": [],
+      "networkErrors": [
+        "GET http://127.0.0.1:3200/seller/vehicles?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/verification?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/fraud?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/listings?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/inquiries?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/reports?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/notifications?_rsc=1qukc :: net::ERR_ABORTED"
+      ]
+    },
+    {
+      "id": "S-UPDATE-doc-replace",
+      "feature": "Documents — replace with new version",
+      "crud": "UPDATE",
+      "role": "seller",
+      "status": "FAIL",
+      "detail": "no new document version was created",
+      "evidence": {},
+      "ms": 41138,
+      "error": "Error: no new document version was created |     at assert (file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:121:20) |     at file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:307:3 |     at async step (file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:103:22)",
+      "consoleErrors": [],
+      "networkErrors": [
+        "GET http://127.0.0.1:3200/seller/notifications?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/vehicles?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/add-vehicle?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/history?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/verification?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/fraud?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/listings?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/inquiries?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/reports?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/settings?_rsc=1qukc :: net::ERR_ABORTED"
+      ]
+    },
+    {
+      "id": "S-UPDATE-doc-reverify",
+      "feature": "Documents — re-verify after replacement",
+      "crud": "UPDATE",
+      "role": "seller",
+      "status": "FAIL",
+      "detail": "document row vanished",
+      "evidence": {},
+      "ms": 5388,
+      "error": "Error: document row vanished |     at assert (file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:121:20) |     at file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:324:3 |     at async step (file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:103:22)",
+      "consoleErrors": [],
+      "networkErrors": [
+        "GET http://127.0.0.1:3200/seller/vehicles?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/add-vehicle?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/verification?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/fraud?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/listings?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/inquiries?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/reports?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/notifications?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/settings?_rsc=1qukc :: net::ERR_ABORTED"
+      ]
+    },
+    {
+      "id": "S-CREATE-listing",
+      "feature": "Listings — create listing draft",
+      "crud": "CREATE",
+      "role": "seller",
+      "status": "FAIL",
+      "detail": "locator.fill: Error: Element is not an <input>, <textarea>, <select> or [contenteditable] and does not have a role allowing [aria-readonly]\nCall log:\n\u001b[2m  - waiting for getByLabel(/^Description/).first()\u001b[22m\n\u001b[2m    - locator resolved to <button class=\"td-btn td-btn-ghost td-btn-sm -mt-1\">…</button>\u001b[22m\n\u001b[2m    - fill(\"Listing created by the live CRUD sweep CRUDQ493022.\")\u001b[22m\n\u001b[2m  - attemptin",
+      "evidence": {},
+      "ms": 1515,
+      "error": "locator.fill: Error: Element is not an <input>, <textarea>, <select> or [contenteditable] and does not have a role allowing [aria-readonly] | Call log: | \u001b[2m  - waiting for getByLabel(/^Description/).first()\u001b[22m | \u001b[2m    - locator resolved to <button class=\"td-btn td-btn-ghost td-btn-sm -mt-1\">…</button>\u001b[22m",
+      "consoleErrors": [],
+      "networkErrors": [
+        "GET http://127.0.0.1:3200/seller/notifications?_rsc=1f3f1 :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/vehicles?_rsc=1f3f1 :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/add-vehicle?_rsc=1f3f1 :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/?_rsc=1f3f1 :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/history?_rsc=1f3f1 :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/verification?_rsc=1f3f1 :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/fraud?_rsc=1f3f1 :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/inquiries?_rsc=1f3f1 :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/reports?_rsc=1f3f1 :: net::ERR_ABORTED"
+      ]
+    },
+    {
+      "id": "S-UPDATE-listing-publish",
+      "feature": "Listings — publish draft",
+      "crud": "UPDATE",
+      "role": "seller",
+      "status": "FAIL",
+      "detail": "Cannot read properties of undefined (reading 'status')",
+      "evidence": {},
+      "ms": 4183,
+      "error": "TypeError: Cannot read properties of undefined (reading 'status') |     at file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:358:14 |     at async step (file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:103:22) |     at async file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:348:1",
+      "consoleErrors": [],
+      "networkErrors": []
+    },
+    {
+      "id": "S-READ-published-visible",
+      "feature": "Marketplace — published listing visible to buyer",
+      "crud": "READ",
+      "role": "seller",
+      "status": "FAIL",
+      "detail": "published listing is NOT visible in the buyer marketplace",
+      "evidence": {},
+      "ms": 1046,
+      "error": "Error: published listing is NOT visible in the buyer marketplace |     at assert (file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:121:20) |     at file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:368:3 |     at async step (file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:103:22)",
+      "consoleErrors": [],
+      "networkErrors": [
+        "GET http://127.0.0.1:3200/buyer/notifications?_rsc=1ev65 :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/?_rsc=1ev65 :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/risk?_rsc=1ev65 :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/compare?_rsc=1ev65 :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/saved?_rsc=1ev65 :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/inquiries?_rsc=1ev65 :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/reports?_rsc=1ev65 :: net::ERR_ABORTED"
+      ]
+    },
+    {
+      "id": "S-UPDATE-listing-pause-resume",
+      "feature": "Listings — pause then resume",
+      "crud": "UPDATE",
+      "role": "seller",
+      "status": "PASS",
+      "detail": "no Pause control",
+      "evidence": {
+        "status": "WARN",
+        "detail": "no Pause control"
+      },
+      "ms": 618,
+      "consoleErrors": [],
+      "networkErrors": []
+    },
+    {
+      "id": "S-UPDATE-vehicle-mileage",
+      "feature": "Vehicle detail — update mileage",
+      "crud": "UPDATE",
+      "role": "seller",
+      "status": "PASS",
+      "detail": "no mileage input found on the vehicle detail page",
+      "evidence": {
+        "status": "WARN",
+        "detail": "no mileage input found on the vehicle detail page"
+      },
+      "ms": 683,
+      "consoleErrors": [],
+      "networkErrors": []
+    },
+    {
+      "id": "B-CREATE-saved",
+      "feature": "Vehicle detail — save vehicle (wishlist)",
+      "crud": "CREATE",
+      "role": "buyer",
+      "status": "PASS",
+      "detail": "no Save control on the vehicle page",
+      "evidence": {
+        "status": "WARN",
+        "detail": "no Save control on the vehicle page"
+      },
+      "ms": 713,
+      "consoleErrors": [],
+      "networkErrors": []
+    },
+    {
+      "id": "B-READ-saved",
+      "feature": "Saved vehicles — persisted after reload",
+      "crud": "READ",
+      "role": "buyer",
+      "status": "FAIL",
+      "detail": "saved vehicle does not appear on /buyer/saved",
+      "evidence": {},
+      "ms": 2339,
+      "error": "Error: saved vehicle does not appear on /buyer/saved |     at assert (file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:121:20) |     at file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:445:3 |     at async step (file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:103:22)",
+      "consoleErrors": [],
+      "networkErrors": [
+        "GET http://127.0.0.1:3200/buyer/explore?_rsc=30phk :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/search?_rsc=30phk :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/verification?_rsc=30phk :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer?_rsc=30phk :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/?_rsc=30phk :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/history?_rsc=30phk :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/risk?_rsc=30phk :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/compare?_rsc=30phk :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/inquiries?_rsc=30phk :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/reports?_rsc=30phk :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/notifications?_rsc=30phk :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/settings?_rsc=30phk :: net::ERR_ABORTED"
+      ]
+    },
+    {
+      "id": "B-CREATE-inquiry",
+      "feature": "Vehicle detail — contact seller (create inquiry)",
+      "crud": "CREATE",
+      "role": "buyer",
+      "status": "PASS",
+      "detail": "no Contact seller control",
+      "evidence": {
+        "status": "WARN",
+        "detail": "no Contact seller control"
+      },
+      "ms": 626,
+      "consoleErrors": [],
+      "networkErrors": []
+    },
+    {
+      "id": "B-CREATE-inquiry-message",
+      "feature": "Inquiry thread — buyer sends a message",
+      "crud": "CREATE",
+      "role": "buyer",
+      "status": "PASS",
+      "detail": "no message composer",
+      "evidence": {
+        "status": "WARN",
+        "detail": "no message composer"
+      },
+      "ms": 626,
+      "consoleErrors": [],
+      "networkErrors": []
+    },
+    {
+      "id": "S-CREATE-reply",
+      "feature": "Inquiry thread — seller replies",
+      "crud": "CREATE",
+      "role": "seller",
+      "status": "PASS",
+      "detail": "no reply composer for the seller",
+      "evidence": {
+        "status": "WARN",
+        "detail": "no reply composer for the seller"
+      },
+      "ms": 687,
+      "consoleErrors": [],
+      "networkErrors": []
+    },
+    {
+      "id": "B-READ-reply",
+      "feature": "Inquiry thread — buyer sees the seller reply",
+      "crud": "READ",
+      "role": "buyer",
+      "status": "FAIL",
+      "detail": "the buyer cannot see the seller reply",
+      "evidence": {},
+      "ms": 1819,
+      "error": "Error: the buyer cannot see the seller reply |     at assert (file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:121:20) |     at file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:509:3 |     at async step (file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:103:22)",
+      "consoleErrors": [],
+      "networkErrors": []
+    },
+    {
+      "id": "B-UPDATE-inquiry-close",
+      "feature": "Inquiry — buyer closes / cancels",
+      "crud": "UPDATE",
+      "role": "buyer",
+      "status": "PASS",
+      "detail": "no close/cancel control for the buyer",
+      "evidence": {
+        "status": "WARN",
+        "detail": "no close/cancel control for the buyer"
+      },
+      "ms": 665,
+      "consoleErrors": [],
+      "networkErrors": []
+    },
+    {
+      "id": "B-CREATE-comparison",
+      "feature": "Compare — save a comparison",
+      "crud": "CREATE",
+      "role": "buyer",
+      "status": "FAIL",
+      "detail": "Cannot read properties of undefined (reading 'id')",
+      "evidence": {},
+      "ms": 1,
+      "error": "TypeError: Cannot read properties of undefined (reading 'id') |     at file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:529:68 |     at step (file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:103:28) |     at file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:527:7",
+      "consoleErrors": [],
+      "networkErrors": []
+    },
+    {
+      "id": "B-DELETE-saved",
+      "feature": "Saved vehicles — remove from wishlist",
+      "crud": "DELETE",
+      "role": "buyer",
+      "status": "PASS",
+      "detail": "no remove control on /buyer/saved",
+      "evidence": {
+        "status": "WARN",
+        "detail": "no remove control on /buyer/saved"
+      },
+      "ms": 2063,
+      "consoleErrors": [],
+      "networkErrors": [
+        "GET http://127.0.0.1:3200/buyer/explore?_rsc=30phk :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/search?_rsc=30phk :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/notifications?_rsc=30phk :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/?_rsc=30phk :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/risk?_rsc=30phk :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/compare?_rsc=30phk :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/reports?_rsc=30phk :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/buyer/settings?_rsc=30phk :: net::ERR_ABORTED"
+      ]
+    },
+    {
+      "id": "S-DELETE-doc",
+      "feature": "Documents — delete document",
+      "crud": "DELETE",
+      "role": "seller",
+      "status": "FAIL",
+      "detail": "Cannot read properties of undefined (reading 'deleted_at')",
+      "evidence": {},
+      "ms": 4875,
+      "error": "TypeError: Cannot read properties of undefined (reading 'deleted_at') |     at file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:569:14 |     at async step (file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:103:22) |     at async file:///C:/Users/darak/Downloads/finall%20caranimation/qa/crud/crud_sweep.mjs:559:1",
+      "consoleErrors": [],
+      "networkErrors": [
+        "GET http://127.0.0.1:3200/seller/vehicles?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/reports?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/verification?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/fraud?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/listings?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/inquiries?_rsc=1qukc :: net::ERR_ABORTED",
+        "GET http://127.0.0.1:3200/seller/settings?_rsc=1qukc :: net::ERR_ABORTED"
+      ]
+    },
+    {
+      "id": "S-UPDATE-vehicle-archive",
+      "feature": "My Vehicles — archive vehicle",
+      "crud": "UPDATE",
+      "role": "seller",
+      "status": "PASS",
+      "detail": "no Archive control",
+      "evidence": {
+        "status": "WARN",
+        "detail": "no Archive control"
+      },
+      "ms": 698,
+      "consoleErrors": [],
+      "networkErrors": []
+    }
+  ]
+}

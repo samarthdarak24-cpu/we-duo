@@ -13,7 +13,7 @@ from sqlalchemy import text
 
 from .. import db, repository
 from ..config import settings
-from ..security import SECRET, assert_owner, current_user, optional_user, require_role
+from ..security import assert_owner, current_user, optional_user, require_role, signing_secret
 
 router = APIRouter(prefix="/api/backend", tags=["marketplace"])
 
@@ -73,7 +73,7 @@ class SuspiciousReport(BaseModel):
 
 def _signed_share(jti: str, vehicle_id: str) -> str:
     raw = f"{jti}.{vehicle_id}"
-    secret = os.getenv("TD_SHARE_SECRET") or SECRET
+    secret = os.getenv("TD_SHARE_SECRET") or signing_secret()
     sig = hmac.new(secret.encode(), raw.encode(), hashlib.sha256).hexdigest()[:32]
     return f"{raw}.{sig}"
 

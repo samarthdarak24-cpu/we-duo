@@ -61,6 +61,6 @@ python -m pytest -q           # 88 passed
 **Additive, not destructive.** The Next.js application remains the system of
 record for portals, the public REST API and the relational database. A Python
 FastAPI service was added beside it, sharing the same database, for document
-intelligence, fraud detection, the 12-node investigator and background jobs.
+intelligence, fraud detection, the 15/16-node conditional investigator and background jobs.
 One database, two runtimes, no removed feature. See
 `docs/CURRENT_ARCHITECTURE.md` and `docs/TECH_STACK_DECISIONS.md`.

@@ -1,0 +1,98 @@
+{
+  "id": "airun-e39501ec-7c09-48b3-a010-a96775cbffa7",
+  "investigationId": "inv-e1675229e392",
+  "question": "Latency probe. Summarise the verified evidence and open findings.",
+  "answer": "The 15/16-node conditional review found no high-severity unresolved conflict in the stored evidence. Document checks: 2 required Electric Car document type(s) are not on record (rc, insurance). This is missing evidence, NOT evidence of a clean history.. Missing records: Service history not available — unverified coverage, not proof of a clean history. Request an independent inspection before purchase. Orchestrator: langgraph; 16 of 16 registered nodes executed (15 for combustion, 16 for electric).",
+  "citations": [
+    {
+      "kind": "finding",
+      "id": "inv-e1675229e392-f1",
+      "label": "unverified required documents",
+      "detail": "2 required Electric Car document type(s) are not on record (rc, insurance). This is missing evidence, NOT evidence of a clean history."
+    },
+    {
+      "kind": "finding",
+      "id": "inv-e1675229e392-f2",
+      "label": "unverified battery health",
+      "detail": "No battery health record with a source document exists for this electric vehicle. Battery condition is UNVERIFIED; no SOH value has been invented."
+    }
+  ],
+  "findings": [
+    {
+      "id": "inv-e1675229e392-f1",
+      "title": "unverified required documents",
+      "severity": "low",
+      "explanation": "2 required Electric Car document type(s) are not on record (rc, insurance). This is missing evidence, NOT evidence of a clean history.",
+      "evidence": [
+        "rc",
+        "insurance"
+      ],
+      "method": "category-document-coverage",
+      "modelVersion": "fraud-rules-2.0.0-multicategory",
+      "confidence": 1,
+      "recommendation": "Request the missing category-specific documents before publishing."
+    },
+    {
+      "id": "inv-e1675229e392-f2",
+      "title": "unverified battery health",
+      "severity": "low",
+      "explanation": "No battery health record with a source document exists for this electric vehicle. Battery condition is UNVERIFIED; no SOH value has been invented.",
+      "evidence": [],
+      "method": "battery-evidence-coverage",
+      "modelVersion": "fraud-rules-2.0.0-multicategory",
+      "confidence": 1,
+      "recommendation": "Request a dated battery health report from an authorised service centre."
+    }
+  ],
+  "trust": {
+    "score": 0,
+    "coverage": 0
+  },
+  "engine": "investigator-2.0.0-multicategory",
+  "graph": "langgraph-conditional",
+  "orchestrator": "langgraph",
+  "checkpointing": true,
+  "nodes": [
+    "VehicleResolverNode",
+    "VehicleCategoryDetectionNode",
+    "DocumentRetrievalNode",
+    "OCRAnalysisNode",
+    "MileageAnalysisNode",
+    "EVBatteryAnalysisNode",
+    "DamageAnalysisNode",
+    "IdentityVerificationNode",
+    "HistoryCorrelationNode",
+    "AnomalyDetectionNode",
+    "EvidenceGraphNode",
+    "ConflictDetectionNode",
+    "RiskExplanationNode",
+    "HumanReviewNode",
+    "ReportGenerationNode",
+    "ResultPersistenceNode"
+  ],
+  "humanReview": {
+    "required": false,
+    "id": null,
+    "policy": "High-impact unresolved findings are held for authorised human review; no automated decision is final."
+  },
+  "modelVersions": {
+    "agent": "investigator-2.0.0-multicategory",
+    "fraud_rules": "fraud-rules-2.0.0-multicategory",
+    "fraud_rules_legacy": "fraud-rules-1.1.0",
+    "fraud_ml": "sklearn-iforest-lof-1.0.0",
+    "trust_score": "trust-v2-multicategory",
+    "category_spec": "multicategory-1.0.0",
+    "llm": "llm-adapter-1.1.0"
+  },
+  "limitations": [
+    "Evidence is permission-filtered and read from the shared database only.",
+    "An LLM never sets the trust score and never invents verification results.",
+    "LangGraph checkpointing is in-memory; Postgres checkpoint persistence is the documented production target.",
+    "Conditional graph: 16 of 16 registered nodes were relevant to 'electric_car'.",
+    "Battery State of Health is never inferred; missing battery evidence is reported as unverified."
+  ],
+  "rulesetVersion": "fraud-rules-2.0.0-multicategory",
+  "status": "completed",
+  "source": "python-intelligence",
+  "disclaimer": "Evidence review over stored records. An LLM never sets the trust score, clears a finding, or certifies the vehicle. Human review is required for high-impact unresolved findings."
+}

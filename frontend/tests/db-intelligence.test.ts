@@ -38,6 +38,8 @@ import {
   listInvestigations,
 } from "../lib/server/db-intelligence";
 import { getDb, getSchemaUpgradeReport } from "../lib/server/db";
+import { computeVehicleTrust, ensureTrustScoreSnapshot } from "../lib/server/data";
+import { TRUST_VERSION } from "../lib/vehicle-categories";
 
 // Phase 4 integration coverage: the intelligence entities must really exist in
 // the shared database, enforce their constraints, and round-trip data.
@@ -216,6 +218,28 @@ describe("Phase 4 intelligence entities", () => {
     const before = getTrustScoreHistory(vehicleId).length;
     expect(() => getDb().prepare("UPDATE trust_scores SET score = 100 WHERE vehicle_id = ?").run(vehicleId)).toThrow();
     expect(getTrustScoreHistory(vehicleId)).toHaveLength(before);
+  });
+
+  it("persists a real, deduplicated trust snapshot through the data service", () => {
+    const before = getTrustScoreHistory(vehicleId, 1000).length;
+    const first = ensureTrustScoreSnapshot(vehicleId, "u-seller");
+    expect(first.created).toBe(true);
+    expect(first.trust.trustScore).toBe(computeVehicleTrust(vehicleId).trustScore);
+    expect(getTrustScoreHistory(vehicleId, 1000)).toHaveLength(before + 1);
+
+    const latest = getLatestTrustScore(vehicleId)!;
+    expect(latest.score).toBe(first.trust.trustScore);
+    expect(latest.band).toBe(first.trust.band);
+    expect(latest.version).toBe(TRUST_VERSION);
+    expect(latest.method).toBe("deterministic-weighted-evidence-coverage");
+    expect(latest.computed_by).toBe("u-seller");
+    expect(JSON.parse(latest.factors_json)).toEqual(first.trust.breakdown);
+
+    // An unchanged re-computation must not append a second identical row.
+    const second = ensureTrustScoreSnapshot(vehicleId, "u-seller");
+    expect(second.created).toBe(false);
+    expect(second.id).toBe(first.id);
+    expect(getTrustScoreHistory(vehicleId, 1000)).toHaveLength(before + 1);
   });
 
   it("runs the job queue: enqueue, dedupe, claim, progress, succeed, retry, dead", () => {

@@ -35,7 +35,7 @@ export default function SellerDocumentsPage({ searchParams }: { searchParams: { 
           ) : undefined
         }
       >
-        <a href={`/seller/documents?vehicle=${selected?.id ?? ""}`} className="td-btn td-btn-secondary">
+        <a href="#upload-document" className="td-btn td-btn-secondary">
           <Icon name="Upload" size={15} /> Upload document
         </a>
         <a href={`/seller/verification?vehicle=${selected?.id ?? ""}`} className="td-btn td-btn-primary">

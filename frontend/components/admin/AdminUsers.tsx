@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { SectionCard } from "@/components/shared/SectionCard";
+import { formatDateUTC } from "@/lib/format";
 
 export interface AdminUserRow {
   id: string;
@@ -75,7 +76,7 @@ export function AdminUsers({ initial }: { initial: AdminUserRow[] }) {
                   <td className="py-2.5 pr-3 text-muted">{u.email}</td>
                   <td className="py-2.5 pr-3"><span className="td-chip">{u.role}</span></td>
                   <td className="py-2.5 pr-3 text-muted">{u.kycStatus}</td>
-                  <td className="py-2.5 pr-3 text-muted">{new Date(u.createdAt).toLocaleDateString()}</td>
+                  <td className="py-2.5 pr-3 text-muted">{formatDateUTC(u.createdAt)}</td>
                   <td className="py-2.5 text-right">
                     <button
                       type="button"

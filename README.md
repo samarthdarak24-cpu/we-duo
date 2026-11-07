@@ -99,7 +99,7 @@ Python FastAPI backend (backend/)
                        verification, AI, damage, listings, search, saved,
                        compare, inquiries, reports (real PDF), QR, notifications,
                        audit/admin — same scrypt+HS256 users as Next.js
-  /api/intelligence/*  OCR pipeline, fraud detectors, 12-node investigator,
+  /api/intelligence/*  OCR pipeline, fraud detectors, 15/16-node conditional investigator (EV adds EVBatteryAnalysisNode),
                        trust score, background_jobs worker, integrity drift
   SQLAlchemy 2.x reflects the live schema; Alembic migrations are additive only
 ```

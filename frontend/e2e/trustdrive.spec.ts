@@ -10,10 +10,20 @@ const BUYER = { email: "rohan@trustdrive.dev", password: "demo1234" };
 async function login(page: import("@playwright/test").Page, role: "seller" | "buyer") {
   const account = role === "seller" ? SELLER : BUYER;
   await page.goto("/login");
-  await page.getByLabel(/email/i).fill(account.email);
+  // The form is a client component. Filling before hydration completes lets the
+  // React render reset the controlled input to empty (observed on WebKit).
+  // Retry until the typed value survives a render tick.
+  const email = page.getByLabel(/email/i);
+  await expect(email).toBeVisible();
+  for (let attempt = 0; attempt < 4; attempt++) {
+    await email.fill(account.email);
+    await page.waitForTimeout(300);
+    if ((await email.inputValue()) === account.email) break;
+  }
+  await expect(email).toHaveValue(account.email);
   await page.getByLabel(/password/i).fill(account.password);
   await page.locator('form button[type="submit"]').click();
-  await expect(page).toHaveURL(new RegExp(`/${role}`));
+  await expect(page).toHaveURL(new RegExp(`/${role}`), { timeout: 30000 });
 }
 
 test.describe("TrustDrive seller -> buyer, 21 persisted steps", () => {
@@ -22,17 +32,19 @@ test.describe("TrustDrive seller -> buyer, 21 persisted steps", () => {
   test("full workflow", async ({ page }) => {
     await test.step("1. Seller signs in", async () => {
       await login(page, "seller");
-      await expect(page.getByText(/seller|overview/i).first()).toBeVisible();
+      // On narrow viewports a hidden desktop label also matches /seller/.
+      await expect(page.getByRole("heading", { name: /seller portfolio/i })).toBeVisible();
     });
 
     await test.step("2. Seller registers a demo vehicle", async () => {
-      await page.goto("/seller/add-vehicle");
-      await expect(page.getByText(/add vehicle/i).first()).toBeVisible();
+      await page.goto("/seller/add-vehicle", { waitUntil: "networkidle" });
+      await expect(page).toHaveURL(/\/seller\/add-vehicle$/);
+      await expect(page.getByRole("heading", { name: "Add Vehicle", exact: true })).toBeVisible();
     });
 
     await test.step("3. Seller uploads images and documents", async () => {
       await page.goto("/seller/documents");
-      await expect(page.getByText(/documents/i).first()).toBeVisible();
+      await expect(page.locator("#portal-main").getByRole("heading", { name: "Documents", exact: true })).toBeVisible();
     });
 
     await test.step("4. OCR processing is queued (background job)", async () => {
@@ -141,7 +153,8 @@ test.describe("TrustDrive seller -> buyer, 21 persisted steps", () => {
   test("RBAC: a buyer cannot open a seller-only route", async ({ page }) => {
     await login(page, "buyer");
     await page.goto("/seller/vehicles");
-    // The page guard redirects to /login?next=seller (or renders a denial).
+    // The middleware 307 can settle after goto resolves; wait for the redirect.
+    await expect(page).toHaveURL(/\/login/, { timeout: 15000 }).catch(() => {});
     const redirected = /\/login/.test(new URL(page.url()).pathname);
     const denied = await page
       .getByText(/access denied|not authorized|forbidden|sign in/i)

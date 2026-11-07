@@ -25,7 +25,7 @@ published listing is the exact row a buyer's explore query returns.
 | Damage | `damage_records`, `vehicle_inspections` | submit own | read + 3D hotspots | 14 rows seeded |
 | Verification | `verification_*`, `verification_evidence` | run + resolve | read results | 30 evidence rows |
 | AI findings | `findings`, `ai_analysis` | review + act | read risk | 15 rows seeded |
-| Trust score | `trust_scores` | computed, shown | shown | 30 rows, versioned `trust-score-2.0.0` |
+| Trust score | `trust_scores` | computed, shown | shown | 30 rows, versioned `trust-v2-multicategory` |
 | Inquiries | `inquiries` (`buyer_id`,`seller_id`) | reply/negotiate own | create/read own | RBAC by `buyer_id`/`seller_id` |
 | Saved / compare | `saved_vehicles`, `saved_comparisons` | — | save/compare | buyer-only |
 | Integrity | `chain_records`, `audit_logs` | append | read | 125 + 48 rows; SHA-256 |

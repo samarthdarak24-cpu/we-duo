@@ -1,0 +1,4809 @@
+{
+  "startedAt": "2026-11-06T10:22:56.222Z",
+  "base": "http://localhost:3000",
+  "login": {
+    "ok": true,
+    "finalUrl": "http://localhost:3000/buyer"
+  },
+  "pages": [
+    {
+      "label": "01-overview",
+      "url": "/buyer",
+      "status": 200,
+      "finalUrl": "http://localhost:3000/buyer",
+      "screenshot": "qa/live-browser/qa-2026-11-06/buyer/discovery/01-overview.png",
+      "title": "TrustDrive — Buyer Portal",
+      "h1": "Good to see you, Aditya",
+      "styleSheets": 1,
+      "bodyFont": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif, \"Plus Jakarta Sans\", Inter, sans-serif, Inter, system-ui, sans-serif",
+      "bodyBackground": "color(srgb 0.0901961 0.0980392 0.105882)",
+      "canvases": 0,
+      "webgl2": true,
+      "bodyTextLength": 3075,
+      "bodyTextPreview": "Skip to content TRUSTDRIVE Buyer Workspace WORKSPACE Overview Explore Vehicles Search & Filters Vehicle Verification Vehicle History AI Risk Analysis Compare Vehicles Saved Vehicles 4 Inquiries 5 ACCOUNT Reports Notifications 19 Profile & Settings Evidence before claims. Verify before you buy. Verify a vehicle Demo workspace · seeded data Enter SECURE 9+ AD Aditya Darak Buyer BUYER WORKSPACE Good to see you, Aditya Discover a vehicle, inspect what is on record, and decide with evidence — not listing copy. 12 explored 4 saved Scores from verified records Verify a vehicle Explore vehicles Vehicles Explored 12 Across the marketplace Saved Vehicles 4 Shortlist ready Recently Viewed 3 Last 30 days Pending Reports 1 Reports in progress Demo photo FEATURED VERIFICATION MH01AB1234 2021 · PETROL · AUTOMATIC BMW 3 Series 330i 42,000 km claimed · 100% evidence coverage. Open the report to see every source, finding and missing record behind this score. Open full report 3D inspection TRUST SCORE 40/100 EVIDENCE COVERAGE 100% MILEAGE CLAIMED 42,000 km MARKET ESTIMATE ₹ 26,00,000 Recommended for you Ranked by evidence coverage, not by paid placement. View all Demo photo BMW 3 Series 40 2021 · 42,",
+      "inputs": [
+        {
+          "id": "",
+          "name": "",
+          "type": "search",
+          "placeholder": "Search registration, VIN or vehicle ID",
+          "value": "",
+          "required": false,
+          "disabled": false
+        }
+      ],
+      "textareas": [],
+      "selects": [],
+      "buttons": [
+        {
+          "text": "",
+          "ariaLabel": "Collapse sidebar",
+          "title": "Collapse sidebar",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Switch to Night mode",
+          "title": "Day mode — switch to Night",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": null,
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Remove BMW 3 Series from saved",
+          "title": "Saved",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Remove Audi A4 from saved",
+          "title": "Saved",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Remove Mercedes-Benz C-Class from saved",
+          "title": "Saved",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Save Hyundai Creta",
+          "title": "Save vehicle",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "How is the trust score calculated?",
+          "title": "Trust score is computed by a deterministic rules engine from verified records — not by an LLM.",
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Ask TrustDrive",
+          "ariaLabel": "Open TrustDrive AI assistant",
+          "title": null,
+          "type": "button",
+          "disabled": false
+        }
+      ],
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "#portal-main"
+        },
+        {
+          "text": "TRUSTDRIVE Buyer Workspace",
+          "href": "/"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore Vehicles",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search & Filters",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Vehicle Verification",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Vehicle History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "AI Risk Analysis",
+          "href": "/buyer/risk"
+        },
+        {
+          "text": "Compare Vehicles",
+          "href": "/buyer/compare"
+        },
+        {
+          "text": "Saved Vehicles 4",
+          "href": "/buyer/saved"
+        },
+        {
+          "text": "Inquiries 5",
+          "href": "/buyer/inquiries"
+        },
+        {
+          "text": "Reports",
+          "href": "/buyer/reports"
+        },
+        {
+          "text": "Notifications 19",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "Profile & Settings",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "Verify a vehicle",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Verify",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "TRUSTDRIVE",
+          "href": "/"
+        },
+        {
+          "text": "9+",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "Verify a vehicle",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Explore vehicles",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Vehicles Explored 12 Across the marketplace",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Saved Vehicles 4 Shortlist ready",
+          "href": "/buyer/saved"
+        },
+        {
+          "text": "Recently Viewed 3 Last 30 days",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Pending Reports 1 Reports in progress",
+          "href": "/buyer/reports"
+        },
+        {
+          "text": "Open full report",
+          "href": "/vehicle/v-bmw"
+        },
+        {
+          "text": "3D inspection",
+          "href": "/vehicle/v-bmw#viewer"
+        },
+        {
+          "text": "View all",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Demo photo BMW 3 Series 40 2021 · 42,000 km · Petrol ₹ 26,00,000",
+          "href": "/vehicle/v-bmw"
+        },
+        {
+          "text": "Audi A4 92 2020 · 58,000 km · Petrol ₹ 22,50,000",
+          "href": "/vehicle/v-audi"
+        },
+        {
+          "text": "Demo photo Mercedes-Benz C-Class 95 2022 · 31,000 km · Petrol ₹ 34,00,000",
+          "href": "/vehicle/v-merc"
+        },
+        {
+          "text": "Hyundai Creta 100 2021 · 36,000 km · Petrol ₹ 14,50,000",
+          "href": "/vehicle/v-hyundai"
+        },
+        {
+          "text": "Suspicious Honda City Trust score changed to 0/100 — review the open findings.",
+          "href": "/vehicle/v-1793876471230"
+        },
+        {
+          "text": "Pending BMW 3 Series Trust score changed to 40/100 — review the open findings.",
+          "href": "/vehicle/v-bmw"
+        },
+        {
+          "text": "Methodology",
+          "href": "/buyer/risk"
+        },
+        {
+          "text": "Inbox",
+          "href": "/buyer/inquiries"
+        }
+      ],
+      "apiResponses": [
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1793960579301",
+          "status": 200,
+          "contentType": "text/css; charset=UTF-8"
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "02-explore",
+      "url": "/buyer/explore",
+      "status": 200,
+      "finalUrl": "http://localhost:3000/buyer/explore",
+      "screenshot": "qa/live-browser/qa-2026-11-06/buyer/discovery/02-explore.png",
+      "title": "Explore Vehicles — TrustDrive",
+      "h1": "Explore vehicles",
+      "styleSheets": 1,
+      "bodyFont": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif, \"Plus Jakarta Sans\", Inter, sans-serif, Inter, system-ui, sans-serif",
+      "bodyBackground": "color(srgb 0.0901961 0.0980392 0.105882)",
+      "canvases": 0,
+      "webgl2": true,
+      "bodyTextLength": 2496,
+      "bodyTextPreview": "Skip to content TRUSTDRIVE Buyer Workspace WORKSPACE Overview Explore Vehicles Search & Filters Vehicle Verification Vehicle History AI Risk Analysis Compare Vehicles Saved Vehicles 4 Inquiries 5 ACCOUNT Reports Notifications 19 Profile & Settings Evidence before claims. Verify before you buy. Verify a vehicle Demo workspace · seeded data Enter SECURE 9+ AD Aditya Darak Buyer MARKETPLACE Explore vehicles Every card links to the evidence behind it — documents, mileage, findings and inspection records. 13 listings Deterministic scores Compare Advanced filters All Recently added Popular Verified Recommended Sorted by evidence coverage and recency. HO Trust 0/100 Damage record Honda City 2021 · VX · 45,000 km ₹ 8,75,000 asking Petrol Automatic Mumbai, Maharashtra 1 open finding — review before buying BM Trust 100/100 BMW Motorrad R 1250 GS 2021 · Triple Black · 22,000 km ₹ 20,50,000 asking Petrol Manual Pune RO Trust 100/100 Royal Enfield Continental GT 650 2021 · Custom · 16,500 km ₹ 3,20,000 asking Petrol Manual Pune DU Trust 100/100 Ducati Panigale V4 2022 · Standard · 12,000 km ₹ 18,50,000 asking Petrol Manual Mumbai HO Trust 100/100 Honda City 2020 · ZX CVT · 47,000 km ₹ 10,50,000",
+      "inputs": [
+        {
+          "id": "",
+          "name": "",
+          "type": "search",
+          "placeholder": "Search registration, VIN or vehicle ID",
+          "value": "",
+          "required": false,
+          "disabled": false
+        }
+      ],
+      "textareas": [],
+      "selects": [],
+      "buttons": [
+        {
+          "text": "",
+          "ariaLabel": "Collapse sidebar",
+          "title": "Collapse sidebar",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Switch to Night mode",
+          "title": "Day mode — switch to Night",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": null,
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Save vehicle",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Save vehicle",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Save vehicle",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Save vehicle",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Save vehicle",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Save vehicle",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Save vehicle",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Remove from saved",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Remove from saved",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Remove from saved",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Save vehicle",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Save vehicle",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Save vehicle",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Ask TrustDrive",
+          "ariaLabel": "Open TrustDrive AI assistant",
+          "title": null,
+          "type": "button",
+          "disabled": false
+        }
+      ],
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "#portal-main"
+        },
+        {
+          "text": "TRUSTDRIVE Buyer Workspace",
+          "href": "/"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore Vehicles",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search & Filters",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Vehicle Verification",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Vehicle History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "AI Risk Analysis",
+          "href": "/buyer/risk"
+        },
+        {
+          "text": "Compare Vehicles",
+          "href": "/buyer/compare"
+        },
+        {
+          "text": "Saved Vehicles 4",
+          "href": "/buyer/saved"
+        },
+        {
+          "text": "Inquiries 5",
+          "href": "/buyer/inquiries"
+        },
+        {
+          "text": "Reports",
+          "href": "/buyer/reports"
+        },
+        {
+          "text": "Notifications 19",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "Profile & Settings",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "Verify a vehicle",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Verify",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "TRUSTDRIVE",
+          "href": "/"
+        },
+        {
+          "text": "9+",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "Compare",
+          "href": "/buyer/compare"
+        },
+        {
+          "text": "Advanced filters",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "All",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Recently added",
+          "href": "/buyer/explore?tab=Recently%20added"
+        },
+        {
+          "text": "Popular",
+          "href": "/buyer/explore?tab=Popular"
+        },
+        {
+          "text": "Verified",
+          "href": "/buyer/explore?tab=Verified"
+        },
+        {
+          "text": "Recommended",
+          "href": "/buyer/explore?tab=Recommended"
+        },
+        {
+          "text": "HO",
+          "href": "/vehicle/v-1793959415934"
+        },
+        {
+          "text": "Honda City 2021 · VX · 45,000 km ₹ 8,75,000 asking Petrol Automatic Mumbai, Maharashtra 1 open finding — review before buying",
+          "href": "/vehicle/v-1793959415934"
+        },
+        {
+          "text": "BM",
+          "href": "/vehicle/v-bmw-bike"
+        },
+        {
+          "text": "BMW Motorrad R 1250 GS 2021 · Triple Black · 22,000 km ₹ 20,50,000 asking Petrol Manual Pune",
+          "href": "/vehicle/v-bmw-bike"
+        },
+        {
+          "text": "RO",
+          "href": "/vehicle/v-royalenfield"
+        },
+        {
+          "text": "Royal Enfield Continental GT 650 2021 · Custom · 16,500 km ₹ 3,20,000 asking Petrol Manual Pune",
+          "href": "/vehicle/v-royalenfield"
+        },
+        {
+          "text": "DU",
+          "href": "/vehicle/v-ducati"
+        },
+        {
+          "text": "Ducati Panigale V4 2022 · Standard · 12,000 km ₹ 18,50,000 asking Petrol Manual Mumbai",
+          "href": "/vehicle/v-ducati"
+        },
+        {
+          "text": "HO",
+          "href": "/vehicle/v-honda"
+        },
+        {
+          "text": "Honda City 2020 · ZX CVT · 47,000 km ₹ 10,50,000 asking Petrol Automatic Mumbai",
+          "href": "/vehicle/v-honda"
+        },
+        {
+          "text": "HY",
+          "href": "/vehicle/v-hyundai"
+        },
+        {
+          "text": "Hyundai Creta 2021 · SX(O) · 36,000 km ₹ 14,50,000 asking Petrol Automatic Nagpur",
+          "href": "/vehicle/v-hyundai"
+        },
+        {
+          "text": "KA",
+          "href": "/vehicle/v-kawasaki"
+        },
+        {
+          "text": "Kawasaki Ninja ZX-10R 2020 · ABS · 14,000 km ₹ 14,20,000 asking Petrol Manual Mumbai",
+          "href": "/vehicle/v-kawasaki"
+        },
+        {
+          "text": "Demo photo",
+          "href": "/vehicle/v-merc"
+        },
+        {
+          "text": "Mercedes-Benz C-Class 2022 · C200 · 31,000 km ₹ 34,00,000 asking Petrol Automatic Mumbai 1 open finding — review before buying",
+          "href": "/vehicle/v-merc"
+        },
+        {
+          "text": "AU",
+          "href": "/vehicle/v-audi"
+        },
+        {
+          "text": "Audi A4 2020 · 40 TFSI · 58,000 km ₹ 22,50,000 asking Petrol Automatic Pune 1 open finding — review before buying",
+          "href": "/vehicle/v-audi"
+        },
+        {
+          "text": "Demo photo",
+          "href": "/vehicle/v-bmw"
+        },
+        {
+          "text": "BMW 3 Series 2021 · 330i · 42,000 km ₹ 26,00,000 asking Petrol Automatic Mumbai 3 open findings — review before buying",
+          "href": "/vehicle/v-bmw"
+        },
+        {
+          "text": "TO",
+          "href": "/vehicle/v-toyota"
+        },
+        {
+          "text": "Toyota Fortuner 2019 · 4x2 AT · 88,000 km ₹ 27,50,000 asking Diesel Automatic Hyderabad 1 open finding — review before buying",
+          "href": "/vehicle/v-toyota"
+        },
+        {
+          "text": "TO",
+          "href": "/vehicle/v-camry"
+        },
+        {
+          "text": "Toyota Camry 2021 · Hybrid · 51,200 km ₹ 21,50,000 asking Hybrid Automatic Pune 3 open findings — review before buying",
+          "href": "/vehicle/v-camry"
+        },
+        {
+          "text": "Demo photo",
+          "href": "/vehicle/v-seller"
+        },
+        {
+          "text": "BMW 3 Series 2015 · 320d · 72,450 km ₹ 5,80,000 asking Diesel Automatic Mumbai 3 open findings — review before buying",
+          "href": "/vehicle/v-seller"
+        }
+      ],
+      "apiResponses": [
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1793960584394",
+          "status": 200,
+          "contentType": "text/css; charset=UTF-8"
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "03-search",
+      "url": "/buyer/search",
+      "status": 200,
+      "finalUrl": "http://localhost:3000/buyer/search",
+      "screenshot": "qa/live-browser/qa-2026-11-06/buyer/discovery/03-search.png",
+      "title": "Search & Filters — TrustDrive",
+      "h1": "Search & filters",
+      "styleSheets": 1,
+      "bodyFont": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif, \"Plus Jakarta Sans\", Inter, sans-serif, Inter, system-ui, sans-serif",
+      "bodyBackground": "color(srgb 0.0901961 0.0980392 0.105882)",
+      "canvases": 0,
+      "webgl2": true,
+      "bodyTextLength": 3174,
+      "bodyTextPreview": "Skip to content TRUSTDRIVE Buyer Workspace WORKSPACE Overview Explore Vehicles Search & Filters Vehicle Verification Vehicle History AI Risk Analysis Compare Vehicles Saved Vehicles 4 Inquiries 5 ACCOUNT Reports Notifications 19 Profile & Settings Evidence before claims. Verify before you buy. Verify a vehicle Demo workspace · seeded data Enter SECURE 9+ AD Aditya Darak Buyer MARKETPLACE Search & filters 13 listings match your filters. Every result is backed by its stored verification record. Browse Filters All filters run against persisted listing and verification data. Keyword Make Any make Audi BMW BMW Motorrad Ducati Honda Hyundai Kawasaki Mercedes-Benz Royal Enfield Toyota Min price (₹) Max price (₹) Year from Year to Max mileage (km) Location Fuel Any fuel Petrol Diesel CNG Hybrid Electric Transmission Any transmission Automatic Manual Ownership (max) Any First owner Up to 2 owners Up to 3 owners Condition Any condition Excellent Good Fair Needs work Verification Any trust level Verified (65+) Caution (below 65) Accident records Any None found Records found Minimum trust score Sort by Newest first Lowest price Highest price Lowest mileage Highest trust Recently verified Apply",
+      "inputs": [
+        {
+          "id": "",
+          "name": "",
+          "type": "search",
+          "placeholder": "Search registration, VIN or vehicle ID",
+          "value": "",
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "text",
+          "placeholder": "Make, model, location…",
+          "value": "",
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "number",
+          "placeholder": "",
+          "value": "",
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "number",
+          "placeholder": "",
+          "value": "",
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "number",
+          "placeholder": "",
+          "value": "",
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "number",
+          "placeholder": "",
+          "value": "",
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "number",
+          "placeholder": "",
+          "value": "",
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "text",
+          "placeholder": "",
+          "value": "",
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "number",
+          "placeholder": "",
+          "value": "",
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "text",
+          "placeholder": "e.g. Automatic BMW under ₹30L",
+          "value": "",
+          "required": false,
+          "disabled": false
+        }
+      ],
+      "textareas": [],
+      "selects": [
+        {
+          "id": "",
+          "name": "",
+          "value": "",
+          "options": [
+            {
+              "value": "",
+              "text": "Any make"
+            },
+            {
+              "value": "Audi",
+              "text": "Audi"
+            },
+            {
+              "value": "BMW",
+              "text": "BMW"
+            },
+            {
+              "value": "BMW Motorrad",
+              "text": "BMW Motorrad"
+            },
+            {
+              "value": "Ducati",
+              "text": "Ducati"
+            },
+            {
+              "value": "Honda",
+              "text": "Honda"
+            },
+            {
+              "value": "Hyundai",
+              "text": "Hyundai"
+            },
+            {
+              "value": "Kawasaki",
+              "text": "Kawasaki"
+            },
+            {
+              "value": "Mercedes-Benz",
+              "text": "Mercedes-Benz"
+            },
+            {
+              "value": "Royal Enfield",
+              "text": "Royal Enfield"
+            },
+            {
+              "value": "Toyota",
+              "text": "Toyota"
+            }
+          ]
+        },
+        {
+          "id": "",
+          "name": "",
+          "value": "",
+          "options": [
+            {
+              "value": "",
+              "text": "Any fuel"
+            },
+            {
+              "value": "Petrol",
+              "text": "Petrol"
+            },
+            {
+              "value": "Diesel",
+              "text": "Diesel"
+            },
+            {
+              "value": "CNG",
+              "text": "CNG"
+            },
+            {
+              "value": "Hybrid",
+              "text": "Hybrid"
+            },
+            {
+              "value": "Electric",
+              "text": "Electric"
+            }
+          ]
+        },
+        {
+          "id": "",
+          "name": "",
+          "value": "",
+          "options": [
+            {
+              "value": "",
+              "text": "Any transmission"
+            },
+            {
+              "value": "Automatic",
+              "text": "Automatic"
+            },
+            {
+              "value": "Manual",
+              "text": "Manual"
+            }
+          ]
+        },
+        {
+          "id": "",
+          "name": "",
+          "value": "",
+          "options": [
+            {
+              "value": "",
+              "text": "Any"
+            },
+            {
+              "value": "1",
+              "text": "First owner"
+            },
+            {
+              "value": "2",
+              "text": "Up to 2 owners"
+            },
+            {
+              "value": "3",
+              "text": "Up to 3 owners"
+            }
+          ]
+        },
+        {
+          "id": "",
+          "name": "",
+          "value": "",
+          "options": [
+            {
+              "value": "",
+              "text": "Any condition"
+            },
+            {
+              "value": "Excellent",
+              "text": "Excellent"
+            },
+            {
+              "value": "Good",
+              "text": "Good"
+            },
+            {
+              "value": "Fair",
+              "text": "Fair"
+            },
+            {
+              "value": "Needs work",
+              "text": "Needs work"
+            }
+          ]
+        },
+        {
+          "id": "",
+          "name": "",
+          "value": "all",
+          "options": [
+            {
+              "value": "all",
+              "text": "Any trust level"
+            },
+            {
+              "value": "verified",
+              "text": "Verified (65+)"
+            },
+            {
+              "value": "caution",
+              "text": "Caution (below 65)"
+            }
+          ]
+        },
+        {
+          "id": "",
+          "name": "",
+          "value": "all",
+          "options": [
+            {
+              "value": "all",
+              "text": "Any"
+            },
+            {
+              "value": "none",
+              "text": "None found"
+            },
+            {
+              "value": "found",
+              "text": "Records found"
+            }
+          ]
+        },
+        {
+          "id": "",
+          "name": "",
+          "value": "",
+          "options": [
+            {
+              "value": "",
+              "text": "Newest first"
+            },
+            {
+              "value": "lowest_price",
+              "text": "Lowest price"
+            },
+            {
+              "value": "highest_price",
+              "text": "Highest price"
+            },
+            {
+              "value": "lowest_mileage",
+              "text": "Lowest mileage"
+            },
+            {
+              "value": "highest_trust",
+              "text": "Highest trust"
+            },
+            {
+              "value": "recently_verified",
+              "text": "Recently verified"
+            }
+          ]
+        }
+      ],
+      "buttons": [
+        {
+          "text": "",
+          "ariaLabel": "Collapse sidebar",
+          "title": "Collapse sidebar",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Switch to Night mode",
+          "title": "Day mode — switch to Night",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": null,
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "Apply filters",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Reset",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Save search",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Delete saved search Automatic SUVs in Pune",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Delete saved search Verified BMW under ₹30L",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Save vehicle",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Save vehicle",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Save vehicle",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Save vehicle",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Save vehicle",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Save vehicle",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Save vehicle",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Remove from saved",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Remove from saved",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Remove from saved",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Save vehicle",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Save vehicle",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Ask TrustDrive",
+          "ariaLabel": "Open TrustDrive AI assistant",
+          "title": null,
+          "type": "button",
+          "disabled": false
+        }
+      ],
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "#portal-main"
+        },
+        {
+          "text": "TRUSTDRIVE Buyer Workspace",
+          "href": "/"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore Vehicles",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search & Filters",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Vehicle Verification",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Vehicle History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "AI Risk Analysis",
+          "href": "/buyer/risk"
+        },
+        {
+          "text": "Compare Vehicles",
+          "href": "/buyer/compare"
+        },
+        {
+          "text": "Saved Vehicles 4",
+          "href": "/buyer/saved"
+        },
+        {
+          "text": "Inquiries 5",
+          "href": "/buyer/inquiries"
+        },
+        {
+          "text": "Reports",
+          "href": "/buyer/reports"
+        },
+        {
+          "text": "Notifications 19",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "Profile & Settings",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "Verify a vehicle",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Verify",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "TRUSTDRIVE",
+          "href": "/"
+        },
+        {
+          "text": "9+",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "Browse",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Automatic SUVs in Pune 2 filters · alerts off",
+          "href": "/buyer/search?transmission=Automatic&location=Pune"
+        },
+        {
+          "text": "Verified BMW under ₹30L 3 filters · alerts on",
+          "href": "/buyer/search?make=BMW&priceMax=3000000&verification=verified"
+        },
+        {
+          "text": "HO",
+          "href": "/vehicle/v-1793959415934"
+        },
+        {
+          "text": "Honda City 2021 · VX · 45,000 km ₹ 8,75,000 asking Petrol Automatic Mumbai, Maharashtra 1 open finding — review before buying",
+          "href": "/vehicle/v-1793959415934"
+        },
+        {
+          "text": "BM",
+          "href": "/vehicle/v-bmw-bike"
+        },
+        {
+          "text": "BMW Motorrad R 1250 GS 2021 · Triple Black · 22,000 km ₹ 20,50,000 asking Petrol Manual Pune",
+          "href": "/vehicle/v-bmw-bike"
+        },
+        {
+          "text": "RO",
+          "href": "/vehicle/v-royalenfield"
+        },
+        {
+          "text": "Royal Enfield Continental GT 650 2021 · Custom · 16,500 km ₹ 3,20,000 asking Petrol Manual Pune",
+          "href": "/vehicle/v-royalenfield"
+        },
+        {
+          "text": "DU",
+          "href": "/vehicle/v-ducati"
+        },
+        {
+          "text": "Ducati Panigale V4 2022 · Standard · 12,000 km ₹ 18,50,000 asking Petrol Manual Mumbai",
+          "href": "/vehicle/v-ducati"
+        },
+        {
+          "text": "HO",
+          "href": "/vehicle/v-honda"
+        },
+        {
+          "text": "Honda City 2020 · ZX CVT · 47,000 km ₹ 10,50,000 asking Petrol Automatic Mumbai",
+          "href": "/vehicle/v-honda"
+        },
+        {
+          "text": "HY",
+          "href": "/vehicle/v-hyundai"
+        },
+        {
+          "text": "Hyundai Creta 2021 · SX(O) · 36,000 km ₹ 14,50,000 asking Petrol Automatic Nagpur",
+          "href": "/vehicle/v-hyundai"
+        },
+        {
+          "text": "KA",
+          "href": "/vehicle/v-kawasaki"
+        },
+        {
+          "text": "Kawasaki Ninja ZX-10R 2020 · ABS · 14,000 km ₹ 14,20,000 asking Petrol Manual Mumbai",
+          "href": "/vehicle/v-kawasaki"
+        },
+        {
+          "text": "Demo photo",
+          "href": "/vehicle/v-merc"
+        },
+        {
+          "text": "Mercedes-Benz C-Class 2022 · C200 · 31,000 km ₹ 34,00,000 asking Petrol Automatic Mumbai 1 open finding — review before buying",
+          "href": "/vehicle/v-merc"
+        },
+        {
+          "text": "AU",
+          "href": "/vehicle/v-audi"
+        },
+        {
+          "text": "Audi A4 2020 · 40 TFSI · 58,000 km ₹ 22,50,000 asking Petrol Automatic Pune 1 open finding — review before buying",
+          "href": "/vehicle/v-audi"
+        },
+        {
+          "text": "Demo photo",
+          "href": "/vehicle/v-bmw"
+        },
+        {
+          "text": "BMW 3 Series 2021 · 330i · 42,000 km ₹ 26,00,000 asking Petrol Automatic Mumbai 3 open findings — review before buying",
+          "href": "/vehicle/v-bmw"
+        },
+        {
+          "text": "TO",
+          "href": "/vehicle/v-toyota"
+        },
+        {
+          "text": "Toyota Fortuner 2019 · 4x2 AT · 88,000 km ₹ 27,50,000 asking Diesel Automatic Hyderabad 1 open finding — review before buying",
+          "href": "/vehicle/v-toyota"
+        },
+        {
+          "text": "TO",
+          "href": "/vehicle/v-camry"
+        },
+        {
+          "text": "Toyota Camry 2021 · Hybrid · 51,200 km ₹ 21,50,000 asking Hybrid Automatic Pune 3 open findings — review before buying",
+          "href": "/vehicle/v-camry"
+        },
+        {
+          "text": "Next",
+          "href": "/buyer/search?page=2"
+        }
+      ],
+      "apiResponses": [
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1793960590926",
+          "status": 200,
+          "contentType": "text/css; charset=UTF-8"
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "04-verification",
+      "url": "/buyer/verification",
+      "status": 200,
+      "finalUrl": "http://localhost:3000/buyer/verification",
+      "screenshot": "qa/live-browser/qa-2026-11-06/buyer/discovery/04-verification.png",
+      "title": "Vehicle Verification — TrustDrive",
+      "h1": "Vehicle Verification",
+      "styleSheets": 1,
+      "bodyFont": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif, \"Plus Jakarta Sans\", Inter, sans-serif, Inter, system-ui, sans-serif",
+      "bodyBackground": "color(srgb 0.0901961 0.0980392 0.105882)",
+      "canvases": 0,
+      "webgl2": true,
+      "bodyTextLength": 721,
+      "bodyTextPreview": "Skip to content TRUSTDRIVE Buyer Workspace WORKSPACE Overview Explore Vehicles Search & Filters Vehicle Verification Vehicle History AI Risk Analysis Compare Vehicles Saved Vehicles 4 Inquiries 5 ACCOUNT Reports Notifications 19 Profile & Settings Evidence before claims. Verify before you buy. Verify a vehicle Demo workspace · seeded data Enter SECURE 9+ AD Aditya Darak Buyer EVIDENCE · LOOKUP Vehicle Verification Look up any vehicle by registration, VIN, TrustDrive ID or signed QR token. No record is a result, not an error. Verify a vehicle Check registration, VIN or a signed QR token against the evidence chain. Scan QR Registration VIN TrustDrive ID QR token Verify Try: MH01AB1234 v-bmw v-seller Ask TrustDrive",
+      "inputs": [
+        {
+          "id": "",
+          "name": "",
+          "type": "search",
+          "placeholder": "Search registration, VIN or vehicle ID",
+          "value": "",
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "text",
+          "placeholder": "MH01AB1234",
+          "value": "",
+          "required": false,
+          "disabled": false
+        }
+      ],
+      "textareas": [],
+      "selects": [],
+      "buttons": [
+        {
+          "text": "",
+          "ariaLabel": "Collapse sidebar",
+          "title": "Collapse sidebar",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Switch to Night mode",
+          "title": "Day mode — switch to Night",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": null,
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "Scan QR",
+          "ariaLabel": null,
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "Registration",
+          "ariaLabel": null,
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "VIN",
+          "ariaLabel": null,
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "TrustDrive ID",
+          "ariaLabel": null,
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "QR token",
+          "ariaLabel": null,
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "Verify",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "MH01AB1234",
+          "ariaLabel": null,
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "v-bmw",
+          "ariaLabel": null,
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "v-seller",
+          "ariaLabel": null,
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "Ask TrustDrive",
+          "ariaLabel": "Open TrustDrive AI assistant",
+          "title": null,
+          "type": "button",
+          "disabled": false
+        }
+      ],
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "#portal-main"
+        },
+        {
+          "text": "TRUSTDRIVE Buyer Workspace",
+          "href": "/"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore Vehicles",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search & Filters",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Vehicle Verification",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Vehicle History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "AI Risk Analysis",
+          "href": "/buyer/risk"
+        },
+        {
+          "text": "Compare Vehicles",
+          "href": "/buyer/compare"
+        },
+        {
+          "text": "Saved Vehicles 4",
+          "href": "/buyer/saved"
+        },
+        {
+          "text": "Inquiries 5",
+          "href": "/buyer/inquiries"
+        },
+        {
+          "text": "Reports",
+          "href": "/buyer/reports"
+        },
+        {
+          "text": "Notifications 19",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "Profile & Settings",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "Verify a vehicle",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Verify",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "TRUSTDRIVE",
+          "href": "/"
+        },
+        {
+          "text": "9+",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "",
+          "href": "/buyer/notifications"
+        }
+      ],
+      "apiResponses": [
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1793960595556",
+          "status": 200,
+          "contentType": "text/css; charset=UTF-8"
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "05-history",
+      "url": "/buyer/history",
+      "status": 200,
+      "finalUrl": "http://localhost:3000/buyer/history",
+      "screenshot": "qa/live-browser/qa-2026-11-06/buyer/discovery/05-history.png",
+      "title": "Vehicle History — TrustDrive",
+      "h1": "Vehicle History",
+      "styleSheets": 1,
+      "bodyFont": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif, \"Plus Jakarta Sans\", Inter, sans-serif, Inter, system-ui, sans-serif",
+      "bodyBackground": "color(srgb 0.0901961 0.0980392 0.105882)",
+      "canvases": 0,
+      "webgl2": true,
+      "bodyTextLength": 1570,
+      "bodyTextPreview": "Skip to content TRUSTDRIVE Buyer Workspace WORKSPACE Overview Explore Vehicles Search & Filters Vehicle Verification Vehicle History AI Risk Analysis Compare Vehicles Saved Vehicles 4 Inquiries 5 ACCOUNT Reports Notifications 19 Profile & Settings Evidence before claims. Verify before you buy. Verify a vehicle Demo workspace · seeded data Enter SECURE 9+ AD Aditya Darak Buyer RECORD · BUYER VIEW Vehicle History Honda City · MH04KL2345 — verified events from supported sources. Full report VEHICLE Honda City MH12QA7079 BMW Motorrad R 1250 GS MH14DZ1100 Royal Enfield Continental GT 650 MH12BK9900 Ducati Panigale V4 MH01EK7777 Honda City MH04KL2345 Hyundai Creta MH14GH3456 Kawasaki Ninja ZX-10R MH02CZ4455 Demo photo Mercedes-Benz C-Class MH03EF9012 Audi A4 MH02CD5678 Demo photo BMW 3 Series MH01AB1234 Toyota Fortuner MH15IJ7890 Toyota Camry MH12CD8899 All events 2 Verified 2 Pending 0 Needs attention 0 First registration Verified Evidence 1 Dec 2020 · rto Registered with RTO Mumbai. Scheduled service Verified Evidence 31 Dec 2023 · 47,000 km · service_center Full service completed. Record integrity Each event is chained to the previous record. Hash chain Intact Records 8 Latest hash 64",
+      "inputs": [
+        {
+          "id": "",
+          "name": "",
+          "type": "search",
+          "placeholder": "Search registration, VIN or vehicle ID",
+          "value": "",
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "text",
+          "placeholder": "Search events, sources…",
+          "value": "",
+          "required": false,
+          "disabled": false
+        }
+      ],
+      "textareas": [],
+      "selects": [],
+      "buttons": [
+        {
+          "text": "",
+          "ariaLabel": "Collapse sidebar",
+          "title": "Collapse sidebar",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Switch to Night mode",
+          "title": "Day mode — switch to Night",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": null,
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "All events 2",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Verified 2",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Pending 0",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Needs attention 0",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "First registration Verified Evidence 1 Dec 2020 · rto Registered with RTO Mumbai.",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Scheduled service Verified Evidence 31 Dec 2023 · 47,000 km · service_center Full service completed.",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Ask TrustDrive",
+          "ariaLabel": "Open TrustDrive AI assistant",
+          "title": null,
+          "type": "button",
+          "disabled": false
+        }
+      ],
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "#portal-main"
+        },
+        {
+          "text": "TRUSTDRIVE Buyer Workspace",
+          "href": "/"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore Vehicles",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search & Filters",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Vehicle Verification",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Vehicle History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "AI Risk Analysis",
+          "href": "/buyer/risk"
+        },
+        {
+          "text": "Compare Vehicles",
+          "href": "/buyer/compare"
+        },
+        {
+          "text": "Saved Vehicles 4",
+          "href": "/buyer/saved"
+        },
+        {
+          "text": "Inquiries 5",
+          "href": "/buyer/inquiries"
+        },
+        {
+          "text": "Reports",
+          "href": "/buyer/reports"
+        },
+        {
+          "text": "Notifications 19",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "Profile & Settings",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "Verify a vehicle",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Verify",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "TRUSTDRIVE",
+          "href": "/"
+        },
+        {
+          "text": "9+",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "Full report",
+          "href": "/vehicle/v-honda"
+        },
+        {
+          "text": "Honda City MH12QA7079",
+          "href": "/buyer/history?vehicle=v-1793959415934"
+        },
+        {
+          "text": "BMW Motorrad R 1250 GS MH14DZ1100",
+          "href": "/buyer/history?vehicle=v-bmw-bike"
+        },
+        {
+          "text": "Royal Enfield Continental GT 650 MH12BK9900",
+          "href": "/buyer/history?vehicle=v-royalenfield"
+        },
+        {
+          "text": "Ducati Panigale V4 MH01EK7777",
+          "href": "/buyer/history?vehicle=v-ducati"
+        },
+        {
+          "text": "Honda City MH04KL2345",
+          "href": "/buyer/history?vehicle=v-honda"
+        },
+        {
+          "text": "Hyundai Creta MH14GH3456",
+          "href": "/buyer/history?vehicle=v-hyundai"
+        },
+        {
+          "text": "Kawasaki Ninja ZX-10R MH02CZ4455",
+          "href": "/buyer/history?vehicle=v-kawasaki"
+        },
+        {
+          "text": "Demo photo Mercedes-Benz C-Class MH03EF9012",
+          "href": "/buyer/history?vehicle=v-merc"
+        },
+        {
+          "text": "Audi A4 MH02CD5678",
+          "href": "/buyer/history?vehicle=v-audi"
+        },
+        {
+          "text": "Demo photo BMW 3 Series MH01AB1234",
+          "href": "/buyer/history?vehicle=v-bmw"
+        },
+        {
+          "text": "Toyota Fortuner MH15IJ7890",
+          "href": "/buyer/history?vehicle=v-toyota"
+        },
+        {
+          "text": "Toyota Camry MH12CD8899",
+          "href": "/buyer/history?vehicle=v-camry"
+        }
+      ],
+      "apiResponses": [
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1793960599305",
+          "status": 200,
+          "contentType": "text/css; charset=UTF-8"
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "06-risk",
+      "url": "/buyer/risk",
+      "status": 200,
+      "finalUrl": "http://localhost:3000/buyer/risk",
+      "screenshot": "qa/live-browser/qa-2026-11-06/buyer/discovery/06-risk.png",
+      "title": "AI Risk Analysis — TrustDrive",
+      "h1": "AI Risk Analysis",
+      "styleSheets": 1,
+      "bodyFont": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif, \"Plus Jakarta Sans\", Inter, sans-serif, Inter, system-ui, sans-serif",
+      "bodyBackground": "color(srgb 0.0901961 0.0980392 0.105882)",
+      "canvases": 0,
+      "webgl2": true,
+      "bodyTextLength": 2332,
+      "bodyTextPreview": "Skip to content TRUSTDRIVE Buyer Workspace WORKSPACE Overview Explore Vehicles Search & Filters Vehicle Verification Vehicle History AI Risk Analysis Compare Vehicles Saved Vehicles 4 Inquiries 5 ACCOUNT Reports Notifications 19 Profile & Settings Evidence before claims. Verify before you buy. Verify a vehicle Demo workspace · seeded data Enter SECURE 9+ AD Aditya Darak Buyer INTELLIGENCE · BUYER VIEW AI Risk Analysis Honda City · MH12QA7079 — deterministic rules, explained in plain language. Full report VEHICLE Honda City MH12QA7079 BMW Motorrad R 1250 GS MH14DZ1100 Royal Enfield Continental GT 650 MH12BK9900 Ducati Panigale V4 MH01EK7777 Honda City MH04KL2345 Hyundai Creta MH14GH3456 Kawasaki Ninja ZX-10R MH02CZ4455 Demo photo Mercedes-Benz C-Class MH03EF9012 Audi A4 MH02CD5678 Demo photo BMW 3 Series MH01AB1234 Toyota Fortuner MH15IJ7890 Toyota Camry MH12CD8899 What this score means Trust and risk are calculated by a deterministic rules engine from verified records. Findings are warnings that need investigation — they are not proof of fraud. RISK SCORE 100 OF 100 Critical risk High risk 100 − trust score Trust score 0/100 Evidence coverage 30% Open findings 1 Hash chain Intact R",
+      "inputs": [
+        {
+          "id": "",
+          "name": "",
+          "type": "search",
+          "placeholder": "Search registration, VIN or vehicle ID",
+          "value": "",
+          "required": false,
+          "disabled": false
+        }
+      ],
+      "textareas": [],
+      "selects": [],
+      "buttons": [
+        {
+          "text": "",
+          "ariaLabel": "Collapse sidebar",
+          "title": "Collapse sidebar",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Switch to Night mode",
+          "title": "Day mode — switch to Night",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": null,
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "Ask TrustDrive",
+          "ariaLabel": "Open TrustDrive AI assistant",
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "Run investigation",
+          "ariaLabel": null,
+          "title": null,
+          "type": "button",
+          "disabled": false
+        }
+      ],
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "#portal-main"
+        },
+        {
+          "text": "TRUSTDRIVE Buyer Workspace",
+          "href": "/"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore Vehicles",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search & Filters",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Vehicle Verification",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Vehicle History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "AI Risk Analysis",
+          "href": "/buyer/risk"
+        },
+        {
+          "text": "Compare Vehicles",
+          "href": "/buyer/compare"
+        },
+        {
+          "text": "Saved Vehicles 4",
+          "href": "/buyer/saved"
+        },
+        {
+          "text": "Inquiries 5",
+          "href": "/buyer/inquiries"
+        },
+        {
+          "text": "Reports",
+          "href": "/buyer/reports"
+        },
+        {
+          "text": "Notifications 19",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "Profile & Settings",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "Verify a vehicle",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Verify",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "TRUSTDRIVE",
+          "href": "/"
+        },
+        {
+          "text": "9+",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "Full report",
+          "href": "/vehicle/v-1793959415934"
+        },
+        {
+          "text": "Honda City MH12QA7079",
+          "href": "/buyer/risk?vehicle=v-1793959415934"
+        },
+        {
+          "text": "BMW Motorrad R 1250 GS MH14DZ1100",
+          "href": "/buyer/risk?vehicle=v-bmw-bike"
+        },
+        {
+          "text": "Royal Enfield Continental GT 650 MH12BK9900",
+          "href": "/buyer/risk?vehicle=v-royalenfield"
+        },
+        {
+          "text": "Ducati Panigale V4 MH01EK7777",
+          "href": "/buyer/risk?vehicle=v-ducati"
+        },
+        {
+          "text": "Honda City MH04KL2345",
+          "href": "/buyer/risk?vehicle=v-honda"
+        },
+        {
+          "text": "Hyundai Creta MH14GH3456",
+          "href": "/buyer/risk?vehicle=v-hyundai"
+        },
+        {
+          "text": "Kawasaki Ninja ZX-10R MH02CZ4455",
+          "href": "/buyer/risk?vehicle=v-kawasaki"
+        },
+        {
+          "text": "Demo photo Mercedes-Benz C-Class MH03EF9012",
+          "href": "/buyer/risk?vehicle=v-merc"
+        },
+        {
+          "text": "Audi A4 MH02CD5678",
+          "href": "/buyer/risk?vehicle=v-audi"
+        },
+        {
+          "text": "Demo photo BMW 3 Series MH01AB1234",
+          "href": "/buyer/risk?vehicle=v-bmw"
+        },
+        {
+          "text": "Toyota Fortuner MH15IJ7890",
+          "href": "/buyer/risk?vehicle=v-toyota"
+        },
+        {
+          "text": "Toyota Camry MH12CD8899",
+          "href": "/buyer/risk?vehicle=v-camry"
+        }
+      ],
+      "apiResponses": [
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1793960602471",
+          "status": 200,
+          "contentType": "text/css; charset=UTF-8"
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "07-compare",
+      "url": "/buyer/compare",
+      "status": 200,
+      "finalUrl": "http://localhost:3000/buyer/compare",
+      "screenshot": "qa/live-browser/qa-2026-11-06/buyer/discovery/07-compare.png",
+      "title": "Compare Vehicles — TrustDrive",
+      "h1": "Compare vehicles",
+      "styleSheets": 1,
+      "bodyFont": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif, \"Plus Jakarta Sans\", Inter, sans-serif, Inter, system-ui, sans-serif",
+      "bodyBackground": "color(srgb 0.0901961 0.0980392 0.105882)",
+      "canvases": 0,
+      "webgl2": true,
+      "bodyTextLength": 2133,
+      "bodyTextPreview": "Skip to content TRUSTDRIVE Buyer Workspace WORKSPACE Overview Explore Vehicles Search & Filters Vehicle Verification Vehicle History AI Risk Analysis Compare Vehicles Saved Vehicles 4 Inquiries 5 ACCOUNT Reports Notifications 19 Profile & Settings Evidence before claims. Verify before you buy. Verify a vehicle Demo workspace · seeded data Enter SECURE 9+ AD Aditya Darak Buyer DECISION SUPPORT Compare vehicles Side-by-side facts from verified records, with a deterministic key-differences summary. Add from marketplace Pick 2–4 vehicles 3 selected · maximum 4 Compare selected Honda City ₹ 11,50,000 · Trust 0/100 Mercedes-Benz C-Class ₹ 34,00,000 · Trust 95/100 Audi A4 ₹ 22,50,000 · Trust 92/100 BMW 3 Series ₹ 26,00,000 · Trust 40/100 Honda City ₹ 8,75,000 · Trust 0/100 BMW Motorrad R 1250 GS ₹ 20,50,000 · Trust 100/100 Royal Enfield Continental GT 650 ₹ 3,20,000 · Trust 100/100 Ducati Panigale V4 ₹ 18,50,000 · Trust 100/100 Honda City ₹ 10,50,000 · Trust 100/100 Hyundai Creta ₹ 14,50,000 · Trust 100/100 Kawasaki Ninja ZX-10R ₹ 14,20,000 · Trust 100/100 Toyota Fortuner ₹ 27,50,000 · Trust 94/100 Toyota Camry ₹ 21,50,000 · Trust 42/100 BMW 3 Series ₹ 5,80,000 · Trust 47/100 Key differen",
+      "inputs": [
+        {
+          "id": "",
+          "name": "",
+          "type": "search",
+          "placeholder": "Search registration, VIN or vehicle ID",
+          "value": "",
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "checkbox",
+          "placeholder": "",
+          "value": "on",
+          "checked": true,
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "checkbox",
+          "placeholder": "",
+          "value": "on",
+          "checked": true,
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "checkbox",
+          "placeholder": "",
+          "value": "on",
+          "checked": true,
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "checkbox",
+          "placeholder": "",
+          "value": "on",
+          "checked": false,
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "checkbox",
+          "placeholder": "",
+          "value": "on",
+          "checked": false,
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "checkbox",
+          "placeholder": "",
+          "value": "on",
+          "checked": false,
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "checkbox",
+          "placeholder": "",
+          "value": "on",
+          "checked": false,
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "checkbox",
+          "placeholder": "",
+          "value": "on",
+          "checked": false,
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "checkbox",
+          "placeholder": "",
+          "value": "on",
+          "checked": false,
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "checkbox",
+          "placeholder": "",
+          "value": "on",
+          "checked": false,
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "checkbox",
+          "placeholder": "",
+          "value": "on",
+          "checked": false,
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "checkbox",
+          "placeholder": "",
+          "value": "on",
+          "checked": false,
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "checkbox",
+          "placeholder": "",
+          "value": "on",
+          "checked": false,
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "checkbox",
+          "placeholder": "",
+          "value": "on",
+          "checked": false,
+          "required": false,
+          "disabled": false
+        }
+      ],
+      "textareas": [],
+      "selects": [],
+      "buttons": [
+        {
+          "text": "",
+          "ariaLabel": "Collapse sidebar",
+          "title": "Collapse sidebar",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Switch to Night mode",
+          "title": "Day mode — switch to Night",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": null,
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "Compare selected",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Ask TrustDrive",
+          "ariaLabel": "Open TrustDrive AI assistant",
+          "title": null,
+          "type": "button",
+          "disabled": false
+        }
+      ],
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "#portal-main"
+        },
+        {
+          "text": "TRUSTDRIVE Buyer Workspace",
+          "href": "/"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore Vehicles",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search & Filters",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Vehicle Verification",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Vehicle History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "AI Risk Analysis",
+          "href": "/buyer/risk"
+        },
+        {
+          "text": "Compare Vehicles",
+          "href": "/buyer/compare"
+        },
+        {
+          "text": "Saved Vehicles 4",
+          "href": "/buyer/saved"
+        },
+        {
+          "text": "Inquiries 5",
+          "href": "/buyer/inquiries"
+        },
+        {
+          "text": "Reports",
+          "href": "/buyer/reports"
+        },
+        {
+          "text": "Notifications 19",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "Profile & Settings",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "Verify a vehicle",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Verify",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "TRUSTDRIVE",
+          "href": "/"
+        },
+        {
+          "text": "9+",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "Add from marketplace",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "HONDA CITY",
+          "href": "/vehicle/v-1793876471230"
+        },
+        {
+          "text": "MERCEDES-BENZ C-CLASS",
+          "href": "/vehicle/v-merc"
+        },
+        {
+          "text": "AUDI A4",
+          "href": "/vehicle/v-audi"
+        }
+      ],
+      "apiResponses": [
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/api/v1/vehicles/v-1793959415934/ai-investigations",
+          "status": 200,
+          "contentType": "application/json"
+        },
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/api/v1/vehicles/v-1793959415934/ai-investigations",
+          "status": 200,
+          "contentType": "application/json"
+        },
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1793960606980",
+          "status": 200,
+          "contentType": "text/css; charset=UTF-8"
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "08-saved",
+      "url": "/buyer/saved",
+      "status": 200,
+      "finalUrl": "http://localhost:3000/buyer/saved",
+      "screenshot": "qa/live-browser/qa-2026-11-06/buyer/discovery/08-saved.png",
+      "title": "Saved Vehicles — TrustDrive",
+      "h1": "Saved vehicles",
+      "styleSheets": 1,
+      "bodyFont": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif, \"Plus Jakarta Sans\", Inter, sans-serif, Inter, system-ui, sans-serif",
+      "bodyBackground": "color(srgb 0.0901961 0.0980392 0.105882)",
+      "canvases": 0,
+      "webgl2": true,
+      "bodyTextLength": 840,
+      "bodyTextPreview": "Skip to content TRUSTDRIVE Buyer Workspace WORKSPACE Overview Explore Vehicles Search & Filters Vehicle Verification Vehicle History AI Risk Analysis Compare Vehicles Saved Vehicles 4 Inquiries 5 ACCOUNT Reports Notifications 19 Profile & Settings Evidence before claims. Verify before you buy. Verify a vehicle Demo workspace · seeded data Enter SECURE 9+ AD Aditya Darak Buyer SHORTLIST Saved vehicles Track price changes, availability and open findings before you decide to inspect. 4 saved Compare 4 saved vehicles Compare (0) HO 0/100 Honda City 2022 · 25,000 km ₹ 11,50,000 Removed Compare Demo photo 95/100 Mercedes-Benz C-Class 2022 · 31,000 km ₹ 34,00,000 Available Compare AU 92/100 Audi A4 2020 · 58,000 km ₹ 22,50,000 Available Compare Demo photo 40/100 BMW 3 Series 2021 · 42,000 km ₹ 26,00,000 Available Compare Ask TrustDrive",
+      "inputs": [
+        {
+          "id": "",
+          "name": "",
+          "type": "search",
+          "placeholder": "Search registration, VIN or vehicle ID",
+          "value": "",
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "checkbox",
+          "placeholder": "",
+          "value": "on",
+          "checked": false,
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "checkbox",
+          "placeholder": "",
+          "value": "on",
+          "checked": false,
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "checkbox",
+          "placeholder": "",
+          "value": "on",
+          "checked": false,
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "checkbox",
+          "placeholder": "",
+          "value": "on",
+          "checked": false,
+          "required": false,
+          "disabled": false
+        }
+      ],
+      "textareas": [],
+      "selects": [],
+      "buttons": [
+        {
+          "text": "",
+          "ariaLabel": "Collapse sidebar",
+          "title": "Collapse sidebar",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Switch to Night mode",
+          "title": "Day mode — switch to Night",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": null,
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Remove Honda City from saved",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Remove Mercedes-Benz C-Class from saved",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Remove Audi A4 from saved",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Remove BMW 3 Series from saved",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Ask TrustDrive",
+          "ariaLabel": "Open TrustDrive AI assistant",
+          "title": null,
+          "type": "button",
+          "disabled": false
+        }
+      ],
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "#portal-main"
+        },
+        {
+          "text": "TRUSTDRIVE Buyer Workspace",
+          "href": "/"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore Vehicles",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search & Filters",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Vehicle Verification",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Vehicle History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "AI Risk Analysis",
+          "href": "/buyer/risk"
+        },
+        {
+          "text": "Compare Vehicles",
+          "href": "/buyer/compare"
+        },
+        {
+          "text": "Saved Vehicles 4",
+          "href": "/buyer/saved"
+        },
+        {
+          "text": "Inquiries 5",
+          "href": "/buyer/inquiries"
+        },
+        {
+          "text": "Reports",
+          "href": "/buyer/reports"
+        },
+        {
+          "text": "Notifications 19",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "Profile & Settings",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "Verify a vehicle",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Verify",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "TRUSTDRIVE",
+          "href": "/"
+        },
+        {
+          "text": "9+",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "Compare",
+          "href": "/buyer/compare"
+        },
+        {
+          "text": "Compare (0)",
+          "href": "/buyer/compare"
+        },
+        {
+          "text": "HO",
+          "href": "/vehicle/v-1793876471230"
+        },
+        {
+          "text": "Demo photo",
+          "href": "/vehicle/v-merc"
+        },
+        {
+          "text": "AU",
+          "href": "/vehicle/v-audi"
+        },
+        {
+          "text": "Demo photo",
+          "href": "/vehicle/v-bmw"
+        }
+      ],
+      "apiResponses": [
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1793960610165",
+          "status": 200,
+          "contentType": "text/css; charset=UTF-8"
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "09-inquiries",
+      "url": "/buyer/inquiries",
+      "status": 200,
+      "finalUrl": "http://localhost:3000/buyer/inquiries",
+      "screenshot": "qa/live-browser/qa-2026-11-06/buyer/discovery/09-inquiries.png",
+      "title": "Inquiries — TrustDrive",
+      "h1": "Inquiries",
+      "styleSheets": 1,
+      "bodyFont": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif, \"Plus Jakarta Sans\", Inter, sans-serif, Inter, system-ui, sans-serif",
+      "bodyBackground": "color(srgb 0.0901961 0.0980392 0.105882)",
+      "canvases": 0,
+      "webgl2": true,
+      "bodyTextLength": 3705,
+      "bodyTextPreview": "Skip to content TRUSTDRIVE Buyer Workspace WORKSPACE Overview Explore Vehicles Search & Filters Vehicle Verification Vehicle History AI Risk Analysis Compare Vehicles Saved Vehicles 4 Inquiries 5 ACCOUNT Reports Notifications 19 Profile & Settings Evidence before claims. Verify before you buy. Verify a vehicle Demo workspace · seeded data Enter SECURE 9+ AD Aditya Darak Buyer CONVERSATIONS Inquiries Contact sellers, ask for documents, schedule test drives and negotiate — every message is stored with the listing. Inquiries 22 conversations SD Samarth Darak 6 Nov Honda City · DL01AB4817 Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. replied SD Samarth Darak 6 Nov Honda City · DL01AB1448 Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. replied SD Samarth Darak 6 Nov Honda City · DL01AB2520 Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. replied SD Samarth Darak 6 Nov Honda City · DL01AB3719 Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. replied SD Samarth Darak 6 Nov Honda City · DL01AB8574 Yes, Sat",
+      "inputs": [
+        {
+          "id": "",
+          "name": "",
+          "type": "search",
+          "placeholder": "Search registration, VIN or vehicle ID",
+          "value": "",
+          "required": false,
+          "disabled": false
+        }
+      ],
+      "textareas": [],
+      "selects": [],
+      "buttons": [
+        {
+          "text": "",
+          "ariaLabel": "Collapse sidebar",
+          "title": "Collapse sidebar",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Switch to Night mode",
+          "title": "Day mode — switch to Night",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": null,
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "SD Samarth Darak 6 Nov Honda City · DL01AB4817 Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. replied",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "SD Samarth Darak 6 Nov Honda City · DL01AB1448 Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. replied",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "SD Samarth Darak 6 Nov Honda City · DL01AB2520 Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. replied",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "SD Samarth Darak 6 Nov Honda City · DL01AB3719 Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. replied",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "SD Samarth Darak 6 Nov Honda City · DL01AB8574 Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. replied",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "SD Samarth Darak 6 Nov Honda City · DL01AB5379 Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. replied",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "SD Samarth Darak 5 Nov Honda City · DL01AB7105 Test from probe open",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "SD Samarth Darak 5 Nov BMW 3 Series · MH01AB1234 Hello, I am interested in viewing this BMW 3 Series. Is Sunday afternoon available for an inspection? open",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "SD Samarth Darak 5 Nov Honda City · DL01AB6585 Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. replied",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "SD Samarth Darak 5 Nov Honda City · DL01AB1379 Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. replied",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "SD Samarth Darak 5 Nov BMW 3 Series · MH01AB1234 Hello, I am interested in viewing this BMW 3 Series. Is Sunday afternoon available for an inspection? open",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "SD Samarth Darak 5 Nov Honda City · DL01AB1942 Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. replied",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "SD Samarth Darak 5 Nov Honda City · DL01AB4574 Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. replied",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "SD Samarth Darak 5 Nov Honda City · DL01AB6629 Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. replied",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "SD Samarth Darak 5 Nov Honda City · DL01AB1604 Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. replied",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "SD Samarth Darak 5 Nov Honda City · DL01AB8435 Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. replied",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "SD Samarth Darak 5 Nov Honda City · DL01AB4547 Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. replied",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "SD Samarth Darak 5 Nov Honda City · DL01AB3597 Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. replied",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "SD Samarth Darak 5 Nov Honda City · DL01AB5588 Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. replied",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "SD Samarth Darak 5 Nov Honda City · DL01AB6074 Hello, is the car available for a test drive this Saturday in Delhi? open",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "SD Samarth Darak 4 Nov BMW 3 Series · MH01AB1234 Is the odometer reading verified? Can I schedule a test drive? replied",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "WM WeDuo Motors 1 Nov Audi A4 · MH02CD5678 Can you share the service records? open",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Ask TrustDrive",
+          "ariaLabel": "Open TrustDrive AI assistant",
+          "title": null,
+          "type": "button",
+          "disabled": false
+        }
+      ],
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "#portal-main"
+        },
+        {
+          "text": "TRUSTDRIVE Buyer Workspace",
+          "href": "/"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore Vehicles",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search & Filters",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Vehicle Verification",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Vehicle History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "AI Risk Analysis",
+          "href": "/buyer/risk"
+        },
+        {
+          "text": "Compare Vehicles",
+          "href": "/buyer/compare"
+        },
+        {
+          "text": "Saved Vehicles 4",
+          "href": "/buyer/saved"
+        },
+        {
+          "text": "Inquiries 5",
+          "href": "/buyer/inquiries"
+        },
+        {
+          "text": "Reports",
+          "href": "/buyer/reports"
+        },
+        {
+          "text": "Notifications 19",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "Profile & Settings",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "Verify a vehicle",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Verify",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "TRUSTDRIVE",
+          "href": "/"
+        },
+        {
+          "text": "9+",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "",
+          "href": "/buyer/notifications"
+        }
+      ],
+      "apiResponses": [
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1793960613402",
+          "status": 200,
+          "contentType": "text/css; charset=UTF-8"
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "10-reports",
+      "url": "/buyer/reports",
+      "status": 200,
+      "finalUrl": "http://localhost:3000/buyer/reports",
+      "screenshot": "qa/live-browser/qa-2026-11-06/buyer/discovery/10-reports.png",
+      "title": "Reports — TrustDrive",
+      "h1": "Reports",
+      "styleSheets": 1,
+      "bodyFont": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif, \"Plus Jakarta Sans\", Inter, sans-serif, Inter, system-ui, sans-serif",
+      "bodyBackground": "color(srgb 0.0901961 0.0980392 0.105882)",
+      "canvases": 0,
+      "webgl2": true,
+      "bodyTextLength": 1688,
+      "bodyTextPreview": "Skip to content TRUSTDRIVE Buyer Workspace WORKSPACE Overview Explore Vehicles Search & Filters Vehicle Verification Vehicle History AI Risk Analysis Compare Vehicles Saved Vehicles 4 Inquiries 5 ACCOUNT Reports Notifications 19 Profile & Settings Evidence before claims. Verify before you buy. Verify a vehicle Demo workspace · seeded data Enter SECURE 9+ AD Aditya Darak Buyer DOCUMENTS · PDF Reports Generate, download and regenerate verification PDFs. Queued and processing reports are labelled honestly. Generate a report Choose a vehicle and the report type. The PDF summarises records on file — it is not a guarantee of condition. Vehicle Honda City · DL01AB6074 Mercedes-Benz C-Class · MH03EF9012 Audi A4 · MH02CD5678 BMW 3 Series · MH01AB1234 Honda City · MH12QA7079 BMW Motorrad R 1250 GS · MH14DZ1100 Royal Enfield Continental GT 650 · MH12BK9900 Ducati Panigale V4 · MH01EK7777 Honda City · MH04KL2345 Hyundai Creta · MH14GH3456 Kawasaki Ninja ZX-10R · MH02CZ4455 Toyota Fortuner · MH15IJ7890 Toyota Camry · MH12CD8899 Report type Vehicle verification Document verification Vehicle condition AI risk analysis Listing performance Buyer inquiry Vehicle history Generate PDF Your reports 4 g",
+      "inputs": [
+        {
+          "id": "",
+          "name": "",
+          "type": "search",
+          "placeholder": "Search registration, VIN or vehicle ID",
+          "value": "",
+          "required": false,
+          "disabled": false
+        }
+      ],
+      "textareas": [],
+      "selects": [
+        {
+          "id": "",
+          "name": "",
+          "value": "v-1793876471230",
+          "options": [
+            {
+              "value": "v-1793876471230",
+              "text": "Honda City · DL01AB6074"
+            },
+            {
+              "value": "v-merc",
+              "text": "Mercedes-Benz C-Class · MH03EF9012"
+            },
+            {
+              "value": "v-audi",
+              "text": "Audi A4 · MH02CD5678"
+            },
+            {
+              "value": "v-bmw",
+              "text": "BMW 3 Series · MH01AB1234"
+            },
+            {
+              "value": "v-1793959415934",
+              "text": "Honda City · MH12QA7079"
+            },
+            {
+              "value": "v-bmw-bike",
+              "text": "BMW Motorrad R 1250 GS · MH14DZ1100"
+            },
+            {
+              "value": "v-royalenfield",
+              "text": "Royal Enfield Continental GT 650 · MH12BK9900"
+            },
+            {
+              "value": "v-ducati",
+              "text": "Ducati Panigale V4 · MH01EK7777"
+            },
+            {
+              "value": "v-honda",
+              "text": "Honda City · MH04KL2345"
+            },
+            {
+              "value": "v-hyundai",
+              "text": "Hyundai Creta · MH14GH3456"
+            },
+            {
+              "value": "v-kawasaki",
+              "text": "Kawasaki Ninja ZX-10R · MH02CZ4455"
+            },
+            {
+              "value": "v-toyota",
+              "text": "Toyota Fortuner · MH15IJ7890"
+            },
+            {
+              "value": "v-camry",
+              "text": "Toyota Camry · MH12CD8899"
+            }
+          ]
+        },
+        {
+          "id": "",
+          "name": "",
+          "value": "Vehicle verification",
+          "options": [
+            {
+              "value": "Vehicle verification",
+              "text": "Vehicle verification"
+            },
+            {
+              "value": "Document verification",
+              "text": "Document verification"
+            },
+            {
+              "value": "Vehicle condition",
+              "text": "Vehicle condition"
+            },
+            {
+              "value": "AI risk analysis",
+              "text": "AI risk analysis"
+            },
+            {
+              "value": "Listing performance",
+              "text": "Listing performance"
+            },
+            {
+              "value": "Buyer inquiry",
+              "text": "Buyer inquiry"
+            },
+            {
+              "value": "Vehicle history",
+              "text": "Vehicle history"
+            }
+          ]
+        }
+      ],
+      "buttons": [
+        {
+          "text": "",
+          "ariaLabel": "Collapse sidebar",
+          "title": "Collapse sidebar",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Switch to Night mode",
+          "title": "Day mode — switch to Night",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": null,
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "Generate PDF",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Regenerate",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Regenerate",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Regenerate",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Regenerate",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Ask TrustDrive",
+          "ariaLabel": "Open TrustDrive AI assistant",
+          "title": null,
+          "type": "button",
+          "disabled": false
+        }
+      ],
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "#portal-main"
+        },
+        {
+          "text": "TRUSTDRIVE Buyer Workspace",
+          "href": "/"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore Vehicles",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search & Filters",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Vehicle Verification",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Vehicle History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "AI Risk Analysis",
+          "href": "/buyer/risk"
+        },
+        {
+          "text": "Compare Vehicles",
+          "href": "/buyer/compare"
+        },
+        {
+          "text": "Saved Vehicles 4",
+          "href": "/buyer/saved"
+        },
+        {
+          "text": "Inquiries 5",
+          "href": "/buyer/inquiries"
+        },
+        {
+          "text": "Reports",
+          "href": "/buyer/reports"
+        },
+        {
+          "text": "Notifications 19",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "Profile & Settings",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "Verify a vehicle",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Verify",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "TRUSTDRIVE",
+          "href": "/"
+        },
+        {
+          "text": "9+",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "Open",
+          "href": "/print/report/rep-4"
+        },
+        {
+          "text": "Open",
+          "href": "/print/report/rep-1"
+        },
+        {
+          "text": "PDF",
+          "href": "/api/v1/reports/rep-1/download"
+        },
+        {
+          "text": "Open",
+          "href": "/print/report/rep-2"
+        },
+        {
+          "text": "PDF",
+          "href": "/api/v1/reports/rep-2/download"
+        },
+        {
+          "text": "Open",
+          "href": "/print/report/rep-3"
+        },
+        {
+          "text": "PDF",
+          "href": "/api/v1/reports/rep-3/download"
+        }
+      ],
+      "apiResponses": [
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/api/v1/inquiries/q-1793958644892",
+          "status": 200,
+          "contentType": "application/json"
+        },
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/api/v1/inquiries/q-1793958644892",
+          "status": 200,
+          "contentType": "application/json"
+        },
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1793960619104",
+          "status": 200,
+          "contentType": "text/css; charset=UTF-8"
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "11-notifications",
+      "url": "/buyer/notifications",
+      "status": 200,
+      "finalUrl": "http://localhost:3000/buyer/notifications",
+      "screenshot": "qa/live-browser/qa-2026-11-06/buyer/discovery/11-notifications.png",
+      "title": "Notifications — TrustDrive",
+      "h1": "Notifications",
+      "styleSheets": 1,
+      "bodyFont": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif, \"Plus Jakarta Sans\", Inter, sans-serif, Inter, system-ui, sans-serif",
+      "bodyBackground": "color(srgb 0.0901961 0.0980392 0.105882)",
+      "canvases": 0,
+      "webgl2": true,
+      "bodyTextLength": 3349,
+      "bodyTextPreview": "Skip to content TRUSTDRIVE Buyer Workspace WORKSPACE Overview Explore Vehicles Search & Filters Vehicle Verification Vehicle History AI Risk Analysis Compare Vehicles Saved Vehicles 4 Inquiries 5 ACCOUNT Reports Notifications 19 Profile & Settings Evidence before claims. Verify before you buy. Verify a vehicle Demo workspace · seeded data Enter SECURE 9+ AD Aditya Darak Buyer ACTIVITY Notifications Price changes, saved-vehicle updates and verification alerts. All Unread (19) Mark all read Samarth Darak replied to your inquiry Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 6 Nov, 03:20 pm Samarth Darak replied to your inquiry Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 6 Nov, 03:14 pm Samarth Darak replied to your inquiry Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 6 Nov, 03:09 pm Samarth Darak replied to your inquiry Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 6 Nov, 02:46 pm Samarth Darak replied to your inquiry Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need",
+      "inputs": [
+        {
+          "id": "",
+          "name": "",
+          "type": "search",
+          "placeholder": "Search registration, VIN or vehicle ID",
+          "value": "",
+          "required": false,
+          "disabled": false
+        }
+      ],
+      "textareas": [],
+      "selects": [],
+      "buttons": [
+        {
+          "text": "",
+          "ariaLabel": "Collapse sidebar",
+          "title": "Collapse sidebar",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Switch to Night mode",
+          "title": "Day mode — switch to Night",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": null,
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "All",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Unread (19)",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Mark all read",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Samarth Darak replied to your inquiry Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 6 Nov, 03:20 pm",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Samarth Darak replied to your inquiry Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 6 Nov, 03:14 pm",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Samarth Darak replied to your inquiry Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 6 Nov, 03:09 pm",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Samarth Darak replied to your inquiry Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 6 Nov, 02:46 pm",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Samarth Darak replied to your inquiry Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 6 Nov, 02:44 pm",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Samarth Darak replied to your inquiry Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 6 Nov, 02:41 pm",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Samarth Darak replied to your inquiry Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 5 Nov, 08:55 pm",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Samarth Darak replied to your inquiry Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 5 Nov, 06:58 pm",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Samarth Darak replied to your inquiry Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 5 Nov, 06:48 pm",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Samarth Darak replied to your inquiry Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 5 Nov, 05:39 pm",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Samarth Darak replied to your inquiry Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 5 Nov, 04:55 pm",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Samarth Darak replied to your inquiry Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 5 Nov, 04:53 pm",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Samarth Darak replied to your inquiry Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 5 Nov, 04:47 pm",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Samarth Darak replied to your inquiry Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 5 Nov, 04:47 pm",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Samarth Darak replied to your inquiry Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 5 Nov, 04:41 pm",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Samarth Darak replied to your inquiry Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 5 Nov, 04:39 pm",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Samarth Darak replied to your inquiry Yes, Saturday afternoon at 3 PM works perfectly. Let me know if you need location coordinates. 5 Nov, 04:36 pm",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Price change on a saved vehicle The BMW 3 Series you saved is still available at ₹26,00,000. 4 Nov, 02:30 pm",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Seller replied to your inquiry Samarth Darak replied about the BMW 3 Series. 4 Nov, 09:30 am",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Verification completed The BMW 3 Series report is ready to view. 3 Nov, 03:30 pm",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Load older notifications",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Ask TrustDrive",
+          "ariaLabel": "Open TrustDrive AI assistant",
+          "title": null,
+          "type": "button",
+          "disabled": false
+        }
+      ],
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "#portal-main"
+        },
+        {
+          "text": "TRUSTDRIVE Buyer Workspace",
+          "href": "/"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore Vehicles",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search & Filters",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Vehicle Verification",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Vehicle History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "AI Risk Analysis",
+          "href": "/buyer/risk"
+        },
+        {
+          "text": "Compare Vehicles",
+          "href": "/buyer/compare"
+        },
+        {
+          "text": "Saved Vehicles 4",
+          "href": "/buyer/saved"
+        },
+        {
+          "text": "Inquiries 5",
+          "href": "/buyer/inquiries"
+        },
+        {
+          "text": "Reports",
+          "href": "/buyer/reports"
+        },
+        {
+          "text": "Notifications 19",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "Profile & Settings",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "Verify a vehicle",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Verify",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "TRUSTDRIVE",
+          "href": "/"
+        },
+        {
+          "text": "9+",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "",
+          "href": "/buyer/notifications"
+        }
+      ],
+      "apiResponses": [
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1793960624286",
+          "status": 200,
+          "contentType": "text/css; charset=UTF-8"
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "12-settings",
+      "url": "/buyer/settings",
+      "status": 200,
+      "finalUrl": "http://localhost:3000/buyer/settings",
+      "screenshot": "qa/live-browser/qa-2026-11-06/buyer/discovery/12-settings.png",
+      "title": "Settings — TrustDrive",
+      "h1": "Profile & Settings",
+      "styleSheets": 1,
+      "bodyFont": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif, \"Plus Jakarta Sans\", Inter, sans-serif, Inter, system-ui, sans-serif",
+      "bodyBackground": "color(srgb 0.0901961 0.0980392 0.105882)",
+      "canvases": 0,
+      "webgl2": true,
+      "bodyTextLength": 5390,
+      "bodyTextPreview": "Skip to content TRUSTDRIVE Buyer Workspace WORKSPACE Overview Explore Vehicles Search & Filters Vehicle Verification Vehicle History AI Risk Analysis Compare Vehicles Saved Vehicles 4 Inquiries 5 ACCOUNT Reports Notifications 19 Profile & Settings Evidence before claims. Verify before you buy. Verify a vehicle Demo workspace · seeded data Enter SECURE 9+ AD Aditya Darak Buyer ACCOUNT Profile & Settings Manage your account, saved searches and privacy. Changes persist in the shared database. Personal details This information appears on reports and in buyer conversations. Full name Email Phone City Buyer account Email verified Save changes Notifications Choose how TrustDrive contacts you about inquiries and verification changes. Email SMS Push Preferences are stored with your profile. Choose Save changes to persist them. Privacy Documents are shared with buyers only when you enable consent per document. Change password Use at least 10 characters with a letter and a number. Current password New password Update password Sign out Security & sessions Profile photo, email status, two-factor authentication and every device signed in to your account. AD KYC not started Aditya Darak aditya@tr",
+      "inputs": [
+        {
+          "id": "",
+          "name": "",
+          "type": "search",
+          "placeholder": "Search registration, VIN or vehicle ID",
+          "value": "",
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "text",
+          "placeholder": "",
+          "value": "Aditya Darak",
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "email",
+          "placeholder": "",
+          "value": "aditya@trustdrive.dev",
+          "required": false,
+          "disabled": true
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "tel",
+          "placeholder": "",
+          "value": "+91 98200 11001",
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "text",
+          "placeholder": "",
+          "value": "Mumbai",
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "password",
+          "placeholder": "",
+          "value": "[hidden]",
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "password",
+          "placeholder": "",
+          "value": "[hidden]",
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "file",
+          "placeholder": "",
+          "value": "",
+          "required": false,
+          "disabled": false
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "password",
+          "placeholder": "Current password",
+          "value": "[hidden]",
+          "required": false,
+          "disabled": false
+        }
+      ],
+      "textareas": [],
+      "selects": [],
+      "buttons": [
+        {
+          "text": "",
+          "ariaLabel": "Collapse sidebar",
+          "title": "Collapse sidebar",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Switch to Night mode",
+          "title": "Day mode — switch to Night",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": null,
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "Save changes",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Email",
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "SMS",
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Push",
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "Update password",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": true
+        },
+        {
+          "text": "Sign out",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Upload photo",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Set up 2FA",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": true
+        },
+        {
+          "text": "Sign out everywhere",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Revoke",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Delete account",
+          "ariaLabel": null,
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "Ask TrustDrive",
+          "ariaLabel": "Open TrustDrive AI assistant",
+          "title": null,
+          "type": "button",
+          "disabled": false
+        }
+      ],
+      "links": [
+        {
+          "text": "Skip to content",
+          "href": "#portal-main"
+        },
+        {
+          "text": "TRUSTDRIVE Buyer Workspace",
+          "href": "/"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore Vehicles",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search & Filters",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Vehicle Verification",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Vehicle History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "AI Risk Analysis",
+          "href": "/buyer/risk"
+        },
+        {
+          "text": "Compare Vehicles",
+          "href": "/buyer/compare"
+        },
+        {
+          "text": "Saved Vehicles 4",
+          "href": "/buyer/saved"
+        },
+        {
+          "text": "Inquiries 5",
+          "href": "/buyer/inquiries"
+        },
+        {
+          "text": "Reports",
+          "href": "/buyer/reports"
+        },
+        {
+          "text": "Notifications 19",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "Profile & Settings",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "Verify a vehicle",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Overview",
+          "href": "/buyer"
+        },
+        {
+          "text": "Explore",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Search",
+          "href": "/buyer/search"
+        },
+        {
+          "text": "Verify",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "History",
+          "href": "/buyer/history"
+        },
+        {
+          "text": "TRUSTDRIVE",
+          "href": "/"
+        },
+        {
+          "text": "9+",
+          "href": "/buyer/notifications"
+        },
+        {
+          "text": "",
+          "href": "/buyer/settings"
+        },
+        {
+          "text": "",
+          "href": "/buyer/notifications"
+        }
+      ],
+      "apiResponses": [
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1793960628237",
+          "status": 200,
+          "contentType": "text/css; charset=UTF-8"
+        },
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/api/v1/me/sessions",
+          "status": 200,
+          "contentType": "application/json"
+        },
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/api/v1/me/sessions",
+          "status": 200,
+          "contentType": "application/json"
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "13-vehicle-report",
+      "url": "/vehicle/v-bmw",
+      "status": 200,
+      "finalUrl": "http://localhost:3000/vehicle/v-bmw",
+      "screenshot": "qa/live-browser/qa-2026-11-06/buyer/discovery/13-vehicle-report.png",
+      "title": "Vehicle Report — TrustDrive",
+      "h1": "BMW 3 Series",
+      "styleSheets": 1,
+      "bodyFont": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif, \"Plus Jakarta Sans\", Inter, sans-serif, Inter, system-ui, sans-serif",
+      "bodyBackground": "color(srgb 0.0901961 0.0980392 0.105882)",
+      "canvases": 0,
+      "webgl2": true,
+      "bodyTextLength": 6051,
+      "bodyTextPreview": "TrustDrive Explore Verify a vehicle Sign in VEHICLE VERIFICATION REPORT BMW 3 Series published 330i · 2021 MH01AB1234 42,000 km claimed Petrol Automatic Mumbai TrustDrive ID TD-8F3K2M9Q · VIN WBA5R1C50KAK12345 ASKING PRICE ₹ 26,00,000 Report generated from records on file TRUST SCORE 40 / 100 Caution EVIDENCE COVERAGE 100 % Verified document weight RECORD INTEGRITY Hash chain intact 21 verified records OPEN CONFLICTS 3 finding(s) Review required Vehicle 3D Inspection Studio Interactive spatial diagnostic model — raycast any panel to inspect verified records, or explore Exploded & X-Ray modes. 2 damage panels Loading 3D viewer… Illustrative executive sedan asset with CC BY 4.0 licensing. Hotspots map directly to verified SQLite database damage rows. Spatial Diagnostic Studio Verification summary Deterministic rules engine · versioned 40 OF 100 Caution Evidence coverage 100% Record integrity Hash chain intact Missing data is unverified coverage — not proof of fraud. No accident or theft record in supported sources does not guarantee the vehicle has none. Vehicle Findings & Insights Deterministic evidence correlation Theft record Only a demo theft source (\"Demo theft registry\") return",
+      "inputs": [],
+      "textareas": [],
+      "selects": [],
+      "buttons": [
+        {
+          "text": "",
+          "ariaLabel": "How is the trust score calculated?",
+          "title": "Trust score is computed by a deterministic rules engine from verified records — not by an LLM.",
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Overview",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "History",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Documents",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Damage",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "AI Analysis",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Saved",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "PDF report",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Contact seller",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Report listing",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Ask TrustDrive",
+          "ariaLabel": "Open TrustDrive AI assistant",
+          "title": null,
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "DAY",
+          "ariaLabel": "Switch to Night mode",
+          "title": "Day mode — switch to Night",
+          "type": "button",
+          "disabled": false
+        }
+      ],
+      "links": [
+        {
+          "text": "TrustDrive",
+          "href": "/"
+        },
+        {
+          "text": "Explore",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Verify a vehicle",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Sign in",
+          "href": "/login"
+        }
+      ],
+      "apiResponses": [
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1793960633631",
+          "status": 200,
+          "contentType": "text/css; charset=UTF-8"
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "14-inspection",
+      "url": "/inspection?vehicle=v-bmw",
+      "status": 200,
+      "finalUrl": "http://localhost:3000/inspection?vehicle=v-bmw",
+      "screenshot": "qa/live-browser/qa-2026-11-06/buyer/discovery/14-inspection.png",
+      "title": "3D Vehicle Inspection Studio — TrustDrive",
+      "h1": "3D Vehicle Inspection Studio.",
+      "styleSheets": 1,
+      "bodyFont": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif, \"Plus Jakarta Sans\", Inter, sans-serif, Inter, system-ui, sans-serif",
+      "bodyBackground": "color(srgb 0.0901961 0.0980392 0.105882)",
+      "canvases": 1,
+      "webgl2": true,
+      "bodyTextLength": 2420,
+      "bodyTextPreview": "TRUSTDRIVE AUTOMOTIVE TRUTH HOME TECHNOLOGY INSPECTION MARKETPLACE RESOURCES ABOUT Sign In GET STARTED SPATIAL DIAGNOSTIC STUDIO 3D Vehicle Inspection Studio. Experience full 360-degree spatial inspection. Explode individual structural panels, inspect mechanical component conditions, and verify accident repair history. INSPECT LIVE BMW 330I Loading Executive Sedan 3D Geometry… Khronos CC BY 4.0 PBR Vehicle Model TRUSTDRIVE 3D STUDIO | NORMAL Normal Exploded Damage X-Ray Theater View RECORDED DEFECTS (3): Engine Hood & Cowl 1 Front Bumper & Grille 1 2.0L Turbo Powertrain 1 3/4 HERO FRONT SIDE PROFILE REAR TAIL TOP DOWN POWERTRAIN Component-Level Inspection Methodology ZONE 01 Exterior Body & Shell Paint depth micrometer measurements, panel alignment gaps, clearcoat re-spray lines, and OEM spot weld integrity across hood, doors, roof, and trunk. Factory Spec Verified ZONE 02 Powertrain & Mechanicals Compression ratios, turbocharger boost pressures, cooling system radiator condition, transmission fluid cleanliness, and ECU OBD-II diagnostic fault logs. 0 Diagnostic Trouble Codes ZONE 03 Chassis & Structural Frame Sub-frame geometry, crumple zone crash impact sensors, suspension strut ",
+      "inputs": [
+        {
+          "id": "",
+          "name": "",
+          "type": "email",
+          "placeholder": "Enter your email address",
+          "value": "",
+          "required": false,
+          "disabled": false
+        }
+      ],
+      "textareas": [],
+      "selects": [],
+      "buttons": [
+        {
+          "text": "",
+          "ariaLabel": "Switch to Night mode",
+          "title": "Day mode — switch to Night",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Switch to Night mode",
+          "title": "Day mode — switch to Night",
+          "type": "button",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Toggle navigation menu",
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Normal",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Exploded",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Damage",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "X-Ray",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Theater View",
+          "ariaLabel": null,
+          "title": "Expand Theater Mode",
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Engine Hood & Cowl 1",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Front Bumper & Grille 1",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "2.0L Turbo Powertrain 1",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "3/4 HERO",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "FRONT",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "SIDE PROFILE",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "REAR TAIL",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "TOP DOWN",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "POWERTRAIN",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Toggle turntable auto rotation",
+          "title": "Start Turntable",
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Reset view",
+          "title": "Reset to Hero Angle",
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Toggle theater mode",
+          "title": "Expand to Theater Mode",
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "ariaLabel": "Toggle fullscreen",
+          "title": "Native Fullscreen",
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "SUBSCRIBE",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        }
+      ],
+      "links": [
+        {
+          "text": "TRUSTDRIVE AUTOMOTIVE TRUTH",
+          "href": "/"
+        },
+        {
+          "text": "HOME",
+          "href": "/"
+        },
+        {
+          "text": "TECHNOLOGY",
+          "href": "/technology"
+        },
+        {
+          "text": "INSPECTION",
+          "href": "/inspection"
+        },
+        {
+          "text": "MARKETPLACE",
+          "href": "/marketplace"
+        },
+        {
+          "text": "RESOURCES",
+          "href": "/resources"
+        },
+        {
+          "text": "ABOUT",
+          "href": "/about"
+        },
+        {
+          "text": "Sign In",
+          "href": "/login"
+        },
+        {
+          "text": "GET STARTED",
+          "href": "/register"
+        },
+        {
+          "text": "INSPECT LIVE BMW 330I",
+          "href": "/vehicle/v-bmw"
+        },
+        {
+          "text": "TRUSTDRIVE",
+          "href": "/"
+        },
+        {
+          "text": "Home",
+          "href": "/"
+        },
+        {
+          "text": "Technology & AI",
+          "href": "/technology"
+        },
+        {
+          "text": "3D Inspection Studio",
+          "href": "/inspection"
+        },
+        {
+          "text": "Verified Marketplace",
+          "href": "/marketplace"
+        },
+        {
+          "text": "Resources & Insights",
+          "href": "/resources"
+        },
+        {
+          "text": "About TrustDrive",
+          "href": "/about"
+        },
+        {
+          "text": "Seller Portal Live",
+          "href": "/seller"
+        },
+        {
+          "text": "Buyer Portal Live",
+          "href": "/buyer"
+        },
+        {
+          "text": "Admin Verification Queue",
+          "href": "/admin/queue"
+        },
+        {
+          "text": "Sample Vehicle Report",
+          "href": "/vehicle/v-bmw"
+        },
+        {
+          "text": "Public VIN Lookup",
+          "href": "/verify/MH01AB1234"
+        },
+        {
+          "text": "Frequently Asked Questions",
+          "href": "/faq"
+        },
+        {
+          "text": "Contact Support",
+          "href": "/contact"
+        }
+      ],
+      "apiResponses": [
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/api/v1/vehicles/v-bmw/provider-checks",
+          "status": 200,
+          "contentType": "application/json"
+        },
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/api/v1/vehicles/v-bmw/provider-checks",
+          "status": 200,
+          "contentType": "application/json"
+        },
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1793960639132",
+          "status": 200,
+          "contentType": "text/css; charset=UTF-8"
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": []
+    },
+    {
+      "label": "16-explore-vehicle-detail",
+      "url": "/vehicle/v-1793959415934",
+      "status": 200,
+      "finalUrl": "http://localhost:3000/vehicle/v-1793959415934",
+      "screenshot": "qa/live-browser/qa-2026-11-06/buyer/discovery/16-explore-vehicle-detail.png",
+      "title": "Vehicle Report — TrustDrive",
+      "h1": "Honda City",
+      "styleSheets": 1,
+      "bodyFont": "Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif, \"Plus Jakarta Sans\", Inter, sans-serif, Inter, system-ui, sans-serif",
+      "bodyBackground": "color(srgb 0.0901961 0.0980392 0.105882)",
+      "canvases": 0,
+      "webgl2": true,
+      "bodyTextLength": 4137,
+      "bodyTextPreview": "TrustDrive Explore Verify a vehicle Sign in VEHICLE VERIFICATION REPORT Honda City published VX · 2021 MH12QA7079 45,000 km claimed Petrol Automatic Mumbai, Maharashtra TrustDrive ID TD-2021-1915 · VIN MAT3959415850NPBL ASKING PRICE ₹ 8,75,000 Report generated from records on file TRUST SCORE 0 / 100 High risk EVIDENCE COVERAGE 30 % Verified document weight RECORD INTEGRITY Hash chain intact 5 verified records OPEN CONFLICTS 1 finding(s) Review required Vehicle 3D Inspection Studio Interactive spatial diagnostic model — raycast any panel to inspect verified records, or explore Exploded & X-Ray modes. 1 damage panel Loading 3D viewer… Illustrative executive sedan asset with CC BY 4.0 licensing. Hotspots map directly to verified SQLite database damage rows. Spatial Diagnostic Studio Verification summary Deterministic rules engine · versioned 0 OF 100 High risk Evidence coverage 30% Record integrity Hash chain intact Missing data is unverified coverage — not proof of fraud. No accident or theft record in supported sources does not guarantee the vehicle has none. Vehicle Findings & Insights Deterministic evidence correlation Theft record No theft registry is configured — this check cou",
+      "inputs": [],
+      "textareas": [],
+      "selects": [],
+      "buttons": [
+        {
+          "text": "",
+          "ariaLabel": "How is the trust score calculated?",
+          "title": "Trust score is computed by a deterministic rules engine from verified records — not by an LLM.",
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Overview",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "History",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Documents",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Damage",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "AI Analysis",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Save",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "PDF report",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Contact seller",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Report listing",
+          "ariaLabel": null,
+          "title": null,
+          "type": "submit",
+          "disabled": false
+        },
+        {
+          "text": "Ask TrustDrive",
+          "ariaLabel": "Open TrustDrive AI assistant",
+          "title": null,
+          "type": "button",
+          "disabled": false
+        }
+      ],
+      "links": [
+        {
+          "text": "TrustDrive",
+          "href": "/"
+        },
+        {
+          "text": "Explore",
+          "href": "/buyer/explore"
+        },
+        {
+          "text": "Verify a vehicle",
+          "href": "/buyer/verification"
+        },
+        {
+          "text": "Sign in",
+          "href": "/login"
+        }
+      ],
+      "apiResponses": [
+        {
+          "method": "GET",
+          "url": "http://localhost:3000/_next/static/css/app/layout.css?v=1793960644315",
+          "status": 200,
+          "contentType": "text/css; charset=UTF-8"
+        }
+      ],
+      "consoleErrors": [],
+      "pageErrors": []
+    }
+  ],
+  "finishedAt": "2026-11-06T10:24:12.666Z"
+}

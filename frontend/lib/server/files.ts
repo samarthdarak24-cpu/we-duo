@@ -80,6 +80,15 @@ export function ensureUploadFromPublic(key: string, publicPath: string): boolean
   }
 }
 
+/** Absolute on-disk path for a stored key (safe: rejects traversal). */
+export function absoluteUploadPath(key: string): string | null {
+  try {
+    return assertInsideRoot(key);
+  } catch {
+    return null;
+  }
+}
+
 export function readUpload(key: string): Buffer | null {
   try {
     const full = assertInsideRoot(key);

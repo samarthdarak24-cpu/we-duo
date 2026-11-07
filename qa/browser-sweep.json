@@ -1,0 +1,357 @@
+[
+ {
+  "role": "seller",
+  "page": "LOGIN",
+  "status": "OK",
+  "detail": "http://127.0.0.1:3000/seller"
+ },
+ {
+  "role": "seller",
+  "page": "/seller",
+  "status": "OK",
+  "nav": "OK",
+  "title": "TrustDrive — Seller Portal",
+  "chars": 4225,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "seller",
+  "page": "/seller/vehicles",
+  "status": "OK",
+  "nav": "OK",
+  "title": "My Vehicles — TrustDrive",
+  "chars": 4907,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "seller",
+  "page": "/seller/add-vehicle",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Add Vehicle — TrustDrive",
+  "chars": 1133,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "seller",
+  "page": "/seller/documents",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Documents — TrustDrive",
+  "chars": 3291,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "seller",
+  "page": "/seller/verification",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Verification Center — TrustDrive",
+  "chars": 3304,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": [
+   "could not"
+  ]
+ },
+ {
+  "role": "seller",
+  "page": "/seller/fraud",
+  "status": "OK",
+  "nav": "OK",
+  "title": "AI Fraud Analysis — TrustDrive",
+  "chars": 3122,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "seller",
+  "page": "/seller/history",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Vehicle History — TrustDrive",
+  "chars": 2671,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "seller",
+  "page": "/seller/listings",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Marketplace Listings — TrustDrive",
+  "chars": 2118,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "seller",
+  "page": "/seller/inquiries",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Buyer Inquiries — TrustDrive",
+  "chars": 4931,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "seller",
+  "page": "/seller/reports",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Reports — TrustDrive",
+  "chars": 3811,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "seller",
+  "page": "/seller/notifications",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Notifications — TrustDrive",
+  "chars": 2357,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "seller",
+  "page": "/seller/settings",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Settings — TrustDrive",
+  "chars": 19580,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "buyer",
+  "page": "LOGIN",
+  "status": "OK",
+  "detail": "http://127.0.0.1:3000/buyer"
+ },
+ {
+  "role": "buyer",
+  "page": "/buyer",
+  "status": "OK",
+  "nav": "OK",
+  "title": "TrustDrive — Buyer Portal",
+  "chars": 2816,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "buyer",
+  "page": "/buyer/explore",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Explore Vehicles — TrustDrive",
+  "chars": 2646,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "buyer",
+  "page": "/buyer/search",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Search & Filters — TrustDrive",
+  "chars": 3106,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "buyer",
+  "page": "/buyer/verification",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Vehicle Verification — TrustDrive",
+  "chars": 716,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": [
+   "error"
+  ]
+ },
+ {
+  "role": "buyer",
+  "page": "/buyer/risk",
+  "status": "OK",
+  "nav": "OK",
+  "title": "AI Risk Analysis — TrustDrive",
+  "chars": 2410,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "buyer",
+  "page": "/buyer/history",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Vehicle History — TrustDrive",
+  "chars": 1563,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "buyer",
+  "page": "/buyer/saved",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Saved Vehicles — TrustDrive",
+  "chars": 639,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "buyer",
+  "page": "/buyer/compare",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Compare Vehicles — TrustDrive",
+  "chars": 2177,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "buyer",
+  "page": "/buyer/inquiries",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Inquiries — TrustDrive",
+  "chars": 1342,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "buyer",
+  "page": "/buyer/reports",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Reports — TrustDrive",
+  "chars": 1290,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "buyer",
+  "page": "/buyer/notifications",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Notifications — TrustDrive",
+  "chars": 840,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "buyer",
+  "page": "/buyer/settings",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Settings — TrustDrive",
+  "chars": 10543,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "admin",
+  "page": "LOGIN",
+  "status": "OK",
+  "detail": "http://127.0.0.1:3000/admin/queue"
+ },
+ {
+  "role": "admin",
+  "page": "/admin/queue",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Review Queue — TrustDrive Admin",
+  "chars": 1293,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "admin",
+  "page": "/admin/kyc",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Seller KYC — TrustDrive Admin",
+  "chars": 591,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "admin",
+  "page": "/admin/audit",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Audit Log — TrustDrive Admin",
+  "chars": 3043,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "admin",
+  "page": "/admin/users",
+  "status": "ISSUE",
+  "nav": "OK",
+  "title": "Users — TrustDrive Admin",
+  "chars": 1055,
+  "apiFails": [],
+  "errors": [
+   "PAGEERROR: Error: Minified React error #425; visit https://react.dev/errors/425 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+   "PAGEERROR: Error: Minified React error #422; visit https://react.dev/errors/422 for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+  ],
+  "suspectText": []
+ },
+ {
+  "role": "admin",
+  "page": "/admin/notifications",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Notifications — TrustDrive",
+  "chars": 512,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ },
+ {
+  "role": "admin",
+  "page": "/admin/settings",
+  "status": "OK",
+  "nav": "OK",
+  "title": "Settings — TrustDrive",
+  "chars": 3504,
+  "apiFails": [],
+  "errors": [],
+  "suspectText": []
+ }
+]

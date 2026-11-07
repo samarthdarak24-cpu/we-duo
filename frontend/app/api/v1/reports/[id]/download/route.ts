@@ -21,13 +21,22 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   if (!data) return fail(404, "NOT_FOUND", "Report not found");
   const auth = getAuth(req);
   const vehicle = getVehicle(data.report.vehicle_id);
-  const signed = verifyDownloadToken(new URL(req.url).searchParams.get("token") ?? "");
+  const tokenParam = new URL(req.url).searchParams.get("token");
+  const signed = verifyDownloadToken(tokenParam ?? "");
   const signedOk =
     !!signed && signed.scope === "report" && (signed.id === params.id || signed.id === data.report.report_id);
   const privileged =
     signedOk ||
     (!!auth && (auth.sub === data.report.requested_by || auth.sub === vehicle?.owner_id || auth.role === "admin"));
-  if (!privileged) return fail(403, "FORBIDDEN", "This report belongs to another account. Request your own copy.");
+  if (!privileged) {
+    // A token was presented but it failed verification (expired, tampered or
+    // scoped to another report). Say that honestly instead of implying the
+    // caller is signed into the wrong account.
+    if (tokenParam) {
+      return fail(403, "DOWNLOAD_LINK_INVALID", "This download link is invalid or has expired. Request a new link.");
+    }
+    return fail(403, "FORBIDDEN", "This report belongs to another account. Request your own copy.");
+  }
   if (data.report.status !== "ready") {
     return fail(409, "REPORT_NOT_READY", `Report is ${data.report.status}. Try again shortly.`);
   }

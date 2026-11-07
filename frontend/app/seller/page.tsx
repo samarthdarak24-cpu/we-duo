@@ -435,11 +435,11 @@ export default function SellerOverview() {
         </div>
 
         <div className="p-3 sm:p-4">
-          <Viewer3DLazy mode="seller" hotspots={data.hotspots} height={600} />
+          <Viewer3DLazy mode="seller" vehicleId={v.id} hotspots={data.hotspots} height={600} />
         </div>
 
         <div className="flex flex-wrap items-center justify-between border-t border-border px-5 py-3 text-[11.5px] text-muted">
-          <span>Khronos CC BY 4.0 Executive Sedan GLB. Hotspots map directly to verified SQLite database damage rows.</span>
+          <span>Generic Khronos CC BY 4.0 reference body — the hotspot records are real SQLite damage rows for this vehicle, not a scan of its exact make and model.</span>
           <span className="font-mono text-primary">Spatial Diagnostic Studio</span>
         </div>
       </section>

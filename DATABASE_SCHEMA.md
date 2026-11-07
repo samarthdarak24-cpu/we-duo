@@ -16,13 +16,24 @@ reflects the live schema instead of re-declaring it.
 
 ## Vehicles & marketplace
 
-`vehicles`, `vehicle_images`, `listings`, `listing_images`, `listing_events`,
-`pricing`, `saved_vehicles`, `saved_comparisons`, `saved_searches`.
+`vehicles`, `vehicle_images`, `vehicle_specs`, `listings`, `listing_images`,
+`listing_events`, `battery_records`, `pricing`, `saved_vehicles`,
+`saved_comparisons`, `saved_searches`.
 
-- `vehicles` — VIN/reg unique, make/model/year, owner, `archived_at`.
+- `vehicles` — VIN/reg unique, make/model/year, owner, `archived_at`,
+  `vehicle_category_id TEXT` (FK to the canonical category taxonomy; legacy rows
+  resolve to `passenger_car`). The car-only schema is preserved — no car column was
+  removed or repurposed.
 - `listings` — lifecycle (`draft → pending_review → published → paused → sold`),
   price, description, publish gate fields.
 - `listing_events` — append-only lifecycle log.
+- `vehicle_specs` — per-vehicle category-specific spec blob (`vehicle_id` PK,
+  `category_id`, `specs` JSON, `spec_version`). No car form is ever used for a
+  scooter; the specs blob holds only that category's declared fields.
+- `battery_records` — electric profiles only (`id` PK, `vehicle_id`, `kind`,
+  `soh_percent`, `capacity_kwh`, `serial`, `measured_at`, `source_document_id`,
+  `status`, `notes`, `created_at`). Battery State of Health is **never** recorded
+  without a source document; missing battery evidence is reported as unverified.
 
 ## Evidence & verification
 
@@ -30,7 +41,7 @@ reflects the live schema instead of re-declaring it.
 `verification_runs`, `verification_results`, `verification_cases`,
 `chain_records`, `findings`, `human_review_queue`, `evidence_nodes`,
 `evidence_edges`, `trust_scores`, `ai_analysis`, `ai_runs`,
-`agent_investigations`, `disputes`.
+`agent_investigations`, `disputes`, `category_registry_snapshot`.
 
 - `documents` — type, private `file_key`, `sha256`, status, version,
   `supersedes_id`, `deleted_at`.
@@ -41,6 +52,9 @@ reflects the live schema instead of re-declaring it.
 - `evidence_nodes` / `evidence_edges` — the graph rendered by `EvidenceGraph`.
 - `trust_scores` — additive score, contributions, coverage, version.
 - `disputes` — seller explanation + evidence, resolved by admin.
+- `category_registry_snapshot` — frozen copy of the canonical taxonomy
+  (`spec_version`, `trust_version`, `matrix`) so a past investigation can be
+  reproduced against the category rules in force at the time.
 
 ## History, mileage, damage
 
@@ -50,7 +64,9 @@ reflects the live schema instead of re-declaring it.
 - `mileage_readings` — km + date + source; rollback detection compares ordered
   readings.
 - `damage_records` — panel/zone, severity, source (`manual|yolo|inspector`),
-  confidence, evidence.
+  confidence, evidence; the multi-category migration added `component_id`,
+  `damage_type`, `local_x`, `local_y`, `local_z`, `position_source` so a hotspot
+  binds to a real component and a 3D-local position rather than a decorative marker.
 - `vehicle_claims` — seller-declared owner count, accidents, service, odometer.
 - `provider_checks` — provider, kind, status (`unavailable|completed|error`),
   queried fields, raw result. Unconfigured providers are never “clean”.

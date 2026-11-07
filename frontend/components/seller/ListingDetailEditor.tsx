@@ -46,7 +46,7 @@ export interface ListingDetailData {
     trustScore?: number;
     color?: string;
     ownershipCount?: number;
-    vin?: string;
+    vin?: string | null;
     trustdriveId?: string;
   };
   trust: { trustScore: number; bandLabel: string; evidenceCoverage: number };
@@ -219,7 +219,7 @@ export function ListingDetailEditor({ detail }: { detail: ListingDetailData }) {
         vehicleLabel={`${vehicle.make} ${vehicle.model} · ${vehicle.regNo}`}
         onAddPhotos={() => focusField(fileRef, true)}
         onSetPrice={() => focusField(priceRef)}
-        onWriteDescription={() => focusField(descRef)}
+        onWriteDescription={() => void action("generate-description")}
       />
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">

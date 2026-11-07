@@ -28,18 +28,26 @@ export function readCookie(req: Request, name: string): string {
 export function getAuth(req: Request): JwtPayload | null {
   const header = req.headers.get("authorization") || "";
   const bearer = header.startsWith("Bearer ") ? header.slice(7) : "";
-  const token = bearer || readCookie(req, "td_token");
-  const payload = token ? verifyToken(token) : null;
-  if (!payload) return null;
-  const user = getUserById(payload.sub);
-  // Soft-deleted users keep no access even if their JWT has not expired yet.
-  if (!user) return null;
-  // SEC-001 defence in depth: never trust a role claim that disagrees with the
-  // live account row (a forged/legacy token must not grant elevated access).
-  if (user.role !== payload.role) return null;
-  // Service tokens are for the Next.js -> Python hop only, never for user APIs.
-  if ((payload as JwtPayload & { svc?: string }).svc) return null;
-  return payload;
+  const cookieToken = readCookie(req, "td_token");
+  // Reverse proxies / sharing gateways may inject their OWN Authorization
+  // header, which must not mask a valid TrustDrive session cookie. Try every
+  // candidate and accept the first token that verifies against our secret and
+  // agrees with the live account row.
+  for (const token of [bearer, cookieToken]) {
+    if (!token) continue;
+    const payload = verifyToken(token);
+    if (!payload) continue;
+    const user = getUserById(payload.sub);
+    // Soft-deleted users keep no access even if their JWT has not expired yet.
+    if (!user) continue;
+    // SEC-001 defence in depth: never trust a role claim that disagrees with
+    // the live account row (a forged/legacy token must not grant elevated access).
+    if (user.role !== payload.role) continue;
+    // Service tokens are for the Next.js -> Python hop only, never for user APIs.
+    if ((payload as JwtPayload & { svc?: string }).svc) continue;
+    return payload;
+  }
+  return null;
 }
 
 type Guard = { ok: true; user: JwtPayload } | { ok: false; response: NextResponse };

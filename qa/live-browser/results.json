@@ -1,0 +1,557 @@
+{
+  "base": "http://127.0.0.1:3001",
+  "startedAt": "2026-11-05T14:04:09.653Z",
+  "pages": [
+    {
+      "path": "/",
+      "name": "01-home",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/",
+      "title": "TrustDrive — Every Car Has a Story. Discover the Truth.",
+      "h1": "Every Car Has a Story. Discover the Truth.",
+      "textLength": 15117,
+      "canvas": 0,
+      "svg": 97,
+      "markers": {
+        "Every Car Has a Story": true,
+        "TRUSTDRIVE": true
+      },
+      "redirectedToLogin": false,
+      "screenshot": "..\\qa\\live-browser\\01-home.png",
+      "consoleErrors": 1
+    },
+    {
+      "path": "/technology",
+      "name": "02-technology",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/technology",
+      "title": "Technology & AI Architecture — TrustDrive",
+      "h1": "The Algorithmic Engine Behind Vehicle Truth.",
+      "textLength": 6977,
+      "canvas": 0,
+      "svg": 31,
+      "markers": {
+        "Technology": true,
+        "OCR": true
+      },
+      "redirectedToLogin": false,
+      "screenshot": "..\\qa\\live-browser\\02-technology.png",
+      "consoleErrors": 0
+    },
+    {
+      "path": "/marketplace",
+      "name": "03-marketplace",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/marketplace",
+      "title": "Verified Used Vehicle Marketplace — TrustDrive",
+      "h1": "TrustDrive Marketplace.",
+      "textLength": 4496,
+      "canvas": 0,
+      "svg": 50,
+      "markers": {},
+      "redirectedToLogin": false,
+      "consoleErrors": 0
+    },
+    {
+      "path": "/inspection",
+      "name": "04-inspection",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/inspection",
+      "title": "3D Vehicle Inspection Studio — TrustDrive",
+      "h1": "3D Vehicle Inspection Studio.",
+      "textLength": 2438,
+      "canvas": 1,
+      "svg": 27,
+      "markers": {},
+      "redirectedToLogin": false,
+      "consoleErrors": 0
+    },
+    {
+      "path": "/seller",
+      "name": "05-seller-dashboard",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/seller",
+      "title": "TrustDrive — Seller Portal",
+      "h1": "Seller portfolio",
+      "textLength": 0,
+      "canvas": 1,
+      "svg": 116,
+      "markers": {
+        "Overview": false
+      },
+      "redirectedToLogin": false,
+      "screenshot": "..\\qa\\live-browser\\05-seller-dashboard.png",
+      "consoleErrors": 0
+    },
+    {
+      "path": "/seller/vehicles",
+      "name": "06-seller-vehicles",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/seller/vehicles",
+      "title": "My Vehicles — TrustDrive",
+      "h1": "TrustDrive — My Vehicles",
+      "textLength": 3475,
+      "canvas": 0,
+      "svg": 201,
+      "markers": {},
+      "redirectedToLogin": false,
+      "consoleErrors": 0
+    },
+    {
+      "path": "/seller/documents",
+      "name": "07-seller-documents",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/seller/documents",
+      "title": "Documents — TrustDrive",
+      "h1": "Documents",
+      "textLength": 2884,
+      "canvas": 0,
+      "svg": 66,
+      "markers": {},
+      "redirectedToLogin": false,
+      "screenshot": "..\\qa\\live-browser\\07-seller-documents.png",
+      "consoleErrors": 0
+    },
+    {
+      "path": "/seller/verification",
+      "name": "08-seller-verification",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/seller/verification",
+      "title": "Verification Center — TrustDrive",
+      "h1": "TrustDrive — Verification Center",
+      "textLength": 2759,
+      "canvas": 0,
+      "svg": 82,
+      "markers": {},
+      "redirectedToLogin": false,
+      "consoleErrors": 0
+    },
+    {
+      "path": "/seller/fraud",
+      "name": "09-seller-fraud",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/seller/fraud",
+      "title": "AI Fraud Analysis — TrustDrive",
+      "h1": "TrustDrive — AI Fraud Analysis",
+      "textLength": 2445,
+      "canvas": 0,
+      "svg": 56,
+      "markers": {},
+      "redirectedToLogin": false,
+      "screenshot": "..\\qa\\live-browser\\09-seller-fraud.png",
+      "consoleErrors": 0
+    },
+    {
+      "path": "/seller/listings",
+      "name": "10-seller-listings",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/seller/listings",
+      "title": "Marketplace Listings — TrustDrive",
+      "h1": "TrustDrive — Marketplace Listings",
+      "textLength": 1762,
+      "canvas": 0,
+      "svg": 82,
+      "markers": {},
+      "redirectedToLogin": false,
+      "consoleErrors": 0
+    },
+    {
+      "path": "/seller/inquiries",
+      "name": "11-seller-inquiries",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/seller/inquiries",
+      "title": "Buyer Inquiries — TrustDrive",
+      "h1": "TrustDrive — Buyer Inquiries",
+      "textLength": 3548,
+      "canvas": 0,
+      "svg": 54,
+      "markers": {},
+      "redirectedToLogin": false,
+      "consoleErrors": 0
+    },
+    {
+      "path": "/seller/reports",
+      "name": "12-seller-reports",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/seller/reports",
+      "title": "Reports — TrustDrive",
+      "h1": "TrustDrive — Reports",
+      "textLength": 3144,
+      "canvas": 0,
+      "svg": 85,
+      "markers": {},
+      "redirectedToLogin": false,
+      "consoleErrors": 0
+    },
+    {
+      "path": "/seller/notifications",
+      "name": "13-seller-notifications",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/seller/notifications",
+      "title": "Notifications — TrustDrive",
+      "h1": "TrustDrive — Notifications",
+      "textLength": 2434,
+      "canvas": 0,
+      "svg": 51,
+      "markers": {},
+      "redirectedToLogin": false,
+      "consoleErrors": 0
+    },
+    {
+      "path": "/seller/add-vehicle",
+      "name": "14-seller-add-vehicle",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/seller/add-vehicle",
+      "title": "Add Vehicle — TrustDrive",
+      "h1": "TrustDrive — Add Vehicle",
+      "textLength": 1137,
+      "canvas": 0,
+      "svg": 31,
+      "markers": {},
+      "redirectedToLogin": false,
+      "consoleErrors": 0
+    },
+    {
+      "path": "/vehicle/v-camry",
+      "name": "15-vehicle-detail",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/vehicle/v-camry",
+      "title": "Vehicle Report — TrustDrive",
+      "h1": "Toyota Camry",
+      "textLength": 5019,
+      "canvas": 1,
+      "svg": 43,
+      "markers": {
+        "86,400": true,
+        "51,200": true,
+        "35,200": false,
+        "ODOMETER_ROLLBACK": true,
+        "Evidence": true
+      },
+      "redirectedToLogin": false,
+      "screenshot": "..\\qa\\live-browser\\15-vehicle-detail.png",
+      "consoleErrors": 0
+    },
+    {
+      "path": "/buyer",
+      "name": "16-buyer-dashboard",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/buyer",
+      "title": "TrustDrive — Buyer Portal",
+      "h1": "Good to see you, Rohan",
+      "textLength": 2780,
+      "canvas": 0,
+      "svg": 63,
+      "markers": {},
+      "redirectedToLogin": false,
+      "screenshot": "..\\qa\\live-browser\\16-buyer-dashboard.png",
+      "consoleErrors": 0
+    },
+    {
+      "path": "/buyer/explore",
+      "name": "17-buyer-explore",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/buyer/explore",
+      "title": "Explore Vehicles — TrustDrive",
+      "h1": "Explore vehicles",
+      "textLength": 2379,
+      "canvas": 0,
+      "svg": 111,
+      "markers": {},
+      "redirectedToLogin": false,
+      "screenshot": "..\\qa\\live-browser\\17-buyer-explore.png",
+      "consoleErrors": 0
+    },
+    {
+      "path": "/buyer/history",
+      "name": "18-buyer-history",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/buyer/history",
+      "title": "Vehicle History — TrustDrive",
+      "h1": "Vehicle History",
+      "textLength": 1595,
+      "canvas": 0,
+      "svg": 47,
+      "markers": {},
+      "redirectedToLogin": false,
+      "screenshot": "..\\qa\\live-browser\\18-buyer-history.png",
+      "consoleErrors": 0
+    },
+    {
+      "path": "/buyer/reports",
+      "name": "19-buyer-reports",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/buyer/reports",
+      "title": "Reports — TrustDrive",
+      "h1": "Reports",
+      "textLength": 1304,
+      "canvas": 0,
+      "svg": 31,
+      "markers": {},
+      "redirectedToLogin": false,
+      "consoleErrors": 0
+    },
+    {
+      "path": "/buyer/compare",
+      "name": "20-buyer-compare",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/buyer/compare",
+      "title": "Compare Vehicles — TrustDrive",
+      "h1": "Compare vehicles",
+      "textLength": 2132,
+      "canvas": 0,
+      "svg": 31,
+      "markers": {},
+      "redirectedToLogin": false,
+      "consoleErrors": 0
+    },
+    {
+      "path": "/buyer/saved",
+      "name": "21-buyer-saved",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/buyer/saved",
+      "title": "Saved Vehicles — TrustDrive",
+      "h1": "Saved vehicles",
+      "textLength": 648,
+      "canvas": 0,
+      "svg": 33,
+      "markers": {},
+      "redirectedToLogin": false,
+      "consoleErrors": 0
+    },
+    {
+      "path": "/buyer/inquiries",
+      "name": "22-buyer-inquiries",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/buyer/inquiries",
+      "title": "Inquiries — TrustDrive",
+      "h1": "Inquiries",
+      "textLength": 1296,
+      "canvas": 0,
+      "svg": 38,
+      "markers": {},
+      "redirectedToLogin": false,
+      "consoleErrors": 0
+    },
+    {
+      "path": "/buyer/risk",
+      "name": "23-buyer-risk",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/buyer/risk",
+      "title": "AI Risk Analysis — TrustDrive",
+      "h1": "AI Risk Analysis",
+      "textLength": 2287,
+      "canvas": 0,
+      "svg": 51,
+      "markers": {},
+      "redirectedToLogin": false,
+      "consoleErrors": 0
+    },
+    {
+      "path": "/seller/vehicles",
+      "name": "24-rbac-buyer-on-seller",
+      "status": 200,
+      "url": "http://localhost:3001/login?next=seller",
+      "title": "Sign In — TrustDrive Automotive Truth",
+      "h1": "Know the Car. Trust the Journey.",
+      "textLength": 620,
+      "canvas": 0,
+      "svg": 7,
+      "markers": {},
+      "redirectedToLogin": true,
+      "consoleErrors": 0
+    },
+    {
+      "path": "/verify/unknown-token",
+      "name": "25-verify-unknown",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/verify/unknown-token",
+      "title": "Verify — TrustDrive",
+      "h1": "No TrustDrive record",
+      "textLength": 153,
+      "canvas": 0,
+      "svg": 2,
+      "markers": {},
+      "redirectedToLogin": false,
+      "consoleErrors": 0
+    },
+    {
+      "path": "/",
+      "name": "26-mobile-home",
+      "status": 200,
+      "url": "http://127.0.0.1:3001/",
+      "title": "TrustDrive — Every Car Has a Story. Discover the Truth.",
+      "h1": "Every Car Has a Story. Discover the Truth.",
+      "textLength": 15042,
+      "canvas": 0,
+      "svg": 97,
+      "markers": {},
+      "redirectedToLogin": false,
+      "screenshot": "..\\qa\\live-browser\\26-mobile-home.png",
+      "consoleErrors": 1
+    }
+  ],
+  "logins": [
+    {
+      "role": "seller",
+      "email": "samarth@trustdrive.dev",
+      "formDiagnostics": {
+        "forms": 1,
+        "inputs": [
+          {
+            "type": "email",
+            "name": "",
+            "id": "login-email",
+            "label": null
+          },
+          {
+            "type": "password",
+            "name": "",
+            "id": "login-password",
+            "label": null
+          },
+          {
+            "type": "checkbox",
+            "name": "",
+            "id": "",
+            "label": null
+          }
+        ],
+        "submits": [
+          "SIGN IN"
+        ]
+      },
+      "url": "http://127.0.0.1:3001/seller",
+      "ok": true,
+      "screenshot": "qa/live-browser/login-seller.png"
+    },
+    {
+      "role": "buyer",
+      "email": "rohan@trustdrive.dev",
+      "formDiagnostics": {
+        "forms": 1,
+        "inputs": [
+          {
+            "type": "email",
+            "name": "",
+            "id": "login-email",
+            "label": null
+          },
+          {
+            "type": "password",
+            "name": "",
+            "id": "login-password",
+            "label": null
+          },
+          {
+            "type": "checkbox",
+            "name": "",
+            "id": "",
+            "label": null
+          }
+        ],
+        "submits": [
+          "SIGN IN"
+        ]
+      },
+      "url": "http://127.0.0.1:3001/buyer",
+      "ok": true,
+      "screenshot": "qa/live-browser/login-buyer.png"
+    }
+  ],
+  "checks": [
+    {
+      "name": "public home renders hero",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "seller login redirects to /seller",
+      "pass": true,
+      "detail": "http://127.0.0.1:3001/seller"
+    },
+    {
+      "name": "all 10 seller pages return 200 and stay authenticated",
+      "pass": true,
+      "detail": "/seller:200 /seller/vehicles:200 /seller/documents:200 /seller/verification:200 /seller/fraud:200 /seller/listings:200 /seller/inquiries:200 /seller/reports:200 /seller/notifications:200 /seller/add-vehicle:200"
+    },
+    {
+      "name": "vehicle detail shows rollback evidence",
+      "pass": true,
+      "detail": "{\"86,400\":true,\"51,200\":true,\"35,200\":false,\"ODOMETER_ROLLBACK\":true,\"Evidence\":true}"
+    },
+    {
+      "name": "real GLB model requested by the page",
+      "pass": true,
+      "detail": "trustdrive-sedan.glb"
+    },
+    {
+      "name": "3D canvas mounted",
+      "pass": true,
+      "detail": "canvas=1"
+    },
+    {
+      "name": "3D hotspot controls present",
+      "pass": true,
+      "detail": "Damage | Bonnet / Engine Hood1 | Front Left Door Assembly1 | Damage"
+    },
+    {
+      "name": "clicking a 3D hotspot shows a database damage record",
+      "pass": true,
+      "detail": "TrustDrive\nExplore\nVerify a vehicle\nSign in\n\nVEHICLE VERIFICATION REPORT\n\nToyota Camry\npublished\n\nHybrid · 2021\n\nMH12CD8"
+    },
+    {
+      "name": "buyer login redirects to /buyer",
+      "pass": true,
+      "detail": "http://127.0.0.1:3001/buyer"
+    },
+    {
+      "name": "all 8 buyer pages return 200 and stay authenticated",
+      "pass": true,
+      "detail": "/buyer:200 /buyer/explore:200 /buyer/history:200 /buyer/reports:200 /buyer/compare:200 /buyer/saved:200 /buyer/inquiries:200 /buyer/risk:200"
+    },
+    {
+      "name": "buyer blocked from seller route",
+      "pass": true,
+      "detail": "http://localhost:3001/login?next=seller"
+    },
+    {
+      "name": "unknown QR token renders safe response",
+      "pass": true,
+      "detail": "status=200"
+    },
+    {
+      "name": "mobile home renders",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "no horizontal overflow on mobile home",
+      "pass": true,
+      "detail": "{\"scrollWidth\":390,\"innerWidth\":390}"
+    }
+  ],
+  "consoleErrors": [
+    {
+      "page": "http://127.0.0.1:3001/",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    },
+    {
+      "page": "http://127.0.0.1:3001/",
+      "text": "Failed to load resource: net::ERR_FAILED"
+    }
+  ],
+  "hotspotNames": [
+    "Damage",
+    "Bonnet / Engine Hood1",
+    "Front Left Door Assembly1",
+    "Damage"
+  ],
+  "summary": {
+    "pagesVisited": 26,
+    "pagesWithErrors": [],
+    "consoleErrorCount": 2,
+    "checksPassed": 14,
+    "checksFailed": 0
+  }
+}

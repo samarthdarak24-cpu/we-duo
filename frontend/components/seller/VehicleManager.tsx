@@ -17,7 +17,7 @@ export interface SellerVehicleRow {
   variant: string;
   year: number;
   regNo: string;
-  vin: string;
+  vin: string | null;
   km: number;
   price: number;
   fuel: string;
@@ -26,6 +26,8 @@ export interface SellerVehicleRow {
   status: string;
   trustScore: number;
   band: string;
+  categoryId?: string;
+  categoryLabel?: string;
   coverage: number;
   listingStatus: string;
   listingId: string | null;
@@ -56,7 +58,7 @@ export function VehicleManager({ vehicles }: { vehicles: SellerVehicleRow[] }) {
   const rows = useMemo(() => {
     const query = q.trim().toLowerCase();
     return vehicles.filter((v) => {
-      const matchQ = !query || `${v.make} ${v.model} ${v.variant} ${v.regNo} ${v.vin}`.toLowerCase().includes(query);
+      const matchQ = !query || `${v.make} ${v.model} ${v.variant} ${v.regNo} ${v.vin ?? ""}`.toLowerCase().includes(query);
       const matchS = status === "all" || v.status === status || v.listingStatus === status;
       return matchQ && matchS;
     });
@@ -149,6 +151,11 @@ export function VehicleManager({ vehicles }: { vehicles: SellerVehicleRow[] }) {
                           <div className="text-[11.5px] text-muted">
                             {v.year} · {v.regNo} · {v.fuel}
                           </div>
+                          {v.categoryLabel && (
+                            <div className="mt-1">
+                              <span className="td-chip td-chip-sm">{v.categoryLabel}</span>
+                            </div>
+                          )}
                           <div className="text-[11px] text-muted">
                             {v.photos} photo{v.photos === 1 ? "" : "s"}
                           </div>

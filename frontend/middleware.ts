@@ -4,9 +4,10 @@ import { NextResponse, type NextRequest } from "next/server";
  * Page-level portal guard.
  *
  * API routes already enforce RBAC; this stops a signed-in buyer from rendering
- * a seller/admin portal at all. The JWT payload is decoded for routing only —
- * signature verification happens on the server and in the API layer.
- * With no cookie we let the page use the seeded demo account (local dev).
+ * a seller/admin portal at all, and stops an anonymous visitor from loading any
+ * portal shell at all. The JWT payload is decoded for routing only — signature
+ * verification happens on the server and in the API layer, so a forged role
+ * claim can at worst reach a page whose data calls then return 401.
  */
 function tokenRole(token: string | undefined): string | null {
   if (!token) return null;
@@ -32,7 +33,14 @@ export function middleware(req: NextRequest) {
   if (!portal) return NextResponse.next();
 
   const role = tokenRole(req.cookies.get("td_token")?.value);
-  if (role && role !== portal) {
+  if (!role) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/login";
+    url.search = "";
+    url.searchParams.set("next", portal);
+    return NextResponse.redirect(url);
+  }
+  if (role !== portal) {
     const url = req.nextUrl.clone();
     url.pathname = "/login";
     url.search = "";

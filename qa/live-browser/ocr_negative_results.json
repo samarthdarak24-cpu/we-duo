@@ -1,0 +1,57 @@
+{
+  "run": "MW5AQOWL",
+  "vehicleId": "v-1793989034368",
+  "regNo": "MH14NV7188",
+  "results": [
+    {
+      "label": "unsupported text file rejected with 415",
+      "ok": true,
+      "detail": "HTTP 415 {\"error\":{\"code\":\"UNSUPPORTED_FILE_TYPE\",\"message\":\"The file content is not a valid PDF, PNG, JPEG or WebP.\"}}"
+    },
+    {
+      "label": "no document row was created for the rejected file",
+      "ok": true,
+      "detail": "0 → 0"
+    },
+    {
+      "label": "corrupt PDF is accepted as a file but not verified",
+      "ok": true,
+      "detail": "HTTP 201 status=needs_correction ocr={\"status\":\"processed\",\"engine\":\"rapidocr\",\"method\":\"not-applicable\",\"isOcr\":false,\"confidence\":0.05,\"flags\":[\"low_extraction_confidence\"],\"reviewId\":\"review-9da94565fcaa\",\"fieldsStored\":2,\"documentStatus\":\"needs_correction\"}"
+    },
+    {
+      "label": "corrupt PDF carries an honest failure reason",
+      "ok": true,
+      "detail": "low_extraction_confidence"
+    },
+    {
+      "label": "unreadable image is not reported as verified",
+      "ok": true,
+      "detail": "HTTP 201 status=needs_correction ocr={\"status\":\"processed\",\"engine\":\"rapidocr\",\"method\":\"rapidocr-error\",\"isOcr\":true,\"confidence\":0.25,\"flags\":[\"low_extraction_confidence\"],\"reviewId\":\"review-dd4d7d8a3f5e\",\"fieldsStored\":2,\"documentStatus\":\"needs_correction\"}"
+    },
+    {
+      "label": "unreadable image has a real failure/low-confidence state",
+      "ok": true,
+      "detail": "doc=needs_correction ocr=processed reason=low_extraction_confidence"
+    },
+    {
+      "label": "clean RC extracted and verified",
+      "ok": true,
+      "detail": "HTTP 201 verified rapidocr"
+    },
+    {
+      "label": "duplicate re-upload is flagged, not verified again",
+      "ok": true,
+      "detail": "HTTP 201 status=needs_correction"
+    },
+    {
+      "label": "duplicate points at the original document",
+      "ok": true,
+      "detail": "duplicate_of=doc-1793989054997 flags=[\"duplicate_of:doc-1793989054997\"]"
+    },
+    {
+      "label": "UI shows the duplicate/correction state",
+      "ok": true,
+      "detail": "duplicate_of:doc-1793989054997"
+    }
+  ]
+}

@@ -88,12 +88,9 @@ export default async function run({ H, rec, page }) {
   });
 
   await H.step(rec, "Z", "cleanup test rows", async () => {
-    if (createdId) {
-      H.sqlExec("DELETE FROM listings WHERE vehicle_id = ?", createdId);
-      H.sqlExec("DELETE FROM chain_records WHERE vehicle_id = ?", createdId);
-      H.sqlExec("DELETE FROM audit_logs WHERE entity_type = 'vehicle' AND entity_id = ?", createdId);
-      H.sqlExec("DELETE FROM vehicles WHERE id = ?", createdId);
-    }
-    rec.check("Z", "test vehicle fully removed from DB", !H.sqlOne("SELECT id FROM vehicles WHERE id = ?", createdId || ""), `id=${createdId}`);
+    const res = await H.cleanupVehicle(page, createdId);
+    rec.check("Z", "test vehicle removed or archived from DB", res.removed || res.archived, `removed=${res.removed} archived=${res.archived}`);
+    const stillActive = H.sqlOne("SELECT id FROM vehicles WHERE id = ? AND status != 'archived'", createdId || "");
+    rec.check("Z", "no active (non-archived) test vehicle remains", !stillActive, `id=${createdId}`);
   });
 }

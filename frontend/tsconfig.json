@@ -48,7 +48,11 @@
     ".next_qa_dev/types/**/*.ts",
     ".next_verify_build/types/**/*.ts",
     ".next_live/types/**/*.ts",
-    ".next_browser_prod/types/**/*.ts"
+    ".next_browser_prod/types/**/*.ts",
+    ".next_e2e/types/**/*.ts",
+    ".next_qa22/types/**/*.ts",
+    ".next_qa/types/**/*.ts",
+    ".next_independent/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

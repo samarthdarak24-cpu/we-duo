@@ -1,0 +1,6 @@
+after buyer login: http://127.0.0.1:3001/buyer
+cookies: td_token,td_refresh
+seller route HTTP 200 location=-
+seller route HTTP 200 location=-
+after seller route: http://127.0.0.1:3001/seller/vehicles
+blocked=false | bodyHead=Skip to content | Overview | Vehicles | Add | Documents | History | TRUSTDRIVE | TRUSTDRIVE | / | SELLER WORKSPACE | TrustDrive — My Vehicles | 9+ | SD | GARAGE | My Vehicles | 24 vehicle

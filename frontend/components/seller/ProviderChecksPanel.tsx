@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { SectionCard } from "@/components/shared/SectionCard";
+import { apiCall } from "@/lib/client/api";
 
 interface Check {
   id: string;
@@ -27,19 +28,21 @@ export function ProviderChecksPanel({ vehicleId, role }: { vehicleId: string; ro
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/v1/vehicles/${vehicleId}/provider-checks`, { cache: "no-store" });
-      const json = (await res.json().catch(() => ({}))) as {
-        data?: { items?: Check[]; configured?: boolean; note?: string };
-      };
-      if (res.ok && json.data) {
-        setItems(json.data.items ?? []);
-        setConfigured(!!json.data.configured);
-        setNote(json.data.note ?? "");
-      }
-    } catch {
-      /* keep the last list */
+    const r = await apiCall<{ items?: Check[]; configured?: boolean; note?: string }>(
+      `/api/v1/vehicles/${vehicleId}/provider-checks`,
+      { cache: "no-store" },
+      "Could not load the provider checks."
+    );
+    if (r.ok && r.data) {
+      setItems(r.data.items ?? []);
+      setConfigured(!!r.data.configured);
+      setNote(r.data.note ?? "");
+      setError(null);
+      return;
     }
+    // A failed read must not render as "no checks recorded" — that would look
+    // like an honest unavailable result when it is really a load failure.
+    setError(r.message);
   }, [vehicleId]);
 
   useEffect(() => {

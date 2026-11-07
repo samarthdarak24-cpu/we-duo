@@ -353,13 +353,13 @@ export function HowItWorksSection() {
                   </div>
 
                   <a
-                    href="/api/v1/reports/rep-1/download"
+                    href="/api/v1/public/sample-report"
                     target="_blank"
                     rel="noreferrer"
                     className="px-3 py-1.5 rounded-full bg-[#F5F5F5] hover:bg-white text-black text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 shrink-0"
                   >
                     <Icon name="Download" size={13} />
-                    <span>Get PDF</span>
+                    <span>Get sample PDF</span>
                   </a>
                 </div>
               )}

@@ -46,7 +46,7 @@ several stale claims in the docs. All were fixed in this pass.
 | Documents | `routers/vehicles.py`, `extract.py`, `ocr.py` | ✅ | 18-step pipeline, PaddleOCR/RapidOCR/PyMuPDF, soft delete |
 | History / mileage | `routers/vehicles.py`, `detectors.py` | ✅ | append-only corrections, rollback detection |
 | Verification | `routers/vehicles.py`, `verification-cases` | ✅ | runs/results/evidence persisted; case detail is API-only |
-| AI findings / investigations | `detectors.py`, `agent.py`, `ai-investigations` | ✅ | 12-node LangGraph, disputes, run history |
+| AI findings / investigations | `detectors.py`, `agent.py`, `ai-investigations` | ✅ | 15/16-node conditional LangGraph, disputes, run history |
 | Provider checks | `provider-checks/route.ts` | ✅ | admin-run, `unavailable` when unconfigured |
 | Listings / marketplace | `routers/marketplace.py` | ✅ | lifecycle, search, saved, compare, share |
 | Inquiries | `routers/inquiries.py` | ✅ | thread, status, inspection request |

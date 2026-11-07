@@ -48,7 +48,7 @@
 | File | Covers |
 | --- | --- |
 | `conftest.py` | Isolated temp SQLite DB with seeded negative examples (rollback, duplicate hash, VIN mismatch) |
-| `test_api.py` | `/health`, OpenAPI, capabilities, fraud, trust score, 12-node investigation, job lifecycle, human review, integrity, damage, upload validation |
+| `test_api.py` | `/health`, OpenAPI, capabilities, fraud, trust score, 15/16-node conditional investigation, job lifecycle, human review, integrity, damage, upload validation |
 | `test_detectors.py` | Mileage rules, duplicate documents, additive score, missing-data policy, offline LLM, grounding validation, damage adapter |
 | `test_pipeline.py` | Field extraction, magic-byte validation, all 18 workflow steps, real PDF text layer, worker idempotency/retry, agent graph + persistence |
 | `test_api.py` (chat) | `/api/intelligence/chat`: grounded LLM answer + citations; rejected LLM → deterministic narrative with sources |

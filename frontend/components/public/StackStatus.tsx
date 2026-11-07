@@ -19,14 +19,20 @@ interface Stack {
   worker?: { backend?: string };
 }
 
+/**
+ * Documented build, NOT live status. When the intelligence service is
+ * unreachable we must never paint a capability as "active": the whole point of
+ * this section is to report what is actually running. Every fallback row is
+ * therefore `off` and the section is explicitly labelled "not live".
+ */
 const FALLBACK: { label: string; value: string; state: "active" | "off" }[] = [
-  { label: "OCR", value: "PaddleOCR 3.7 + RapidOCR", state: "active" },
-  { label: "Damage CV", value: "YOLO11m (MIT weights)", state: "active" },
-  { label: "Anomaly ML", value: "Isolation Forest + LOF + XGBoost", state: "active" },
-  { label: "Retrieval", value: "sentence-transformers", state: "active" },
-  { label: "Agent", value: "LangGraph · 12 nodes", state: "active" },
-  { label: "LLM", value: "Local Qwen2.5-0.5B / configurable", state: "active" },
-  { label: "Integrity", value: "Local SHA-256 chain", state: "active" },
+  { label: "OCR", value: "Documented: PaddleOCR / RapidOCR (status unknown)", state: "off" },
+  { label: "Damage CV", value: "Documented: YOLO adapter (status unknown)", state: "off" },
+  { label: "Anomaly ML", value: "Documented: rules + IForest/LOF + XGBoost (status unknown)", state: "off" },
+  { label: "Retrieval", value: "Documented: keyword / sentence-transformers (status unknown)", state: "off" },
+  { label: "Agent", value: "Documented: LangGraph 15/16 conditional nodes (status unknown)", state: "off" },
+  { label: "LLM", value: "Documented: local / configurable (status unknown)", state: "off" },
+  { label: "Integrity", value: "Documented: local SHA-256 chain (status unknown)", state: "off" },
   { label: "On-chain anchor", value: "Not configured · not claimed", state: "off" },
 ];
 
@@ -81,13 +87,13 @@ export function StackStatus() {
       },
       {
         label: "Anomaly ML",
-        value: intel.xgboost?.available ? "Isolation Forest + LOF + XGBoost" : "rules + IForest/LOF",
-        state: "active",
+        value: intel.xgboost?.available ? "Isolation Forest + LOF + XGBoost" : "deterministic rules only (no fitted ML model)",
+        state: intel.xgboost?.available ? "active" : "off",
       },
       {
         label: "Retrieval",
         value: intel.retrieval?.backend ?? "keyword",
-        state: "active",
+        state: intel.retrieval?.available ? "active" : "off",
       },
       {
         label: "Agent",
@@ -131,7 +137,7 @@ export function StackStatus() {
             </p>
           </div>
           <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#8A8F98]">
-            {stack?.connected ? "service connected" : failed ?? "checking…"}
+            {stack?.connected ? "service connected" : "live status unavailable · documented build"}
           </span>
         </div>
 
@@ -152,10 +158,12 @@ export function StackStatus() {
           ))}
         </div>
 
-        {failed && (
+        {!stack?.connected && (
           <p className="mt-4 text-[12px] leading-relaxed text-[#8A8F98]">
-            Live status is unavailable ({failed}). The list above reflects the documented
-            build; start the intelligence service to see the active engines.
+            Live status is unavailable{failed ? ` (${failed})` : ""}. The list above is the{' '}
+            <strong className="text-[#F5F5F5]">documented build, not live status</strong> — none of
+            these engines is confirmed running, so none is marked active. Start the intelligence
+            service to see the engines that are actually available.
           </p>
         )}
       </div>

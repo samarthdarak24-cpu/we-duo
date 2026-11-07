@@ -30,6 +30,10 @@ export default defineConfig({
     // Only Vitest suites. Playwright specs live in e2e/ and are run by
     // `npm run test:e2e`; letting Vitest collect them breaks both runners.
     include: ["tests/**/*.test.{ts,tsx}"],
+    // Redirect TD_DB_FILE to a throwaway snapshot before any test module (and
+    // therefore `lib/server/db`) is imported. Without this, DB suites wrote
+    // straight into the live `.data/trustdrive.db`.
+    setupFiles: ["./tests/setup-db.ts"],
     pool: "forks",
     fileParallelism: false,
     // `node:sqlite` is a runtime builtin; Vite must not try to resolve it as a

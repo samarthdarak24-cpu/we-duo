@@ -20,7 +20,12 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     if (!guard.ok) return guard.response;
     const body = (await req.json().catch(() => ({}))) as { type?: string };
     const result = createReportForVehicle(guard.user.sub, params.id, body.type);
-    if (!result.ok) return fail(404, result.code, result.message);
+    if (!result.ok) {
+      // Map by code: missing vehicle = 404, ownership/publish gate = 403,
+      // unknown report type = 400 (previously every failure returned 404).
+      const status = result.code === "NOT_FOUND" ? 404 : result.code === "FORBIDDEN" ? 403 : 400;
+      return fail(status, result.code, result.message);
+    }
     const reportId = (result as { id?: string }).id;
     return created({
       ...result,

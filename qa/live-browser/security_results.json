@@ -1,0 +1,69 @@
+{
+  "results": [
+    {
+      "label": "anonymous seller API is rejected (401)",
+      "ok": true,
+      "detail": "HTTP 401"
+    },
+    {
+      "label": "all three demo logins return 200",
+      "ok": true,
+      "detail": "200/200/200"
+    },
+    {
+      "label": "buyer cannot call the seller vehicle API (403)",
+      "ok": true,
+      "detail": "HTTP 403"
+    },
+    {
+      "label": "buyer cannot create a seller vehicle (403)",
+      "ok": true,
+      "detail": "HTTP 403"
+    },
+    {
+      "label": "buyer cannot publish a listing (403)",
+      "ok": true,
+      "detail": "HTTP 403"
+    },
+    {
+      "label": "buyer cannot list documents of an unpublished vehicle (403)",
+      "ok": true,
+      "detail": "HTTP 403 {\"error\":{\"code\":\"FORBIDDEN\",\"message\":\"These documents are private.\"}}"
+    },
+    {
+      "label": "buyer sees only consented documents on a published listing",
+      "ok": true,
+      "detail": "HTTP 200 items=11 unconsented=0"
+    },
+    {
+      "label": "a different seller cannot list another seller's documents (403)",
+      "ok": true,
+      "detail": "HTTP 403"
+    },
+    {
+      "label": "buyer cannot fetch raw document bytes by id (403)",
+      "ok": true,
+      "detail": "HTTP 403"
+    },
+    {
+      "label": "buyer can read consented document metadata (200)",
+      "ok": true,
+      "detail": "HTTP 200 {\"data\":{\"documentId\":\"v-bmw-inspection\",\"vehicleId\":\"v-bmw\",\"method\":\"recorded-extraction\",\"items\":[{\"id\":\"dx-v-bmw-ins"
+    },
+    {
+      "label": "a different seller cannot read another seller's extraction (403)",
+      "ok": true,
+      "detail": "HTTP 403"
+    },
+    {
+      "label": "buyer cannot read another buyer's inquiry (403)",
+      "ok": true,
+      "detail": "HTTP 403"
+    },
+    {
+      "label": "marketplace search treats SQL metacharacters as text (no dump)",
+      "ok": true,
+      "detail": "HTTP 200 items=0"
+    }
+  ]
+}

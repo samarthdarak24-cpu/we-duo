@@ -83,8 +83,8 @@ export function HistoryManager({
   }
 
   async function addReading() {
-    if (!reading.km) {
-      setError("Enter the odometer reading.");
+    if (!reading.km || !reading.date) {
+      setError("Enter the reading date and the odometer reading.");
       return;
     }
     setBusy("mileage");

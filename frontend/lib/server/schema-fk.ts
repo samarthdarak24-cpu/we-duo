@@ -128,6 +128,19 @@ export function upgradeCoreForeignKeys(conn: DatabaseSync, dbFile: string): FkUp
   }
 
   conn.exec("PRAGMA foreign_keys = OFF;");
+  // Views that alias a table become invalid the moment that table is dropped,
+  // and SQLite then refuses the RENAME step with "error in view …". Capture and
+  // recreate every view around the rebuild so the compatibility aliases survive.
+  const views = conn
+    .prepare("SELECT name, sql FROM sqlite_master WHERE type='view' AND sql IS NOT NULL")
+    .all() as { name: string; sql: string }[];
+  for (const view of views) {
+    try {
+      conn.exec(`DROP VIEW IF EXISTS "${view.name}"`);
+    } catch (err) {
+      report.skipped.push(`view ${view.name}: ${(err as Error).message}`);
+    }
+  }
   for (const table of pending) {
     try {
       rebuildWithForeignKeys(conn, table, FK_SPEC[table]);
@@ -137,6 +150,13 @@ export function upgradeCoreForeignKeys(conn: DatabaseSync, dbFile: string): FkUp
     }
   }
   conn.exec("PRAGMA foreign_keys = ON;");
+  for (const view of views) {
+    try {
+      conn.exec(view.sql);
+    } catch (err) {
+      report.skipped.push(`view ${view.name}: ${(err as Error).message}`);
+    }
+  }
 
   for (const row of conn.prepare("PRAGMA foreign_key_check").all() as { table: string; rowid: number }[]) {
     report.violations.push(`${row.table}#${row.rowid}`);

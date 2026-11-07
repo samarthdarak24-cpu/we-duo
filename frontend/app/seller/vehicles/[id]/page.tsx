@@ -45,6 +45,20 @@ export default function SellerVehicleDetailPage({ params }: { params: { id: stri
   const claims = getVehicleClaims(v.id);
   const graph = buildEvidenceGraph(v.id, { id: user.id, role: "seller" });
   const damageCount = hotspots.reduce((total, hotspot) => total + hotspot.damage.length, 0);
+  const damageRecords = hotspots
+    .flatMap((h) =>
+      h.damage.map((d) => ({
+        id: d.id,
+        zoneLabel: h.label,
+        severity: d.severity,
+        description: d.description,
+        repairStatus: d.repairStatus,
+        status: d.status,
+        inspectionDate: d.inspectionDate,
+      }))
+    )
+    .sort((a, b) => (a.status === "pending" ? -1 : 0) - (b.status === "pending" ? -1 : 0))
+    .slice(0, 40);
 
   return (
     <PortalShell
@@ -94,7 +108,7 @@ export default function SellerVehicleDetailPage({ params }: { params: { id: stri
         </div>
 
         <div className="p-3 sm:p-4">
-          <Viewer3DLazy mode="seller" hotspots={hotspots} height={620} />
+          <Viewer3DLazy mode="seller" vehicleId={v.id} hotspots={hotspots} height={620} />
         </div>
 
         <div className="flex flex-wrap items-center justify-between border-t border-border px-5 py-3 text-[11.5px] text-muted">
@@ -140,6 +154,7 @@ export default function SellerVehicleDetailPage({ params }: { params: { id: stri
           vehicleId={v.id}
           zones={hotspots.map((h) => ({ id: h.id, label: h.label }))}
           recordCount={damageCount}
+          records={damageRecords}
         />
       </div>
 

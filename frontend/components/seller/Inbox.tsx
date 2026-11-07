@@ -6,6 +6,7 @@ import { cn } from "@/lib/cn";
 import { Icon } from "@/components/ui/Icon";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { InlineAlert } from "@/components/shared/InlineAlert";
+import { apiCall } from "@/lib/client/api";
 import { formatINR } from "@/lib/format";
 
 export interface InquirySummary {
@@ -124,17 +125,20 @@ export function Inbox({
   async function setStatus(status: string) {
     if (!selected) return;
     setBusy(true);
-    const res = await fetch(`/api/v1/inquiries/${selected}/status`, {
+    setError(null);
+    const r = await apiCall(`/api/v1/inquiries/${selected}/status`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
-    });
+    }, "Could not change the inquiry status.");
     setBusy(false);
-    if (res.ok) {
-      setList((l) => l.map((i) => (i.id === selected ? { ...i, status } : i)));
-      setThread((t) => (t ? { ...t, status } : t));
-      router.refresh();
+    if (!r.ok) {
+      setError(r.message);
+      return;
     }
+    setList((l) => l.map((i) => (i.id === selected ? { ...i, status } : i)));
+    setThread((t) => (t ? { ...t, status } : t));
+    router.refresh();
   }
 
   const counterpart = (i: InquirySummary) => (role === "seller" ? i.buyerName : i.sellerName);

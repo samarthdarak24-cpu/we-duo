@@ -7,7 +7,7 @@ Two runtimes share **one database** (`.data/trustdrive.db`). The Next.js app is 
 - **Next.js** REST: `/api/v1/*` (documented below) — the contract the UI calls.
 - **FastAPI**: `/api/backend/*` (full surface, same scrypt+HS256 users), `/api/v1/*`
   (thin adapters mapping documented contract paths), `/api/intelligence/*` (OCR, fraud
-  detectors, 12-node investigator, trust score, background jobs, integrity drift).
+  detectors, 15/16-node conditional investigator (EV adds `EVBatteryAnalysisNode`), trust score, background jobs, integrity drift).
   Live OpenAPI: `GET /openapi.json` when the service runs (`npm run intel:serve`).
 
 ---
@@ -126,7 +126,7 @@ Two runtimes share **one database** (`.data/trustdrive.db`). The Next.js app is 
 | GET | `/api/intelligence/capabilities` | active OCR/LLM/agent/worker versions |
 | POST | `/api/intelligence/documents/process` | 18-step OCR + extraction pipeline |
 | GET/POST | `/api/intelligence/fraud/{vehicleId}` | deterministic + ML detectors |
-| POST | `/api/intelligence/investigate` | 12-node investigator (LangGraph when installed) |
+| POST | `/api/intelligence/investigate` | 15/16-node conditional investigator (EV adds `EVBatteryAnalysisNode`; LangGraph when installed) |
 | GET | `/api/intelligence/trust-score/{vehicleId}` | additive deterministic trust score |
 | GET/POST | `/api/intelligence/jobs[/:id]` | DB-backed background jobs |
 | GET/POST | `/api/intelligence/review[/:id/resolve]` | human-in-the-loop queue |

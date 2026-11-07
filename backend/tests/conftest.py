@@ -12,6 +12,8 @@ DB_FILE = TMP / "test.db"
 
 os.environ["TD_DB_URL"] = f"sqlite+pysqlite:///{DB_FILE.as_posix()}"
 os.environ["TD_UPLOAD_DIR"] = str(TMP / "uploads")
+os.environ["TD_CHECKPOINT_DB"] = str(TMP / "langgraph-checkpoints.db")
+os.environ["TD_CHECKPOINT_BACKEND"] = "sqlite"
 os.environ["TD_LLM_PROVIDER"] = "none"
 os.environ["TD_ENV"] = "local"
 os.environ["TD_RATE_LIMIT_AUTH"] = "1000"
@@ -44,7 +46,8 @@ CREATE TABLE vehicles (id TEXT PRIMARY KEY, owner_id TEXT, reg_no TEXT, vin TEXT
   color TEXT, ownership_count INTEGER DEFAULT 1, location TEXT, km_claimed INTEGER DEFAULT 0,
   last_verified_km INTEGER, asking_price INTEGER DEFAULT 0, status TEXT DEFAULT 'draft',
   base_value INTEGER, condition_score REAL, trustdrive_id TEXT, qr_token TEXT,
-  description TEXT DEFAULT '', condition TEXT, created_at TEXT, updated_at TEXT);
+  description TEXT DEFAULT '', condition TEXT, created_at TEXT, updated_at TEXT,
+  vehicle_category_id TEXT);
 CREATE TABLE documents (id TEXT PRIMARY KEY, vehicle_id TEXT, status TEXT, sha256 TEXT,
   file_name TEXT, file_key TEXT, mime TEXT, size_bytes INTEGER, type TEXT, consent INTEGER DEFAULT 1,
   version INTEGER DEFAULT 1, supersedes_id TEXT, extracted TEXT DEFAULT '{}', uploaded_at TEXT,
@@ -61,7 +64,9 @@ CREATE TABLE history_events (id TEXT PRIMARY KEY, vehicle_id TEXT, category TEXT
 CREATE TABLE damage_records (id TEXT PRIMARY KEY, vehicle_id TEXT, zone_id TEXT, component TEXT,
   description TEXT, severity TEXT, repair_status TEXT, repair_details TEXT, inspection_date TEXT,
   status TEXT, photo_keys TEXT DEFAULT '[]', repair_invoice_doc_id TEXT, supersedes_id TEXT,
-  created_by TEXT, created_at TEXT);
+  created_by TEXT, created_at TEXT,
+  component_id TEXT, damage_type TEXT, local_x REAL, local_y REAL, local_z REAL,
+  position_source TEXT);
 CREATE TABLE vehicle_inspections (id TEXT PRIMARY KEY, vehicle_id TEXT, inspector_id TEXT,
   inspector_name TEXT, inspection_type TEXT, inspection_date TEXT, odometer_km INTEGER,
   structural_damage INTEGER, passed INTEGER, score REAL, status TEXT, summary TEXT,
@@ -137,6 +142,17 @@ CREATE TABLE report_access (id TEXT PRIMARY KEY, report_id TEXT, token_hash TEXT
   expires_at TEXT, created_at TEXT, used_at TEXT);
 CREATE TABLE activity (user_id TEXT PRIMARY KEY, explored INTEGER DEFAULT 0, saved INTEGER DEFAULT 0,
   recently_viewed INTEGER DEFAULT 0, pending_reports INTEGER DEFAULT 0);
+CREATE TABLE vehicle_specs (vehicle_id TEXT PRIMARY KEY, category_id TEXT NOT NULL,
+  specs TEXT NOT NULL DEFAULT '{}', spec_version TEXT NOT NULL,
+  created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+CREATE TABLE battery_records (id TEXT PRIMARY KEY, vehicle_id TEXT NOT NULL, kind TEXT NOT NULL,
+  soh_percent REAL, capacity_kwh REAL, serial TEXT, measured_at TEXT NOT NULL,
+  source_document_id TEXT, status TEXT NOT NULL DEFAULT 'verified',
+  notes TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL);
+CREATE TABLE category_registry_snapshot (id TEXT PRIMARY KEY, spec_version TEXT NOT NULL,
+  trust_version TEXT NOT NULL, matrix TEXT NOT NULL, created_at TEXT NOT NULL);
+CREATE TABLE document_extractions (id TEXT PRIMARY KEY, vehicle_id TEXT, document_id TEXT,
+  payload TEXT DEFAULT '{}', created_at TEXT);
 """
 
 
@@ -196,7 +212,11 @@ def _seed(conn: sqlite3.Connection) -> None:
     # (the tuple above includes created_at as its 13th value)
     conn.execute("INSERT INTO history_events VALUES ('h1','v-test','service','2021-01-01',30000,'Service','','invoice','doc1','verified',NULL,'u-seller','2021-01-01')")
     conn.execute("INSERT INTO history_events VALUES ('h2','v-test','ownership','2020-01-01',NULL,'Transfer','','rc',NULL,'verified',NULL,'u-seller','2020-01-01')")
-    conn.execute("INSERT INTO damage_records VALUES ('d1','v-test','front-bumper','Front Bumper','Scratch','medium','repaired',NULL,'2023-01-01','reported','[]',NULL,NULL,'u-seller',?)", (now,))
+    conn.execute(
+        "INSERT INTO damage_records (id,vehicle_id,zone_id,component,description,severity,repair_status,"
+        "repair_details,inspection_date,status,photo_keys,repair_invoice_doc_id,supersedes_id,created_by,created_at)"
+        " VALUES ('d1','v-test','front-bumper','Front Bumper','Scratch','medium','repaired',NULL,"
+        "'2023-01-01','reported','[]',NULL,NULL,'u-seller',?)", (now,))
     conn.execute("INSERT INTO vehicle_inspections(id,vehicle_id,inspection_date,status,inspector_name,created_at,updated_at) VALUES ('i1','v-test','2023-02-01','approved','inspector-1',?,?)", (now, now))
     conn.execute("INSERT INTO verification_evidence VALUES ('e1','v-test','document','doc1','document_hash','RC','document:doc1','medium',NULL,'cccccccccccccccccccccccccccccccc','{}',0,NULL,?)", (now,))
     conn.execute("INSERT INTO chain_records VALUES ('c1','v-test',0,'d'*64,'dddddddddddddddddddddddddddddddd',1,?)", (now,))
@@ -205,6 +225,80 @@ def _seed(conn: sqlite3.Connection) -> None:
     conn.execute("INSERT INTO listings(id,vehicle_id,status,headline,description,condition,location,views,saves,inquiries,created_at,updated_at) VALUES ('l-test','v-test','draft','BMW 3 Series','Clean sedan','used','Mumbai',10,2,1,?,?)", (now, now))
     conn.execute("INSERT INTO listings(id,vehicle_id,status,headline,description,condition,location,views,saves,inquiries,published_at,created_at,updated_at) VALUES ('l-test2','v-test2','draft','Honda City','Reliable','used','Pune',20,3,2,NULL,?,?)", (now, now))
     conn.execute("INSERT INTO activity VALUES ('u-buyer',5,1,2,0)")
+
+    # --- Multi-category fixtures: one shared DB, six real category profiles ---
+    # v-test / v-test2 keep NO vehicle_category_id so the legacy car path stays
+    # under test. The demo rows use the authoritative new column.
+    demos = [
+        ("v-demo-bike", "petrol_motorcycle", "MH12AB3456", "ME4JC259E8T000123",
+         "Honda", "CB350", "petrol", "chassis_number", "engine_number"),
+        ("v-demo-scooter", "petrol_scooter", "MH12CD7890", "ME4JF401H9T012345",
+         "Honda", "Activa 6G", "petrol", "chassis_number", "engine_number"),
+        ("v-demo-escooter", "electric_scooter", "MH12EF1234", "MD2DSB123K1A00421",
+         "Ather", "450X", "electric", "chassis_number", "motor_number"),
+        ("v-demo-ebike", "electric_motorcycle", "MH12GH5678", "MD2DSA001K2B00987",
+         "Revolt", "RV400", "electric", "chassis_number", "motor_number"),
+        ("v-demo-car", "passenger_car", "MH12JK9012", "WBA5R1C50KAK12345",
+         "BMW", "3 Series", "petrol", "vin", "engine_number"),
+        ("v-demo-ecar", "electric_car", "MH12LM3456", "WBY1Z210X0V123456",
+         "Tata", "Nexon EV", "electric", "vin", "motor_number"),
+    ]
+    for vid, cid, reg, primary, make, model, fuel, primary_key, power_key in demos:
+        conn.execute(
+            "INSERT INTO vehicles (id,owner_id,reg_no,vin,make,model,year,status,asking_price,km_claimed,"
+            "fuel,transmission,location,trustdrive_id,category,created_at,updated_at,vehicle_category_id)"
+            " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (vid, "u-seller", reg, primary, make, model, 2022, "verified", 150000, 12000,
+             fuel, "automatic", "Pune", f"TD-{vid.upper()}", cid, now, now, cid),
+        )
+        spec_values = {
+            primary_key: primary,
+            power_key: f"{power_key.upper()}TEST001",
+            "odometer_km": 12000,
+        }
+        if "electric" in fuel:
+            spec_values["battery_serial"] = f"BAT-{vid.upper()}"
+            spec_values["battery_capacity_kwh"] = 3.7 if "scooter" in cid else 45.0
+        conn.execute(
+            "INSERT INTO vehicle_specs (vehicle_id,category_id,specs,spec_version,created_at,updated_at)"
+            " VALUES (?,?,?,?,?,?)",
+            (vid, cid, __import__("json").dumps(spec_values), "multicategory-1.0.0", now, now),
+        )
+        two_wheeler = cid not in ("passenger_car", "electric_car")
+        rc_type = "rc_2w" if two_wheeler else "rc"
+        ins_type = "insurance_2w" if two_wheeler else "insurance"
+        for n, dtype in enumerate((rc_type, ins_type)):
+            conn.execute(
+                "INSERT INTO documents (id,vehicle_id,status,sha256,file_name,type,uploaded_at)"
+                " VALUES (?,?,?,?,?,?,?)",
+                (f"doc-{vid}-{n}", vid, "verified", f"hash-{vid}-{n}", f"{dtype}.pdf", dtype, now),
+            )
+        for n, (km, day) in enumerate(((4000, "2022-06-01"), (8000, "2023-06-01"),
+                                       (12000, "2024-06-01"))):
+            conn.execute(
+                "INSERT INTO mileage_readings (id,vehicle_id,km,date,flagged,verified,source)"
+                " VALUES (?,?,?,?,?,?,?)",
+                (f"m-{vid}-{n}", vid, km, day, 0, 1, "service_invoice"),
+            )
+        if "electric" in fuel:
+            # One sourced, one unsourced: exercises provenance honesty.
+            conn.execute(
+                "INSERT INTO battery_records (id,vehicle_id,kind,soh_percent,capacity_kwh,serial,"
+                "measured_at,source_document_id,status,notes,created_at)"
+                " VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                (f"bat-{vid}-1", vid, "battery_health", 92.0,
+                 spec_values.get("battery_capacity_kwh"), spec_values.get("battery_serial"),
+                 "2024-06-01", f"doc-{vid}-0", "verified", "authorised service report", now),
+            )
+            conn.execute(
+                "INSERT INTO battery_records (id,vehicle_id,kind,soh_percent,measured_at,status,notes,created_at)"
+                " VALUES (?,?,?,?,?,?,?,?)",
+                (f"bat-{vid}-2", vid, "battery_health", 88.0, "2023-06-01",
+                 "seller_claim", "no source document attached", now),
+            )
+    conn.execute(
+        "INSERT INTO category_registry_snapshot (id,spec_version,trust_version,matrix,created_at)"
+        " VALUES ('snap-test','multicategory-1.0.0','trust-v2-multicategory','{}',?)", (now,))
     conn.commit()
 
 

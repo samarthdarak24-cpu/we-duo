@@ -12,7 +12,7 @@ no separate microservices; the modules share one database and one process.
 | Damage CV | YOLO11m (MIT) | active when `ultralytics` + weights | `models/car_damage.pt` |
 | Anomaly ML | rules + Isolation Forest + LOF + XGBoost | active | `models/mileage_xgb.json` (synthetic demo) |
 | Retrieval | sentence-transformers `all-MiniLM-L6-v2` | active when installed | ~90 MB |
-| Agent | LangGraph, 12 nodes | active | `langgraph` |
+| Agent | LangGraph, 15/16 conditional nodes (EV adds `EVBatteryAnalysisNode`) | active when installed | `langgraph` |
 | LLM | Qwen2.5-0.5B / SmolLM2-360M (local) | opt-in (`TD_LLM_PROVIDER=local`) | torch + transformers |
 | LLM (hosted) | OpenAI-compatible | opt-in | API key |
 | Blockchain | local SHA-256 chain | active (integrity only) | none |
@@ -39,15 +39,27 @@ missing; nothing is reported as active unless it can run.
   near-duplicate text, missing required record.
 - **Risk**: additive trust score (never a black box), coverage, unverified areas.
 
-## 12-node investigator
+## Conditional investigator (15/16 nodes)
 
-`resolve_vehicle → retrieve_records → analyze_documents → analyze_mileage →
-analyze_damage → correlate_evidence → detect_conflicts → score_trust → explain →
-human_review → persist → summarize`
+One shared investigator. The resolved vehicle category selects its node list from
+the canonical taxonomy: **15 nodes for combustion profiles** and **16 for electric
+profiles** (the extra node is `EVBatteryAnalysisNode`). Only the category's listed
+nodes are added to the graph and executed; the full registry holds **16 nodes**
+(`agent.py::NODE_NAMES`).
+
+`VehicleResolverNode → VehicleCategoryDetectionNode → DocumentRetrievalNode →
+OCRAnalysisNode → MileageAnalysisNode → (EVBatteryAnalysisNode for electric) →
+DamageAnalysisNode → IdentityVerificationNode → HistoryCorrelationNode →
+AnomalyDetectionNode → EvidenceGraphNode → ConflictDetectionNode →
+RiskExplanationNode → HumanReviewNode → ReportGenerationNode →
+ResultPersistenceNode`
 
 - Persists runs in `ai_runs` / `agent_investigations`.
 - Returns citations (evidence IDs); hidden evidence is excluded.
 - A finding is cleared only by an admin review or a deterministic re-check.
+- When langgraph cannot load (missing package or blocked DLL), the SAME selected
+  node functions run sequentially and the payload reports
+  `orchestrator: "sequential-fallback"`.
 
 ## LLM guardrails
 

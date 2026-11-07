@@ -396,7 +396,7 @@ class TestVerificationAndAI:
             ts = c.get(f"/api/intelligence/trust-score/{SELLER_A_VEHICLE}",
                        headers={"Authorization": "Bearer " + _intel_token()})
             assert ts.status_code == 200
-            assert ts.json()["version"] == "trust-score-2.0.0"
+            assert ts.json()["version"] == "trust-v2-multicategory"
 
     def test_hash_chain_verifies(self, nxt):
         r = nxt.get(f"/api/v1/chain/{SELLER_A_VEHICLE}")

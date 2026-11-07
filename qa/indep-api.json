@@ -1,0 +1,130 @@
+{
+  "executedAt": "2026-11-07T14:34:22.610Z",
+  "base": "http://127.0.0.1:3000",
+  "intel": "http://127.0.0.1:8000",
+  "total": 15,
+  "passed": 15,
+  "failed": 0,
+  "rows": [
+    {
+      "group": "Intelligence",
+      "method": "GET",
+      "url": "/health",
+      "status": 200,
+      "ok": true,
+      "detail": "version=intelligence-2.0.0-multicategory tables=54 shared=true"
+    },
+    {
+      "group": "Security",
+      "method": "GET",
+      "url": "/api/intelligence/capabilities (anonymous)",
+      "status": 401,
+      "ok": true,
+      "detail": "service-token required"
+    },
+    {
+      "group": "Security",
+      "method": "GET",
+      "url": "/api/intelligence/categories (anonymous)",
+      "status": 401,
+      "ok": true,
+      "detail": "service-token required"
+    },
+    {
+      "group": "Intelligence",
+      "method": "GET",
+      "url": "/api/intelligence/capabilities (service token)",
+      "status": 200,
+      "ok": true,
+      "detail": "keys=version,ocr,llm,agent,worker,trust_score,categories,fraud"
+    },
+    {
+      "group": "Intelligence",
+      "method": "GET",
+      "url": "/api/intelligence/categories (service token)",
+      "status": 200,
+      "ok": true,
+      "detail": "categories=6"
+    },
+    {
+      "group": "Security",
+      "method": "POST",
+      "url": "/api/intelligence/investigate (anonymous)",
+      "status": 401,
+      "ok": true,
+      "detail": "service-token required"
+    },
+    {
+      "group": "Frontend API",
+      "method": "GET",
+      "url": "/api/v1/ai/stack",
+      "status": 200,
+      "ok": true,
+      "detail": "connected=true"
+    },
+    {
+      "group": "Frontend API",
+      "method": "GET",
+      "url": "/api/v1/marketplace/listings",
+      "status": 200,
+      "ok": true,
+      "detail": "items=12"
+    },
+    {
+      "group": "Frontend API",
+      "method": "GET",
+      "url": "/api/v1/categories",
+      "status": 200,
+      "ok": true,
+      "detail": "bytes=6741"
+    },
+    {
+      "group": "Frontend API",
+      "method": "GET",
+      "url": "/api/v1/public/sample-report",
+      "status": 200,
+      "ok": true,
+      "detail": "bytes=106834 demo=synthetic-seed-data-not-a-real-vehicle-record"
+    },
+    {
+      "group": "Security",
+      "method": "GET",
+      "url": "/api/v1/reports/rep-1/download (anonymous)",
+      "status": 403,
+      "ok": true,
+      "detail": "RBAC preserved"
+    },
+    {
+      "group": "Security",
+      "method": "GET",
+      "url": "/api/v1/seller/overview (anonymous)",
+      "status": 401,
+      "ok": true,
+      "detail": "protected"
+    },
+    {
+      "group": "Security",
+      "method": "GET",
+      "url": "/api/v1/buyer/overview (anonymous)",
+      "status": 401,
+      "ok": true,
+      "detail": "protected"
+    },
+    {
+      "group": "Security",
+      "method": "GET",
+      "url": "/api/v1/admin/audit (anonymous)",
+      "status": 401,
+      "ok": true,
+      "detail": "protected"
+    },
+    {
+      "group": "Security",
+      "method": "GET",
+      "url": "/api/v1/notifications (anonymous)",
+      "status": 401,
+      "ok": true,
+      "detail": "protected"
+    }
+  ]
+}

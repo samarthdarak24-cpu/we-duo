@@ -59,7 +59,7 @@ required. YOLO is an adapter slot, not active.
 
 ## 4. Trust score (`app/explain.py`)
 
-Additive, deterministic, versioned `trust-score-2.0.0`:
+Additive, deterministic, versioned `trust-v2-multicategory`:
 
 ```
 score = 50 + Σ (weight × ratio)
@@ -76,7 +76,7 @@ service_history 6 · inspection_evidence 6 · record_integrity 6
 - Snapshots persist to `trust_scores` with weights, factors, positive/negative/
   unverified JSON and `computed_at`.
 
-## 5. 12-node investigator (`app/agent.py`)
+## 5. 15/16-node conditional investigator (`app/agent.py`)
 
 ```
 VehicleResolver → RecordRetrieval → DocumentAnalysis → MileageAnalysis →
@@ -111,7 +111,7 @@ ConflictDetection → Explanation → HumanReview → ResultPersistence
 | Trust score | seeded vehicle with mixed evidence | 86/100, 6 contributions, 1 unverified area |
 | 18-step pipeline | generated PDF with reg/VIN/odometer | 18 steps, reg + 72,450 km, confidence 0.83 |
 | Grounding | LLM validator with fabricated numbers | rejected |
-| Agent | seeded vehicle | 12 nodes, `awaiting_review`, evidence IDs returned |
+| Agent | seeded vehicle | 15/16 conditional nodes, `awaiting_review`, evidence IDs returned |
 | Grounded chat | `scripts/eval_llm.py`, 10 cases | **10/10 passed**; 2 LLM narratives, 8 deterministic fallbacks; no forbidden safety claim |
 
 **Not evaluated:** supervised fraud precision/recall (no labelled corpus), YOLO
@@ -153,7 +153,7 @@ the deterministic answer. The LLM never sets the trust score.
 | Damage YOLO (ONNX) | `app/intelligence/damage/yolo.py` | `models/car_damage.onnx` + onnxruntime | OpenCV signals, `available:false` |
 | Damage YOLO (Ultralytics) | same | `models/car_damage.pt` + `ultralytics` | **active** (MIT weights) |
 | Retrieval embeddings | `app/intelligence/retrieval/embeddings.py` | `sentence-transformers` (+ optional pgvector) | keyword-overlap backend |
-| LangGraph | `app/agent.py::build_graph` | package importable | sequential 12-node executor |
+| LangGraph | `app/agent.py::build_graph` | package importable | sequential 15/16-node conditional executor |
 | LLM (local) | `app/llm.py` | `TD_LLM_PROVIDER=local` + torch/transformers | deterministic evidence-only answer |
 | LLM (HTTP) | same | `TD_LLM_*` configured | deterministic evidence-only answer |
 | Vehicle registry | `app/integrations/vehicle_data/` | authorised provider configured | demo provider, `demo:true` |

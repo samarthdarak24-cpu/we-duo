@@ -1,0 +1,34 @@
+[
+  {
+    "name": "verify-electric_scooter-schematic.png",
+    "vehicleId": "v-1794054469821",
+    "screenshot": "SCREENSHOTS/verify-electric_scooter-schematic.png",
+    "loadingPlaceholderGone": true,
+    "labelledSchematicShown": true,
+    "noCarGlbMentioned": true,
+    "carStudioShown": true,
+    "excerpt": [
+      "Vehicle 3D Inspection Studio",
+      "Labelled Electric Scooter schematic. No licensed 3D model exists for this category, so raycast, Exploded and X-Ray interactions are disabled.",
+      "0 damage panels",
+      "NO 3D MODEL AVAILABLE",
+      "Labelled schematic · interactions off",
+      "No licensed 3D model for Electric Scooter — labelled schematic only · interactions disabled."
+    ]
+  },
+  {
+    "name": "verify-passenger_car-glb.png",
+    "vehicleId": "v-1794054488033",
+    "screenshot": "SCREENSHOTS/verify-passenger_car-glb.png",
+    "loadingPlaceholderGone": true,
+    "labelledSchematicShown": false,
+    "noCarGlbMentioned": true,
+    "carStudioShown": true,
+    "excerpt": [
+      "Vehicle 3D Inspection Studio",
+      "1 damage panel",
+      "TRUSTDRIVE 3D STUDIO",
+      "Spatial Diagnostic Studio"
+    ]
+  }
+]

@@ -3,6 +3,11 @@
 Deterministic regex extraction over the ACTIVE backend's text. Confidence is a
 coverage/consistency heuristic, not a probability of authenticity. Low
 confidence, duplicates, expiry and mismatches create real manual-review rows.
+
+The extracted identity fields depend on the vehicle category: cars use a
+17-character VIN, two-wheelers use a stamped chassis/frame number, and EVs
+carry motor and battery identifiers instead of a combustion engine number.
+OCR extraction is machine-read text, NEVER proof that a document is genuine.
 """
 from __future__ import annotations
 
@@ -14,20 +19,33 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from . import db
+from . import categories, db
 from .config import settings
 from .logging import emit
 from .ocr import OcrResult, run_ocr, sha256_file, validate_file
 
-EXTRACTION_VERSION = "extract-1.0.0"
+EXTRACTION_VERSION = "extract-2.0.0-multicategory"
 
 REG_RE = re.compile(r"\b([A-Z]{2}[-\s]?\d{1,2}[-\s]?[A-Z]{0,2}[-\s]?\d{1,4})\b")
 VIN_RE = re.compile(r"\b([A-HJ-NPR-Z0-9]{17})\b", re.I)
 POLICY_RE = re.compile(r"\b(?:policy|policy\s*no\.?|policy\s*number)\s*[:#]?\s*([A-Z0-9/-]{6,24})\b", re.I)
 DATE_RE = re.compile(r"\b(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}-\d{2}-\d{2})\b")
-ODOMETER_RE = re.compile(r"\b(?:odometer|km\s*reading|mileage|kms?)\s*[:#]?\s*([\d,]{3,7})\b", re.I)
+ODOMETER_RE = re.compile(
+    r"\b(?:odometer|odo|km\s*reading|mileage|total\s*distance|distance\s*run|kms?)\s*[:#]?\s*([\d,]{3,7})\b",
+    re.I,
+)
 AMOUNT_RE = re.compile(r"(?:₹|INR|Rs\.?)\s*([\d,]+(?:\.\d{2})?)", re.I)
 MODEL_RE = re.compile(r"\b(?:model|vehicle|make)\s*[:#]?\s*([A-Za-z0-9 ]{2,30})", re.I)
+
+# Category-specific identity/powertrain fields. Every one is label-anchored:
+# an unlabelled token is never promoted into an identity claim.
+CHASSIS_RE = re.compile(
+    r"\b(?:chassis|frame|chassis\s*no\.?|frame\s*no\.?|chassis\s*number|frame\s*number|"
+    r"vehicle\s*identification\s*number|vin)\s*[:#]?\s*([A-Z0-9]{8,22})\b", re.I)
+ENGINE_RE = re.compile(r"\b(?:engine\s*(?:no\.?|number|serial)?)\s*[:#]?\s*([A-Z0-9]{5,22})\b", re.I)
+MOTOR_RE = re.compile(r"\b(?:motor\s*(?:no\.?|number|serial)?|traction\s*motor)\s*[:#]?\s*([A-Z0-9]{5,22})\b", re.I)
+BATTERY_SERIAL_RE = re.compile(r"\b(?:battery\s*(?:no\.?|number|serial|id)|pack\s*serial)\s*[:#]?\s*([A-Z0-9-]{5,30})\b", re.I)
+BATTERY_CAPACITY_RE = re.compile(r"\b(?:battery\s*capacity|capacity|kwh)\s*[:#]?\s*([\d.]{1,6})\s*(?:kwh)?\b", re.I)
 
 
 class ExtractedFields(BaseModel):
@@ -40,6 +58,17 @@ class ExtractedFields(BaseModel):
     odometer_km: int | None = None
     invoice_amount: float | None = None
     service_details: str | None = None
+    # Category-aware identity / powertrain fields. `primary_identifier` is the
+    # category-correct name for whatever lives in the shared vehicles.vin column.
+    category_id: str = categories.DEFAULT_CATEGORY_ID
+    identifier_label: str = "VIN"
+    primary_identifier: str | None = None
+    chassis_number: str | None = None
+    frame_number: str | None = None
+    engine_number: str | None = None
+    motor_number: str | None = None
+    battery_serial: str | None = None
+    battery_capacity_kwh: float | None = None
 
 
 class ExtractionResult(BaseModel):
@@ -58,8 +87,10 @@ class ExtractionResult(BaseModel):
     comparison: dict = Field(default_factory=dict)
     workflow: list[dict] = Field(default_factory=list)
     version: str = EXTRACTION_VERSION
+    category_id: str = categories.DEFAULT_CATEGORY_ID
     warning: str = (
-        "Extracted values are machine-read text, not proof that the document is genuine."
+        "Extracted values are machine-read text, not proof that the document is genuine. "
+        "OCR extraction is not verification of authenticity."
     )
 
 
@@ -72,30 +103,88 @@ def _parse_date(value: str) -> datetime | None:
     return None
 
 
-def extract_fields(text: str) -> ExtractedFields:
+def extract_fields(text: str, category_id: str | None = None) -> ExtractedFields:
+    """Category-correct structured extraction. NO universal 17-character rule.
+
+    A car uses an ISO 3779 VIN. A motorcycle/scooter uses a stamped chassis or
+    frame number of 8-22 characters. An EV has a motor number and battery
+    identifiers, never a combustion engine number. Values are only accepted
+    from the text that the active OCR/PDF engine actually produced.
+    """
+    cid = category_id or categories.DEFAULT_CATEGORY_ID
+    ident = categories.identity_for(cid)
+    vin_applicable = bool(ident.get("vinApplicable"))
     reg = REG_RE.search(text)
-    vin = VIN_RE.search(text)
     policy = POLICY_RE.search(text)
     dates = [m.group(1) for m in DATE_RE.finditer(text)]
     odo = ODOMETER_RE.search(text)
     amount = AMOUNT_RE.search(text)
     model = MODEL_RE.search(text)
+
+    vin_value: str | None = None
+    primary: str | None = None
+    chassis: str | None = None
+    if vin_applicable:
+        vin = VIN_RE.search(text)
+        if vin:
+            vin_value = vin.group(1).upper()
+            primary = vin_value
+    else:
+        chassis_match = CHASSIS_RE.search(text)
+        if chassis_match:
+            value = chassis_match.group(1).upper()
+            pattern = str(ident.get("primaryPattern") or r"^[A-Z0-9]{8,22}$")
+            if re.match(pattern, value):
+                chassis = value
+                primary = value
+
+    engine: str | None = None
+    motor: str | None = None
+    if categories.has_engine(cid):
+        m = ENGINE_RE.search(text)
+        engine = m.group(1).upper() if m else None
+    if categories.is_electric(cid):
+        m = MOTOR_RE.search(text)
+        motor = m.group(1).upper() if m else None
+
+    battery_serial = None
+    battery_capacity = None
+    if categories.is_electric(cid):
+        m = BATTERY_SERIAL_RE.search(text)
+        battery_serial = m.group(1).upper() if m else None
+        m = BATTERY_CAPACITY_RE.search(text)
+        if m:
+            try:
+                battery_capacity = float(m.group(1))
+            except ValueError:
+                battery_capacity = None
+
     return ExtractedFields(
         registration_number=re.sub(r"\s", "", reg.group(1)) if reg else None,
-        vin=vin.group(1).upper() if vin else None,
+        vin=vin_value,
         policy_number=policy.group(1) if policy else None,
         dates=dates[:20],
         odometer_km=int(odo.group(1).replace(",", "")) if odo else None,
         invoice_amount=float(amount.group(1).replace(",", "")) if amount else None,
         vehicle_model=model.group(1).strip() if model else None,
         service_details=text[:400] or None,
+        category_id=cid,
+        identifier_label=str(ident.get("primaryLabel") or "VIN"),
+        primary_identifier=primary,
+        chassis_number=chassis,
+        frame_number=chassis,
+        engine_number=engine,
+        motor_number=motor,
+        battery_serial=battery_serial,
+        battery_capacity_kwh=battery_capacity,
     )
 
 
 def _confidence(fields: ExtractedFields, ocr: OcrResult) -> float:
     present = sum(1 for v in (
-        fields.registration_number, fields.vin, fields.policy_number,
+        fields.registration_number, fields.primary_identifier, fields.policy_number,
         fields.odometer_km, fields.invoice_amount, fields.vehicle_model,
+        fields.engine_number, fields.motor_number, fields.battery_serial,
     ) if v is not None)
     base = 0.15 + 0.12 * present
     if ocr.is_ocr:
@@ -131,8 +220,14 @@ def _find_duplicate(sha: str, document_id: str, vehicle_id: str) -> str | None:
     return None
 
 
-def _compare_with_vehicle(vehicle_id: str, fields: ExtractedFields) -> dict:
-    out: dict[str, Any] = {"vehicle_id": vehicle_id, "checks": []}
+def _compare_with_vehicle(vehicle_id: str, fields: ExtractedFields,
+                          category_id: str | None = None) -> dict:
+    cid = category_id or fields.category_id or categories.DEFAULT_CATEGORY_ID
+    ident = categories.identity_for(cid)
+    out: dict[str, Any] = {
+        "vehicle_id": vehicle_id, "category_id": cid,
+        "identifier_label": ident.get("primaryLabel"), "checks": [],
+    }
     rows = db.read("vehicles", where="id = :id", params={"id": vehicle_id}, limit=1)
     if not rows:
         out["checks"].append({"field": "vehicle", "result": "vehicle_not_found"})
@@ -145,11 +240,17 @@ def _compare_with_vehicle(vehicle_id: str, fields: ExtractedFields) -> dict:
             "field": "registration_number", "result": "match" if stored == got else "mismatch",
             "expected": stored, "extracted": got,
         })
-    if fields.vin:
-        stored_vin = str(v.get("vin") or "").upper()
+    # `vehicles.vin` is the SHARED primary-identifier column: VIN for cars,
+    # chassis/frame number for two-wheelers. It is compared with the
+    # category-correct extracted value, never with a universal VIN rule.
+    if fields.primary_identifier:
+        stored_primary = re.sub(r"[^A-Z0-9]", "", str(v.get("vin") or "")).upper()
+        got = re.sub(r"[^A-Z0-9]", "", fields.primary_identifier).upper()
         out["checks"].append({
-            "field": "vin", "result": "match" if stored_vin == fields.vin else "mismatch",
-            "expected": stored_vin, "extracted": fields.vin,
+            "field": "vin" if ident.get("vinApplicable") else "chassis_number",
+            "result": "match" if stored_primary == got else "mismatch",
+            "expected": stored_primary, "extracted": got,
+            "label": ident.get("primaryLabel"),
         })
     if fields.odometer_km is not None:
         readings = db.read("mileage_readings", where="vehicle_id = :v", params={"v": vehicle_id}, limit=100)
@@ -158,6 +259,38 @@ def _compare_with_vehicle(vehicle_id: str, fields: ExtractedFields) -> dict:
             "field": "odometer_km",
             "result": "no_reference" if not kms else ("above_latest" if fields.odometer_km > max(kms) else "not_above_latest"),
             "latest_recorded_km": max(kms) if kms else None,
+        })
+
+    # Category-specific spec cross-checks, only against persisted rows.
+    specs = []
+    if db.has_table("vehicle_specs") and "vehicle_id" in db.columns("vehicle_specs"):
+        specs = db.read("vehicle_specs", where="vehicle_id = :v", params={"v": vehicle_id}, limit=20)
+    spec: dict[str, Any] = {}
+    if specs:
+        raw = specs[0].get("specs") or "{}"
+        try:
+            parsed = json.loads(raw) if isinstance(raw, str) else dict(raw)
+            if isinstance(parsed, dict):
+                spec = parsed
+        except (ValueError, TypeError):
+            spec = {}
+    for field_name, extracted in (("engine_number", fields.engine_number),
+                                  ("motor_number", fields.motor_number),
+                                  ("battery_serial", fields.battery_serial)):
+        if not extracted:
+            continue
+        stored = re.sub(r"[^A-Z0-9]", "", str(spec.get(field_name) or "")).upper()
+        out["checks"].append({
+            "field": field_name,
+            "result": "no_reference" if not stored else ("match" if stored == extracted else "mismatch"),
+            "expected": stored or None, "extracted": extracted,
+        })
+    # An EV must never be asked for a combustion engine number.
+    if not categories.has_engine(cid) and fields.engine_number:
+        out["checks"].append({
+            "field": "engine_number", "result": "not_applicable",
+            "expected": None, "extracted": fields.engine_number,
+            "note": "Engine number does not apply to an electric powertrain.",
         })
     return out
 
@@ -205,16 +338,27 @@ def _step(n: int, name: str, status: str, detail: str = "") -> dict:
     return {"step": n, "name": name, "status": status, "detail": detail}
 
 
-def process_document(path: Path, document_id: str, vehicle_id: str, doc_type: str = "rc") -> ExtractionResult:
-    """The checklist's 18-step workflow, each step recorded with its real status."""
+def process_document(path: Path, document_id: str, vehicle_id: str, doc_type: str = "rc",
+                     category_id: str | None = None) -> ExtractionResult:
+    """The checklist's 18-step workflow, each step recorded with its real status.
+
+    `category_id` is normally resolved from the shared `vehicles` row. An
+    explicit override is accepted for tests and for reprocessing an archived
+    document whose vehicle row no longer exists.
+    """
+    if category_id:
+        profile = categories.get_category(category_id)
+        cid = str(profile["id"]) if profile else categories.DEFAULT_CATEGORY_ID
+    else:
+        cid = categories.category_id_for_vehicle(vehicle_id)
     wf: list[dict] = []
     ok, reason = validate_file(path)
     wf.append(_step(1, "Validate extension / MIME / size", "passed" if ok else "failed", reason or ""))
     if not ok:
         return ExtractionResult(
             document_id=document_id, sha256="", engine="none", method="validation", is_ocr=False,
-            fields=ExtractedFields(), confidence=0.0, low_confidence=True,
-            flags=[reason or "invalid file"], workflow=wf,
+            fields=ExtractedFields(category_id=cid), confidence=0.0, low_confidence=True,
+            flags=[reason or "invalid file"], workflow=wf, category_id=cid,
         )
     wf.append(_step(2, "Store privately", "passed", f"path={path}"))
     sha = sha256_file(path)
@@ -233,11 +377,12 @@ def process_document(path: Path, document_id: str, vehicle_id: str, doc_type: st
     ocr = run_ocr(path)
     wf.append(_step(5, "Run OCR", "passed" if ocr.is_ocr else "degraded",
                     f"engine={ocr.engine} method={ocr.method}"))
-    fields = extract_fields(ocr.text)
-    wf.append(_step(6, "Extract fields", "passed" if ocr.text.strip() else "unavailable"))
+    fields = extract_fields(ocr.text, cid)
+    wf.append(_step(6, "Extract fields", "passed" if ocr.text.strip() else "unavailable",
+                    f"category={cid}, identifier_label={fields.identifier_label}"))
     wf.append(_step(7, "Normalize extracted values", "passed",
-                    f"reg={fields.registration_number} vin={fields.vin}"))
-    comparison = _compare_with_vehicle(vehicle_id, fields)
+                    f"reg={fields.registration_number} {fields.identifier_label}={fields.primary_identifier}"))
+    comparison = _compare_with_vehicle(vehicle_id, fields, cid)
     wf.append(_step(8, "Compare with vehicle database", "passed",
                     ", ".join(f"{c['field']}:{c['result']}" for c in comparison["checks"])))
     duplicate = _find_duplicate(sha, document_id, vehicle_id)
@@ -305,8 +450,9 @@ def process_document(path: Path, document_id: str, vehicle_id: str, doc_type: st
         # Real schema CHECK: odometer|document|damage|conflict|agent|market|inspection
         "kind": "document", "analysis_type": "document_extraction",
         "anomaly_type": "low_confidence_extraction" if low else "extraction_complete",
-        "title": f"{doc_type.upper()} document extraction",
-        "explanation": f"engine={ocr.engine}, method={ocr.method}, confidence={confidence}",
+        "title": f"{doc_type.upper()} document extraction ({cid})",
+        "explanation": (f"engine={ocr.engine}, method={ocr.method}, confidence={confidence}, "
+                        f"category={cid}, identifier={fields.identifier_label}"),
         "severity": "medium" if low else "low",
         "method": ocr.method, "engine": ocr.engine,
         "model_version": EXTRACTION_VERSION, "version": EXTRACTION_VERSION,
@@ -328,7 +474,7 @@ def process_document(path: Path, document_id: str, vehicle_id: str, doc_type: st
         document_id=document_id, sha256=sha, engine=ocr.engine, method=ocr.method,
         is_ocr=ocr.is_ocr, fields=fields, confidence=confidence, low_confidence=low,
         flags=flags, duplicate_of=duplicate, expiry=expiry, manual_review_id=review_id,
-        comparison=comparison, workflow=wf,
+        comparison=comparison, workflow=wf, category_id=cid,
     )
 
 

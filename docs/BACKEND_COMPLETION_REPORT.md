@@ -56,7 +56,7 @@ Web backend (Next.js) remains `app/api/v1/*` (102 `route.ts` files) + `lib/serve
 
 | Suite | Result |
 | --- | --- |
-| `test_api.py` | health, capabilities, fraud, trust, 12-node investigation, jobs, review, integrity, damage, upload validation |
+| `test_api.py` | health, capabilities, fraud, trust, 15/16-node conditional investigation, jobs, review, integrity, damage, upload validation |
 | `test_detectors.py` | mileage rules, duplicates, additive score, missing-data policy, offline LLM, grounding, damage adapter |
 | `test_pipeline.py` | extraction, magic bytes, 18 steps, real PDF text layer, worker idempotency, agent persistence |
 | `test_backend.py` | auth, vehicle CRUD + duplicates, mileage flag, listing lifecycle, saved, compare, inquiry thread, real PDF, share/verify, notifications, append-only correction, verification persistence, admin KYC |

@@ -7,65 +7,57 @@ import { Icon } from "@/components/ui/Icon";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { InlineAlert } from "@/components/shared/InlineAlert";
+import {
+  documentsForCategory,
+  fieldsForCategory,
+  getCategory,
+  implementedCategories,
+  isElectric,
+  validateIdentity,
+} from "@/lib/vehicle-categories";
 
 const steps = ["Basic info", "Photos", "Documents", "History", "Verification", "Review & publish"];
 
 const stepDescription: Record<number, string> = {
-  0: "Start with the identifiers on the registration certificate. Make, model, registration and year are required before a draft is created.",
+  0: "Pick the vehicle category first — the form, validation and documents adapt to it. Make, model, registration and the category primary identifier are required before a draft is created.",
   1: "Add front, rear, left, right, interior, dashboard and odometer photos. JPEG, PNG or WebP, 10 MB each.",
-  2: "Upload only documents you are allowed to share. Buyer visibility is consent-gated and recorded.",
-  3: "Add prior mileage readings, service, repair, ownership or inspection events. Everything is submitted as Pending until verified.",
+  2: "Upload only documents you are allowed to share. The allowed document set follows the selected category. Buyer visibility is consent-gated and recorded.",
+  3: "Add prior mileage / distance readings, service, repair, ownership or inspection events. Everything is submitted as Pending until verified.",
   4: "Run the deterministic pipeline: document completeness, identifier checks, duplicate detection and mileage analysis.",
   5: "Review the draft and publish. Blockers must be cleared; warnings stay labelled on the public report.",
 };
 
-interface FormState {
-  make: string;
-  model: string;
-  variant: string;
-  year: string;
-  regNo: string;
-  vin: string;
-  fuel: string;
-  transmission: string;
-  category: string;
-  color: string;
-  ownershipCount: string;
-  location: string;
-  km: string;
-  price: string;
-  description: string;
-  condition: string;
-}
-
-const empty: FormState = {
-  make: "",
-  model: "",
-  variant: "",
-  year: String(new Date().getFullYear()),
-  regNo: "",
-  vin: "",
-  fuel: "Petrol",
-  transmission: "Automatic",
-  category: "Sedan",
-  color: "",
-  ownershipCount: "1",
-  location: "",
-  km: "",
-  price: "",
-  description: "",
-  condition: "Good",
+/** Maps a fieldCatalog `column` to the VehicleInput core key. `specs` columns are
+ *  stored separately as seller declarations. `primary_identifier` shares the `vin`
+ *  column (chassis / frame number for two-wheelers, 17-char VIN for cars). */
+const CORE_KEY: Record<string, string> = {
+  reg_no: "regNo",
+  vin: "vin",
+  make: "make",
+  model: "model",
+  variant: "variant",
+  year: "year",
+  color: "color",
+  location: "location",
+  ownership_count: "ownershipCount",
+  asking_price: "price",
+  km_claimed: "km",
+  transmission: "transmission",
 };
 
-const docTypes = [
-  { value: "rc", label: "Registration Certificate (RC)" },
-  { value: "insurance", label: "Insurance Policy" },
-  { value: "puc", label: "PUC Certificate" },
-  { value: "service", label: "Service Invoice" },
-  { value: "inspection", label: "Inspection Report" },
-  { value: "ownership", label: "Ownership Document" },
-  { value: "repair", label: "Repair Invoice" },
-  { value: "accident_claim", label: "Accident Claim" },
+// Identity / common fields preserved when the seller switches category so they
+// don't have to retype the basics.
+const KEEP_ON_SWITCH = [
+  "reg_no",
+  "primary_identifier",
+  "make",
+  "model",
+  "variant",
+  "year",
+  "color",
+  "location",
+  "ownership_count",
+  "asking_price",
 ];
 
 interface Gate {
@@ -74,10 +66,13 @@ interface Gate {
   canPublish: boolean;
 }
 
+type GroupField = ReturnType<typeof fieldsForCategory>[number]["fields"][number];
+
 export function AddVehicleStepper() {
   const router = useRouter();
   const [step, setStep] = useState(0);
-  const [form, setForm] = useState<FormState>(empty);
+  const [categoryId, setCategoryId] = useState<string>("passenger_car");
+  const [form, setForm] = useState<Record<string, string>>({});
   const [vehicleId, setVehicleId] = useState<string | null>(null);
   const [listingId, setListingId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -86,26 +81,127 @@ export function AddVehicleStepper() {
   const [gate, setGate] = useState<Gate | null>(null);
   const [checks, setChecks] = useState<{ label: string; status: string; note: string }[]>([]);
   const [historyRows, setHistoryRows] = useState<{ date: string; km: string; category: string; title: string }[]>([]);
-  const [docType, setDocType] = useState("rc");
+  const [docType, setDocType] = useState<string>(
+    () => documentsForCategory("passenger_car").find((d) => d.required)?.id ?? "rc"
+  );
   const [docConsent, setDocConsent] = useState(true);
   const photoRef = useRef<HTMLInputElement>(null);
   const docRef = useRef<HTMLInputElement>(null);
 
-  const set = (k: keyof FormState, v: string) => setForm((f) => ({ ...f, [k]: v }));
+  const cat = getCategory(categoryId);
+  const groups = useMemo(() => fieldsForCategory(categoryId), [categoryId]);
+  const docList = useMemo(() => documentsForCategory(categoryId), [categoryId]);
 
-  const canSaveBasic = useMemo(
-    () => !!(form.make && form.model && form.regNo && form.year),
-    [form]
+  const requiredNames = useMemo(
+    () => groups.flatMap((g) => g.fields).filter((f) => f.required).map((f) => f.name),
+    [groups]
   );
+  const canSaveBasic = requiredNames.every((n) => (form[n] ?? "").trim().length > 0);
+
+  const categoryNote = [
+    cat?.labels?.primaryIdentifier ? `Primary identifier: ${cat.labels.primaryIdentifier}.` : "",
+    isElectric(categoryId)
+      ? "Electric: no engine number and no PUC. Battery State of Health comes only from a battery health report, never from a photo or distance."
+      : "Combustion: engine number is optional; PUC applies where relevant.",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const setField = (name: string, value: string) => setForm((f) => ({ ...f, [name]: value }));
+
+  const onCategoryChange = (id: string) => {
+    setCategoryId(id);
+    setForm((f) => {
+      const next: Record<string, string> = {};
+      for (const k of KEEP_ON_SWITCH) if (f[k] != null) next[k] = f[k];
+      return next;
+    });
+    const docs = documentsForCategory(id);
+    const firstReq = docs.find((d) => d.required)?.id ?? docs[0]?.id ?? "rc";
+    setDocType(firstReq);
+  };
+
+  /** Split the dynamic form into the core VehicleInput columns and the category specs. */
+  function buildBodies() {
+    const core: Record<string, string> = {};
+    const specs: Record<string, string> = {};
+    for (const g of groups) {
+      for (const f of g.fields) {
+        const val = (form[f.name] ?? "").trim();
+        if (f.column === "specs") {
+          if (val) specs[f.name] = val;
+        } else {
+          const k = CORE_KEY[f.column];
+          if (k) core[k] = val;
+        }
+      }
+    }
+    const c = getCategory(categoryId)!;
+    const fuel = isElectric(categoryId)
+      ? "Electric"
+      : c.powertrain === "diesel"
+        ? "Diesel"
+        : c.powertrain === "cng"
+          ? "CNG"
+          : c.powertrain === "hybrid"
+            ? "Hybrid"
+            : "Petrol";
+    const transmission =
+      core.transmission ||
+      (isElectric(categoryId) && c.class === "two_wheeler" ? "Direct drive" : "Manual");
+
+    const post = {
+      make: core.make,
+      model: core.model,
+      variant: core.variant || undefined,
+      year: Number(core.year) || new Date().getFullYear(),
+      regNo: core.regNo,
+      vin: core.vin,
+      fuel,
+      transmission,
+      category: c.label,
+      color: core.color || undefined,
+      location: core.location || undefined,
+      ownershipCount: Number(core.ownershipCount) || 1,
+      price: Number(core.price) || 0,
+      km: Number(core.km) || 0,
+      description: form.description || undefined,
+      condition: "Good",
+      categoryId,
+      specs: Object.keys(specs).length ? specs : undefined,
+    };
+    const patch = {
+      reg_no: core.regNo,
+      vin: core.vin,
+      make: core.make,
+      model: core.model,
+      variant: core.variant,
+      year: Number(core.year) || new Date().getFullYear(),
+      color: core.color,
+      location: core.location,
+      ownership_count: Number(core.ownershipCount) || 1,
+      asking_price: Number(core.price) || 0,
+      km_claimed: Number(core.km) || 0,
+      transmission,
+      fuel,
+      category: c.label,
+      description: form.description,
+      condition: "Good",
+      categoryId,
+      specs,
+    };
+    return { post, patch };
+  }
 
   async function saveBasic() {
     setBusy(true);
     setError(null);
+    const { post } = buildBodies();
     try {
       const res = await fetch("/api/v1/seller/vehicles", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, ownershipCount: Number(form.ownershipCount) }),
+        body: JSON.stringify(post),
       });
       const json = (await res.json()) as { data?: { id: string; listingId: string }; error?: { message: string } };
       if (!res.ok || !json.data) {
@@ -128,11 +224,12 @@ export function AddVehicleStepper() {
     setError(null);
     if (step === 0) {
       if (vehicleId) {
-        // Draft already exists — patch the basic fields before moving on.
+        // Draft already exists — patch the basic fields (including category specs) before moving on.
+        const { patch } = buildBodies();
         const res = await fetch(`/api/v1/seller/vehicles/${vehicleId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...form, year: Number(form.year), km_claimed: Number(form.km), asking_price: Number(form.price), ownership_count: Number(form.ownershipCount) }),
+          body: JSON.stringify(patch),
         });
         if (!res.ok) {
           const json = (await res.json().catch(() => ({}))) as { error?: { message?: string } };
@@ -143,7 +240,18 @@ export function AddVehicleStepper() {
         return;
       }
       if (!canSaveBasic) {
-        setError("Make, model, registration and year are required.");
+        setError("Make, model, registration and the category primary identifier are required.");
+        return;
+      }
+      // Fast client-side identity feedback (server re-validates authoritatively).
+      const v = validateIdentity(categoryId, {
+        regNo: form.reg_no ?? "",
+        primaryIdentifier: form.primary_identifier ?? "",
+        engineNumber: form.engine_number ?? "",
+        motorNumber: form.motor_number ?? "",
+      });
+      if (!v.ok) {
+        setError(v.errors.join(" "));
         return;
       }
       const ok = await saveBasic();
@@ -195,7 +303,12 @@ export function AddVehicleStepper() {
 
   async function addHistoryRow() {
     if (!vehicleId) return;
-    const row = { date: new Date().toISOString().slice(0, 10), km: form.km || "0", category: "service", title: "Seller-submitted record" };
+    const row = {
+      date: new Date().toISOString().slice(0, 10),
+      km: form.odometer_km || "0",
+      category: "service",
+      title: "Seller-submitted record",
+    };
     setBusy(true);
     const res = await fetch(`/api/v1/vehicles/${vehicleId}/history`, {
       method: "POST",
@@ -241,30 +354,26 @@ export function AddVehicleStepper() {
   async function publish() {
     if (!vehicleId) return;
     await loadGate();
-    if (!listingId) {
+    // Keep the id in a local variable. React state updates are asynchronous, so
+    // reading `listingId` again in this same tick returns the OLD value (null)
+    // and silently aborts the first publish after creating a draft.
+    let id = listingId;
+    if (!id) {
       const created = await fetch("/api/v1/seller/listings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ vehicleId, description: form.description, price: Number(form.price) }),
+        body: JSON.stringify({ vehicleId, description: form.description, price: Number(form.asking_price) }),
       });
       const json = (await created.json().catch(() => ({}))) as { data?: { id: string }; error?: { message: string } };
       if (!created.ok || !json.data) {
         setError(json.error?.message ?? "Could not create the listing.");
         return;
       }
-      setListingId(json.data.id);
+      id = json.data.id;
+      setListingId(id);
     }
-    const id = listingId;
     if (!id) {
-      // Re-read from the server to get the id we just created.
-      const res = await fetch(`/api/v1/seller/listings?pageSize=100`);
-      const json = (await res.json().catch(() => ({}))) as { data?: { items: { vehicle: { id: string }; listing: { id: string } | null }[] } };
-      const row = json.data?.items.find((r) => r.vehicle.id === vehicleId);
-      if (!row?.listing) {
-        setError("Create the listing draft first.");
-        return;
-      }
-      setListingId(row.listing.id);
+      setError("Could not resolve the listing draft. Reopen the wizard and try again.");
       return;
     }
     setBusy(true);
@@ -279,29 +388,50 @@ export function AddVehicleStepper() {
     router.push("/seller/listings");
   }
 
-  const field = (label: string, key: keyof FormState, type = "text", placeholder = "") => (
-    <label className="block">
-      <span className="td-label">{label}</span>
-      <input
-        type={type}
-        value={form[key]}
-        placeholder={placeholder}
-        onChange={(e) => set(key, e.target.value)}
-        className="td-input"
-      />
-    </label>
-  );
-
-  const select = (label: string, key: keyof FormState, options: string[]) => (
-    <label className="block">
-      <span className="td-label">{label}</span>
-      <select value={form[key]} onChange={(e) => set(key, e.target.value)} className="td-input td-select">
-        {options.map((x) => (
-          <option key={x}>{x}</option>
-        ))}
-      </select>
-    </label>
-  );
+  const renderField = (f: GroupField) => {
+    if (f.type === "select") {
+      return (
+        <label className="block" key={f.name}>
+          <span className="td-label">
+            {f.label}
+            {f.required ? " *" : ""}
+          </span>
+          <select
+            value={form[f.name] ?? ""}
+            onChange={(e) => setField(f.name, e.target.value)}
+            className="td-input td-select"
+          >
+            <option value="">Select…</option>
+            {f.options?.map((o) => (
+              <option key={o} value={o}>
+                {o}
+              </option>
+            ))}
+          </select>
+          {f.help && <p className="td-help mt-1">{f.help}</p>}
+        </label>
+      );
+    }
+    return (
+      <label className="block" key={f.name}>
+        <span className="td-label">
+          {f.label}
+          {f.required ? " *" : ""}
+        </span>
+        <input
+          type={f.type === "number" ? "number" : "text"}
+          value={form[f.name] ?? ""}
+          placeholder={f.placeholder ?? ""}
+          min={f.min}
+          max={f.max}
+          step={f.step}
+          onChange={(e) => setField(f.name, e.target.value)}
+          className="td-input"
+        />
+        {f.help && <p className="td-help mt-1">{f.help}</p>}
+      </label>
+    );
+  };
 
   return (
     <div className="td-page">
@@ -328,7 +458,11 @@ export function AddVehicleStepper() {
                 <span
                   className={cn(
                     "flex h-5 w-5 items-center justify-center rounded-full text-[10.5px] font-bold",
-                    i === step ? "bg-black/15 text-[var(--on-primary)]" : i < step ? "bg-success-bg text-success" : "bg-surface-tint text-muted"
+                    i === step
+                      ? "bg-black/15 text-[var(--on-primary)]"
+                      : i < step
+                        ? "bg-success-bg text-success"
+                        : "bg-surface-tint text-muted"
                   )}
                 >
                   {i < step ? <Icon name="Check" size={11} strokeWidth={3} /> : i + 1}
@@ -348,32 +482,48 @@ export function AddVehicleStepper() {
       >
         <div className="space-y-5">
           {step === 0 && (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              {field("Registration number", "regNo", "text", "MH01AB1234")}
-              {field("VIN (17 chars)", "vin", "text", "WBA5R1C50KAK12345")}
-              {field("Make", "make", "text", "BMW")}
-              {field("Model", "model", "text", "3 Series")}
-              {field("Variant", "variant", "text", "330i")}
-              {field("Year", "year", "number")}
-              {select("Fuel", "fuel", ["Petrol", "Diesel", "Hybrid", "Electric", "CNG"])}
-              {select("Transmission", "transmission", ["Automatic", "Manual"])}
-              {select("Category", "category", ["Sedan", "SUV", "Hatchback", "MUV", "Coupe"])}
-              {field("Colour", "color", "text", "Silver")}
-              {field("Ownership count", "ownershipCount", "number")}
-              {field("Location", "location", "text", "Mumbai")}
-              {field("Current mileage (km)", "km", "number")}
-              {field("Asking price (₹)", "price", "number")}
-              {field("Condition", "condition", "text", "Good")}
+            <div className="space-y-5">
+              <div className="rounded-[12px] border border-border bg-surface-tint p-4">
+                <label className="block">
+                  <span className="td-label">
+                    Vehicle category <span className="text-danger">*</span>
+                  </span>
+                  <select
+                    value={categoryId}
+                    onChange={(e) => onCategoryChange(e.target.value)}
+                    className="td-input td-select"
+                  >
+                    {implementedCategories().map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.label} · {c.powertrain}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <p className="td-help mt-1.5">{categoryNote}</p>
+              </div>
+
+              {groups.map((g) => (
+                <div key={g.id} className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted md:col-span-3">
+                    {g.label}
+                  </p>
+                  {g.fields.map((f) => renderField(f))}
+                </div>
+              ))}
+
               <label className="block md:col-span-3">
                 <span className="td-label">Description</span>
                 <textarea
-                  value={form.description}
-                  onChange={(e) => set("description", e.target.value)}
+                  value={form.description ?? ""}
+                  onChange={(e) => setField("description", e.target.value)}
                   rows={3}
                   className="td-textarea"
                   placeholder="Describe the vehicle using verified facts."
                 />
-                <p className="td-help mt-1.5">Buyer-facing copy. Avoid unverified claims about accident or service history.</p>
+                <p className="td-help mt-1.5">
+                  Buyer-facing copy. Avoid unverified claims about accident or service history.
+                </p>
               </label>
             </div>
           )}
@@ -404,10 +554,15 @@ export function AddVehicleStepper() {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <label className="block">
                   <span className="td-label">Document type</span>
-                  <select value={docType} onChange={(e) => setDocType(e.target.value)} className="td-input td-select">
-                    {docTypes.map((d) => (
-                      <option key={d.value} value={d.value}>
+                  <select
+                    value={docType}
+                    onChange={(e) => setDocType(e.target.value)}
+                    className="td-input td-select"
+                  >
+                    {docList.map((d) => (
+                      <option key={d.id} value={d.id}>
                         {d.label}
+                        {d.required ? " (required)" : ""}
                       </option>
                     ))}
                   </select>
@@ -423,11 +578,17 @@ export function AddVehicleStepper() {
                 </label>
               </div>
               <label className="flex items-center gap-2 text-[12.5px] text-ink">
-                <input type="checkbox" checked={docConsent} onChange={(e) => setDocConsent(e.target.checked)} />
+                <input
+                  type="checkbox"
+                  checked={docConsent}
+                  onChange={(e) => setDocConsent(e.target.checked)}
+                />
                 Share this document with buyers
               </label>
               <p className="td-help">
-                Shared documents appear on the buyer report. Uploading a document does not make it independently verified.
+                The document set follows the selected category — two-wheelers use RC/insurance for
+                two-wheelers and engine-chassis records; EVs add battery warranty, inspection, SOH and
+                replacement documents. Uploading a document does not make it independently verified.
               </p>
               <button onClick={uploadDocument} disabled={busy} className="td-btn td-btn-primary">
                 <Icon name="FileText" size={14} /> {busy ? "Uploading…" : "Upload document"}
@@ -477,7 +638,10 @@ export function AddVehicleStepper() {
               {checks.length > 0 ? (
                 <ul className="grid grid-cols-1 gap-2 md:grid-cols-2">
                   {checks.map((c) => (
-                    <li key={c.label} className="flex items-center justify-between gap-3 rounded-[11px] border border-border bg-surface-tint px-3.5 py-2.5">
+                    <li
+                      key={c.label}
+                      className="flex items-center justify-between gap-3 rounded-[11px] border border-border bg-surface-tint px-3.5 py-2.5"
+                    >
                       <div className="min-w-0">
                         <p className="text-[12.5px] font-semibold text-ink">{c.label}</p>
                         <p className="truncate text-[11px] text-muted">{c.note}</p>
@@ -523,7 +687,11 @@ export function AddVehicleStepper() {
                       <Icon name="ShieldAlert" size={14} /> Blockers ({gate.blockers.length})
                     </div>
                     <ul className="mt-2 list-disc space-y-1 pl-4 text-[12px] text-ink">
-                      {gate.blockers.length ? gate.blockers.map((b) => <li key={b}>{b}</li>) : <li>None — ready to publish.</li>}
+                      {gate.blockers.length ? (
+                        gate.blockers.map((b) => <li key={b}>{b}</li>)
+                      ) : (
+                        <li>None — ready to publish.</li>
+                      )}
                     </ul>
                   </div>
                   <div
@@ -537,7 +705,11 @@ export function AddVehicleStepper() {
                       <Icon name="AlertTriangle" size={14} /> Warnings ({gate.warnings.length})
                     </div>
                     <ul className="mt-2 list-disc space-y-1 pl-4 text-[12px] text-ink">
-                      {gate.warnings.length ? gate.warnings.map((w) => <li key={w}>{w}</li>) : <li>None.</li>}
+                      {gate.warnings.length ? (
+                        gate.warnings.map((w) => <li key={w}>{w}</li>)
+                      ) : (
+                        <li>None.</li>
+                      )}
                     </ul>
                   </div>
                 </div>

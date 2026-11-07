@@ -1,0 +1,472 @@
+{
+  "generatedAt": "2026-11-06T18:25:47.941Z",
+  "run": {
+    "runId": "MW5ATBQ1",
+    "base": "http://127.0.0.1:3100",
+    "vehicleId": "v-1793989151346",
+    "regNo": "MH12QA7132",
+    "vin": "MAT3989149185KLJS",
+    "listingId": "l-1793989218038",
+    "features": [
+      {
+        "feature": "RC upload + OCR",
+        "status": "PASS",
+        "total": 11,
+        "failed": 0
+      },
+      {
+        "feature": "Mileage detection",
+        "status": "PASS",
+        "total": 6,
+        "failed": 0
+      },
+      {
+        "feature": "AI investigation",
+        "status": "PASS",
+        "total": 9,
+        "failed": 0
+      },
+      {
+        "feature": "Damage inspection",
+        "status": "PASS",
+        "total": 4,
+        "failed": 0
+      },
+      {
+        "feature": "Marketplace",
+        "status": "PASS",
+        "total": 9,
+        "failed": 0
+      },
+      {
+        "feature": "Buyer inquiries",
+        "status": "PASS",
+        "total": 10,
+        "failed": 0
+      }
+    ]
+  },
+  "db": {
+    "file": "C:\\Users\\darak\\Downloads\\finall caranimation\\.data\\trustdrive.db",
+    "tables": 54,
+    "schemaVersion": 3,
+    "counts": {
+      "accident_records": 54,
+      "activity": 2,
+      "agent_investigations": 90,
+      "ai_analysis": 138,
+      "ai_runs": 21,
+      "audit_logs": 153,
+      "auth_tokens": 0,
+      "background_jobs": 157,
+      "battery_records": 6,
+      "buyer_profiles": 1,
+      "category_registry_snapshot": 1,
+      "chain_records": 562,
+      "contact_messages": 3,
+      "damage_records": 69,
+      "disputes": 2,
+      "document_extractions": 956,
+      "documents": 222,
+      "evidence_edges": 63,
+      "evidence_nodes": 69,
+      "findings": 40,
+      "history_events": 88,
+      "human_review_queue": 98,
+      "idempotency_keys": 6,
+      "inquiries": 50,
+      "inquiry_messages": 92,
+      "listing_events": 77,
+      "listing_images": 115,
+      "listings": 76,
+      "login_attempts": 1,
+      "mileage_readings": 148,
+      "newsletter_subscribers": 3,
+      "notifications": 284,
+      "pricing": 19,
+      "provider_checks": 0,
+      "qr_tokens": 14,
+      "report_access": 0,
+      "reports": 31,
+      "saved_comparisons": 0,
+      "saved_searches": 2,
+      "saved_vehicles": 3,
+      "seller_profiles": 1,
+      "sessions": 386,
+      "theft_checks": 9,
+      "trust_scores": 68,
+      "users": 7,
+      "vehicle_claims": 1,
+      "vehicle_images": 54,
+      "vehicle_inspections": 54,
+      "vehicle_specs": 6,
+      "vehicles": 88,
+      "verification_cases": 8,
+      "verification_evidence": 106,
+      "verification_results": 598,
+      "verification_runs": 71
+    },
+    "vehicle": {
+      "id": "v-1793989151346",
+      "owner_id": "u-seller",
+      "make": "Honda",
+      "model": "City",
+      "variant": "VX",
+      "year": 2021,
+      "reg_no": "MH12QA7132",
+      "vin": "MAT3989149185KLJS",
+      "fuel": "Petrol",
+      "transmission": "Automatic",
+      "category": "Sedan",
+      "color": "White",
+      "ownership_count": 1,
+      "location": "Mumbai, Maharashtra",
+      "km_claimed": 45000,
+      "last_verified_km": 45000,
+      "asking_price": 875000,
+      "status": "published",
+      "base_value": 875000,
+      "condition_score": 85,
+      "trustdrive_id": "TD-2021-2237",
+      "qr_token": "qr-v-1793989151346",
+      "description": "Live integration proof vehicle MW5ATBQ1",
+      "condition": "Good",
+      "created_at": "2026-11-06T18:19:11.346Z",
+      "updated_at": "2026-11-06T18:20:31.503Z",
+      "vehicle_category_id": "passenger_car"
+    },
+    "listing": {
+      "id": "l-1793989218038",
+      "vehicle_id": "v-1793989151346",
+      "status": "published",
+      "headline": "2021 Honda City VX — live proof MW5ATBQ1",
+      "description": "Live integration proof listing created from the seller portal. All evidence is stored in the shared database.",
+      "condition": "Excellent",
+      "location": "Mumbai, Maharashtra",
+      "views": 0,
+      "saves": 0,
+      "inquiries": 1,
+      "cover_image": "photos/v-1793989151346/dc6f4a6e-f682-4959-89df-adb884e1ef75.png",
+      "published_at": "2026-11-06T18:20:31.488Z",
+      "created_at": "2026-11-06T18:20:18.038Z",
+      "updated_at": "2026-11-06T18:24:05.215Z"
+    },
+    "photos": 3,
+    "document": {
+      "id": "doc-1793989171647",
+      "type": "rc",
+      "status": "verified",
+      "status_reason": null,
+      "sha256": "034295a54b1537989d019a32d8b7357eb15ae304d7e87d607b0878195b60beef",
+      "verified_at": "2026-11-06T18:19:35.107Z",
+      "extracted": {
+        "fields": {
+          "registration_number": "MH12QA7132",
+          "vin": "MAT3989149185KLJS",
+          "owner_name": null,
+          "vehicle_model": "Model",
+          "policy_number": null,
+          "dates": [
+            "01/04/2021",
+            "31/12/2030"
+          ],
+          "odometer_km": 45000,
+          "invoice_amount": null,
+          "service_details": "GOVERNMENT OF MAHARASHTRA\nREGISTRATION CERTIFICATE\nRegistration Number\nMH12QA7132\nChassis Number (VIN)\nMAT3989149185KLJS\nOwner Name\nSamarth Deshmukh\nVehicle Model\nHonda City\nFuel Type\nPetrol\nRegistration Date\n01/04/2021\nValid Till\n31/12/2030\nOdometer\n45000 km",
+          "category_id": "passenger_car",
+          "identifier_label": "VIN (17 characters)",
+          "primary_identifier": "MAT3989149185KLJS",
+          "chassis_number": null,
+          "frame_number": null,
+          "engine_number": null,
+          "motor_number": null,
+          "battery_serial": null,
+          "battery_capacity_kwh": null
+        },
+        "confidence": 0.778,
+        "method": "rapidocr-onnx-crnn",
+        "engine": "rapidocr",
+        "is_ocr": true,
+        "flags": [],
+        "comparison": {
+          "vehicle_id": "v-1793989151346",
+          "category_id": "passenger_car",
+          "identifier_label": "VIN (17 characters)",
+          "checks": [
+            {
+              "field": "registration_number",
+              "result": "match",
+              "expected": "MH12QA7132",
+              "extracted": "MH12QA7132"
+            },
+            {
+              "field": "vin",
+              "result": "match",
+              "expected": "MAT3989149185KLJS",
+              "extracted": "MAT3989149185KLJS",
+              "label": "VIN (17 characters)"
+            },
+            {
+              "field": "odometer_km",
+              "result": "no_reference",
+              "latest_recorded_km": null
+            }
+          ]
+        },
+        "workflow": [
+          {
+            "step": 1,
+            "name": "Validate extension / MIME / size",
+            "status": "passed",
+            "detail": ""
+          },
+          {
+            "step": 2,
+            "name": "Store privately",
+            "status": "passed",
+            "detail": "path=C:\\Users\\darak\\Downloads\\finall caranimation\\.data\\uploads\\documents\\v-1793989151346\\086bd08c-2fb6-4c16-961c-c299f330676c.png"
+          },
+          {
+            "step": 3,
+            "name": "Calculate SHA-256",
+            "status": "passed",
+            "detail": "034295a54b1537989d019a32d8b7357eb15ae304d7e87d607b0878195b60beef"
+          },
+          {
+            "step": 4,
+            "name": "Create document-processing job",
+            "status": "passed",
+            "detail": "job-ec3dbc2727a5"
+          },
+          {
+            "step": 5,
+            "name": "Run OCR",
+            "status": "passed",
+            "detail": "engine=rapidocr method=rapidocr-onnx-crnn"
+          },
+          {
+            "step": 6,
+            "name": "Extract fields",
+            "status": "passed",
+            "detail": "category=passenger_car, identifier_label=VIN (17 characters)"
+          },
+          {
+            "step": 7,
+            "name": "Normalize extracted values",
+            "status": "passed",
+            "detail": "reg=MH12QA7132 VIN (17 characters)=MAT3989149185KLJS"
+          },
+          {
+            "step": 8,
+            "name": "Compare with vehicle database",
+            "status": "passed",
+            "detail": "registration_number:match, vin:match, odometer_km:no_reference"
+          },
+          {
+            "step": 9,
+            "name": "Check duplicates",
+            "status": "passed",
+            "detail": "none"
+          },
+          {
+            "step": 10,
+            "name": "Check date and expiry",
+            "status": "passed",
+            "detail": "{'latest_date': '31/12/2030', 'days_from_today': 1515, 'expired': False, 'doc_type': 'rc', 'note': 'Date is machine-read; expiry is indicative, not a validity guarantee.'}"
+          },
+          {
+            "step": 11,
+            "name": "Check metadata",
+            "status": "passed",
+            "detail": "[]"
+          },
+          {
+            "step": 12,
+            "name": "Calculate extraction confidence",
+            "status": "passed",
+            "detail": "0.778"
+          },
+          {
+            "step": 13,
+            "name": "Flag low-confidence results",
+            "status": "clear",
+            "detail": ""
+          },
+          {
+            "step": 14,
+            "name": "Send for manual review when required",
+            "status": "not_required",
+            "detail": ""
+          },
+          {
+            "step": 15,
+            "name": "Save verification evidence",
+            "status": "passed",
+            "detail": "evidence-7ccea8b47d7e"
+          },
+          {
+            "step": 16,
+            "name": "Notify seller",
+            "status": "passed",
+            "detail": "u-seller"
+          },
+          {
+            "step": 17,
+            "name": "Expose permitted results to buyer",
+            "status": "passed",
+            "detail": "consent-filtered summary only; source file stays private"
+          },
+          {
+            "step": 18,
+            "name": "Persist run + complete job",
+            "status": "passed",
+            "detail": "job-ec3dbc2727a5"
+          }
+        ],
+        "expiry": {
+          "latest_date": "31/12/2030",
+          "days_from_today": 1515,
+          "expired": false,
+          "doc_type": "rc",
+          "note": "Date is machine-read; expiry is indicative, not a validity guarantee."
+        },
+        "duplicate_of": null,
+        "review_id": null,
+        "version": "extract-2.0.0-multicategory",
+        "source": "python-intelligence",
+        "warning": "Extracted values are machine-read text, not proof that the document is genuine. OCR extraction is not verification of authenticity."
+      },
+      "extractionRows": 8
+    },
+    "damage": {
+      "id": "d-1793989213056",
+      "vehicle_id": "v-1793989151346",
+      "zone_id": "front_bumper",
+      "description": "Live proof dent on front door MW5ATBQ1",
+      "severity": "Moderate",
+      "repair_status": "Repaired",
+      "repair_details": "",
+      "inspection_date": "2026-11-06",
+      "status": "pending",
+      "photo_keys": "[]",
+      "repair_invoice_doc_id": null,
+      "supersedes_id": null,
+      "created_by": "u-seller",
+      "created_at": "2026-11-06T18:20:13.056Z",
+      "component_id": "front_bumper",
+      "damage_type": "visible_damage",
+      "local_x": null,
+      "local_y": null,
+      "local_z": null,
+      "position_source": "component_registry_anchor"
+    },
+    "finding": {
+      "id": "f-1793989179252",
+      "vehicle_id": "v-1793989151346",
+      "rule_key": "MILEAGE_INCONSISTENCY",
+      "code": "ODOMETER_ROLLBACK",
+      "severity": "critical",
+      "title": "Odometer rollback detected",
+      "explanation": "The submitted reading of 41,000 km is lower than the previous reading of 52,000 km.",
+      "recommendation": "Provide a service invoice or cluster-replacement receipt that explains the change.",
+      "evidence": "{\"fromKm\":52000,\"toKm\":41000,\"date\":\"2025-02-20\"}",
+      "responsible_doc": null,
+      "points": 40,
+      "status": "open",
+      "created_at": "2026-11-06T18:19:39.251Z"
+    },
+    "aiRun": {
+      "id": "airun-574c5fe0-f451-4dde-a030-3b32c159f24d",
+      "status": "awaiting_review",
+      "graph": "langgraph-conditional",
+      "modelVersion": "investigator-2.0.0-multicategory",
+      "rulesetVersion": "fraud-rules-2.0.0-multicategory",
+      "outputRefs": "{\"citations\":6,\"findings\":2,\"humanReviewId\":\"review-1a0e6cfae277\"}",
+      "startedAt": "2026-11-06T18:20:06.186Z",
+      "finishedAt": "2026-11-06T18:20:06.186Z"
+    },
+    "inquiry": {
+      "id": "q-1793989445140",
+      "listing_id": "l-1793989218038",
+      "buyer_id": "u-buyer2",
+      "seller_id": "u-seller",
+      "buyer_name": "Rohan Mehta",
+      "initials": "RM",
+      "message": "Yes — repaired and documented. Ref MW5ATBQ1",
+      "type": "general",
+      "status": "replied",
+      "created_at": "2026-11-06T18:24:05.140Z",
+      "last_activity_at": "2026-11-06T18:24:37.383Z"
+    },
+    "messages": [
+      {
+        "id": "msg-1793989445214",
+        "inquiry_id": "q-1793989445140",
+        "sender_id": "u-buyer2",
+        "sender_name": "Rohan Mehta",
+        "body": "Is the front-door damage repaired? Ref MW5ATBQ1",
+        "offer_amount": null,
+        "scheduled_at": null,
+        "attachments": "[]",
+        "created_at": "2026-11-06T18:24:05.140Z"
+      },
+      {
+        "id": "msg-1793989477383",
+        "inquiry_id": "q-1793989445140",
+        "sender_id": "u-seller",
+        "sender_name": "Samarth Darak",
+        "body": "Yes — repaired and documented. Ref MW5ATBQ1",
+        "offer_amount": null,
+        "scheduled_at": null,
+        "attachments": "[]",
+        "created_at": "2026-11-06T18:24:37.383Z"
+      }
+    ],
+    "report": {
+      "id": "rep-1793989494948",
+      "vehicle_id": "v-1793989151346",
+      "requested_by": "u-buyer2",
+      "type": "Vehicle verification",
+      "status": "ready",
+      "file_key": "reports/rep-1793989494948.pdf",
+      "report_id": "RPT-2026-0003",
+      "generated_at": "2026-11-06T18:24:54.948Z",
+      "created_at": "2026-11-06T18:24:54.948Z",
+      "pdf_hash": "622a04056686a0ce24637bce7090e8d6151f8b869796e0e1b07eea589a2b6990",
+      "snapshot": "{}",
+      "version": 1
+    }
+  },
+  "screenshots": [
+    "feat1-rc-ocr.png",
+    "feat2-mileage-rollback.png",
+    "feat3-ai-investigation.png",
+    "feat4-damage-record.png",
+    "feat5-marketplace-3d.png",
+    "feat6-seller-inbox-reply.png",
+    "ocr-negative.png",
+    "probe-3d.png",
+    "probe-inquiry.png",
+    "rc-MW4QNG01.png",
+    "rc-MW4SRQ1H.png",
+    "rc-MW4SZ0E9.png",
+    "rc-MW4T1ZXB.png",
+    "rc-MW4T4163.png",
+    "rc-MW4XSSTH.png",
+    "rc-MW4YEB19.png",
+    "rc-MW4YPUXH.png",
+    "rc-MW4YUPLX.png",
+    "rc-MW4YZNE2.png",
+    "rc-MW4Z7WL9.png",
+    "rc-MW4ZXGCA.png",
+    "rc-MW50IRNZ.png",
+    "rc-MW50R78K.png",
+    "rc-MW5ATBQ1.png",
+    "rc-neg-MW5AJ5P1.png",
+    "rc-neg-MW5ALYV1.png",
+    "rc-neg-MW5AQOWL.png"
+  ],
+  "consoleErrors": [
+    "Warning: Extra attributes from the server: %s%s style \n    at input\n    at div\n    at DocumentsManager (webpack-internal:///(app-pages-browser)/./components/seller/DocumentsManager.tsx:45:11)\n    at div\n    at div\n    at main\n    at div\n    at div\n    at PortalShell (Server)\n    at SellerDocumentsPage (Server)\n    at InnerLayoutRouter (webpack-internal:///(app-pages-browser)/./node_modules/next/di"
+  ]
+}

@@ -1,5 +1,5 @@
 import { addDocumentForVehicle, getDocumentsView } from "@/lib/server/data";
-import { getVehicle } from "@/lib/server/db";
+import { getListingByVehicle, getVehicle } from "@/lib/server/db";
 import { fail, created, ok, requireRole } from "@/lib/server/http";
 import { paginate } from "@/lib/server/pagination";
 import { MAX_DOC_BYTES, saveUpload, sniffUpload } from "@/lib/server/files";
@@ -8,6 +8,7 @@ import { scanBuffer, type ScanResult } from "@/lib/server/scan";
 import { withIdempotency } from "@/lib/server/idempotency";
 import { LIMITS, enforceRateLimit } from "@/lib/server/ratelimit";
 import { signedDownloadPath } from "@/lib/server/signed";
+import { runDocumentOcr } from "@/lib/server/document-ocr";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,11 +17,23 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   const guard = requireRole(req, "buyer", "seller", "admin");
   if (!guard.ok) return guard.response;
-  if (!getVehicle(params.id)) return fail(404, "NOT_FOUND", "Vehicle not found");
+  const vehicle = getVehicle(params.id);
+  if (!vehicle) return fail(404, "NOT_FOUND", "Vehicle not found");
   const url = new URL(req.url);
   const type = url.searchParams.get("type");
   const status = url.searchParams.get("status");
+  const isOwner = vehicle.owner_id === guard.user.sub;
+  const isAdmin = guard.user.role === "admin";
   let rows = getDocumentsView(params.id);
+  // Private evidence is consent-gated: only the owning seller/admin sees every
+  // document. Buyers see consented documents of a published listing; other
+  // sellers see nothing. This mirrors GET /documents/:id and the vehicle report.
+  if (!isOwner && !isAdmin) {
+    const listing = getListingByVehicle(params.id);
+    const buyerView = guard.user.role === "buyer" && listing?.status === "published";
+    if (!buyerView) return fail(403, "FORBIDDEN", "These documents are private.");
+    rows = rows.filter((d) => d.consent);
+  }
   if (type && type !== "all") rows = rows.filter((d) => d.type === type);
   if (status && status !== "all") rows = rows.filter((d) => d.status === status);
   return ok({ ...paginate(rows, url, { pageSize: 50 }), nearDuplicates: nearDuplicateDocuments(params.id) });
@@ -96,12 +109,17 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   });
   if (!result.ok) return fail(result.code === "NOT_FOUND" ? 404 : result.code === "FORBIDDEN" ? 403 : 400, result.code, result.message);
   const documentId = (result as { id?: string }).id;
+  // Real OCR bridge: when a file was stored, run the intelligence extraction
+  // synchronously and persist its fields/status before returning. If the service
+  // is down the document stays pending with the honest reason in status_reason.
+  const ocr = documentId && fileKey ? await runDocumentOcr(documentId) : null;
   const extractions = documentId ? recordDocumentExtractions(documentId) : 0;
   return created({
     ...result,
     fileKey,
     fileUrl: fileKey ? signedDownloadPath(`/api/v1/files/${fileKey}`, "file", fileKey) : null,
     scan,
+    ocr,
     extractions,
   });
   });

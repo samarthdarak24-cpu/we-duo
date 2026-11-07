@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
 import { SectionCard } from "@/components/shared/SectionCard";
+import { implementedCategories } from "@/lib/vehicle-categories";
 
 export interface SavedSearchView {
   id: string;
@@ -32,6 +33,7 @@ const empty = {
   kmMax: "",
   fuel: "",
   transmission: "",
+  category: "",
   location: "",
   ownershipMax: "",
   condition: "",
@@ -180,6 +182,10 @@ export function FilterPanel({
           {select("Transmission", "transmission", [
             { value: "", label: "Any transmission" },
             ...["Automatic", "Manual"].map((t) => ({ value: t, label: t })),
+          ])}
+          {select("Category", "category", [
+            { value: "", label: "Any category" },
+            ...implementedCategories().map((c) => ({ value: c.id, label: c.label })),
           ])}
           {select("Ownership (max)", "ownershipMax", [
             { value: "", label: "Any" },

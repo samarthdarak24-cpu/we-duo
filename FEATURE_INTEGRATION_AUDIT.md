@@ -101,3 +101,16 @@ Legend: ✅ proven by execution · 🟡 partial / environment-blocked · ⚙️ 
 - `qa/evidence/fastapi_proof.txt` — 11/12 live HTTP checks
 - `qa/evidence/fastapi_health.json` — live engine/adapter inventory
 - `qa/fastapi_live_proof.py` — reproducible proof harness
+
+## 5. Latest live integration verification — 2026-11-06
+
+- Next.js readiness returned `200`.
+- FastAPI `/health` returned `200` and confirmed the shared 51-table SQLite
+  database, active OCR/damage adapters, worker, and honest unavailable external
+  provider states.
+- Desktop Chromium Playwright: **2 passed** — the 21-step Seller→Buyer
+  workflow and the buyer-to-seller RBAC check.
+- Playwright now supports `E2E_BASE_URL` without starting a second Next.js
+  process, preventing concurrent development `.next` directory collisions.
+- Mobile execution still has intermittent development-server navigation/session
+  timing failures; it is not being reported as complete from desktop coverage.

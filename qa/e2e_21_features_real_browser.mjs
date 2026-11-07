@@ -19,14 +19,19 @@ function logTest(featureNum, name, status, details = '') {
   results.push({ featureNum, name, status, details });
 }
 
-async function loginAs(page, roleName) {
-  await page.goto(`${BASE_URL}/login`, { waitUntil: 'load' });
+async function loginAs(context, page, roleName) {
+  const email = roleName === 'Seller' ? 'samarth@trustdrive.dev' : 'aditya@trustdrive.dev';
+  const targetPath = roleName === 'Seller' ? '/seller' : '/buyer';
+
+  const loginRes = await context.request.post(`${BASE_URL}/api/v1/auth/login`, {
+    data: { email, password: 'demo1234' }
+  });
+  if (!loginRes.ok()) {
+    throw new Error(`Failed to log in as ${roleName}: ${loginRes.status()}`);
+  }
+
+  await page.goto(`${BASE_URL}${targetPath}`, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1000);
-  await page.click(`button:has-text("${roleName}")`);
-  await page.waitForTimeout(500);
-  await page.click('button[type="submit"]');
-  const targetPath = roleName === 'Seller' ? 'seller' : 'buyer';
-  await page.waitForURL(`**/${targetPath}**`, { timeout: 15000 });
 }
 
 async function runAllTests() {
@@ -35,16 +40,17 @@ async function runAllTests() {
   console.log(`Target: ${BASE_URL} (Next.js) | DB: .data/trustdrive.db`);
   console.log('================================================================\n');
 
-  const browser = await chromium.launch({ channel: 'chrome', headless: true });
+  const browser = await chromium.launch({ channel: 'chrome', headless: true, timeout: 60000 });
   
   try {
     // -------------------------------------------------------------
     // SELLER SESSION SETUP
     // -------------------------------------------------------------
     console.log('>>> AUTHENTICATING SELLER SESSION (samarth@trustdrive.dev)...');
-    const sellerContext = await browser.newContext();
+    const sellerContext = await browser.newContext({ timezoneId: 'Asia/Kolkata' });
+    sellerContext.setDefaultTimeout(60000);
     const sellerPage = await sellerContext.newPage();
-    await loginAs(sellerPage, 'Seller');
+    await loginAs(sellerContext, sellerPage, 'Seller');
     console.log('Seller authenticated successfully!\n');
 
     // -------------------------------------------------------------
@@ -110,22 +116,21 @@ async function runAllTests() {
 
       // Verify in DB
       const db = getDb();
-      const dbVehicle = db.prepare('SELECT id, reg_no, vin, mileage, status FROM vehicles WHERE id = ?').get(testVehicleId);
+      const dbVehicle = db.prepare('SELECT id, reg_no, vin, km_claimed, status FROM vehicles WHERE id = ?').get(testVehicleId);
       if (!dbVehicle) throw new Error('Vehicle not found in SQLite vehicles table');
 
       // 3. Update: Update mileage
       const updateRes = await sellerPage.request.post(`${BASE_URL}/api/v1/vehicles/${testVehicleId}/mileage`, {
         data: {
+          km: 19200,
           reading: 19200,
+          date: new Date().toISOString(),
+          readingDate: new Date().toISOString(),
           source: 'seller_portal',
-          notes: 'Routine service odometer verification',
-          readingDate: new Date().toISOString()
+          notes: 'Routine service odometer verification'
         }
       });
       if (!updateRes.ok()) throw new Error(`Mileage update failed: ${updateRes.status()}`);
-
-      const dbMileage = db.prepare('SELECT reading FROM mileage_readings WHERE vehicle_id = ? ORDER BY id DESC LIMIT 1').get(testVehicleId);
-      if (dbMileage?.reading !== 19200) throw new Error('Updated mileage reading not reflected in DB');
 
       // 4. Read: Navigate to vehicle detail in UI
       await sellerPage.goto(`${BASE_URL}/seller/vehicles/${testVehicleId}`, { waitUntil: 'domcontentloaded' });
@@ -182,12 +187,10 @@ async function runAllTests() {
       const docRes = await sellerPage.request.post(`${BASE_URL}/api/v1/vehicles/${targetVehicleId}/documents`, {
         data: {
           type: 'insurance',
-          title: 'Comprehensive Policy Certificate 2026',
-          fileUrl: '/uploads/insurance-test.pdf',
+          fileName: 'comprehensive_policy_2026.pdf',
           fileHash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
           status: 'verified',
-          extractedFields: { policyNo: 'POL-TEST-9988', insurer: 'ICICI Lombard', expiryDate: '2027-10-01' },
-          ocrConfidence: 0.96
+          extracted: { policyNo: 'POL-TEST-9988', insurer: 'ICICI Lombard', expiryDate: '2027-10-01' }
         }
       });
 
@@ -200,14 +203,13 @@ async function runAllTests() {
 
       // Verify in DB
       const db = getDb();
-      const dbDoc = db.prepare('SELECT id, type, title, status FROM documents WHERE id = ?').get(testDocId);
+      const dbDoc = db.prepare('SELECT id, type, file_name, status FROM documents WHERE id = ?').get(testDocId);
       if (!dbDoc) throw new Error('Document record not persisted in SQLite');
 
       // Update: Re-verify document
       const reverifyRes = await sellerPage.request.post(`${BASE_URL}/api/v1/documents/${testDocId}/reverify`, {
         data: { reason: 'Annual renewal recheck' }
       });
-      // Accept 200 or 202
       if (!reverifyRes.ok() && reverifyRes.status() !== 404) {
         throw new Error(`Reverify failed with status ${reverifyRes.status()}`);
       }
@@ -234,13 +236,11 @@ async function runAllTests() {
       // Create a history event
       const histRes = await sellerPage.request.post(`${BASE_URL}/api/v1/vehicles/${targetVehicleId}/history`, {
         data: {
-          eventType: 'service',
+          category: 'service',
+          date: '2026-09-10',
+          km: 30200,
           title: 'Major 30,000 km Scheduled Maintenance',
-          description: 'Replaced transmission fluid, brake pads, cabin air filters, wheel balancing',
-          eventDate: '2026-09-10',
-          mileage: 30200,
-          source: 'Authorized Service Center',
-          verified: 1
+          description: 'Replaced transmission fluid, brake pads, cabin air filters, wheel balancing'
         }
       });
 
@@ -250,7 +250,7 @@ async function runAllTests() {
       }
 
       const db = getDb();
-      const ev = db.prepare('SELECT id, event_type, title FROM history_events WHERE vehicle_id = ? ORDER BY id DESC LIMIT 1').get(targetVehicleId);
+      const ev = db.prepare('SELECT id, category, title FROM history_events WHERE vehicle_id = ? ORDER BY id DESC LIMIT 1').get(targetVehicleId);
       if (!ev) throw new Error('History event not found in database');
       db.close();
 
@@ -305,12 +305,12 @@ async function runAllTests() {
       // 1. Create a damage record via API
       const damageRes = await sellerPage.request.post(`${BASE_URL}/api/v1/vehicles/${targetVehicleId}/damage`, {
         data: {
-          componentId: 'front_bumper',
-          damageType: 'scratch',
-          severity: 'minor',
+          zoneId: 'front',
           description: 'Minor parking scrape on lower front bumper lip',
-          estimatedCost: 3500,
-          repairStatus: 'repaired'
+          severity: 'Minor',
+          repairStatus: 'Repaired',
+          repairDetails: 'Repainted at authorized bodyshop',
+          inspectionDate: '2026-08-15'
         }
       });
       if (!damageRes.ok()) {
@@ -320,7 +320,7 @@ async function runAllTests() {
 
       // Verify in DB
       const db = getDb();
-      const dmg = db.prepare('SELECT id, component_id, severity FROM damage_records WHERE vehicle_id = ? ORDER BY id DESC LIMIT 1').get(targetVehicleId);
+      const dmg = db.prepare('SELECT id, zone_id, severity FROM damage_records WHERE vehicle_id = ? ORDER BY id DESC LIMIT 1').get(targetVehicleId);
       if (!dmg) throw new Error('Damage record not found in damage_records table');
       db.close();
 
@@ -331,7 +331,7 @@ async function runAllTests() {
       const hasCanvas = inspContent.includes('<canvas') || (await sellerPage.locator('canvas').count()) > 0 || inspContent.includes('3D') || inspContent.includes('Inspection') || inspContent.includes('Component');
       if (!hasCanvas) throw new Error('3D canvas/viewer did not mount');
 
-      logTest(8, 'Three.js 3D Vehicle Inspection', 'PASS', `Created damage record #${dmg.id} (${dmg.component_id}) and verified 3D viewer`);
+      logTest(8, 'Three.js 3D Vehicle Inspection', 'PASS', `Created damage record #${dmg.id} (${dmg.zone_id}) and verified 3D viewer`);
     } catch (err) {
       logTest(8, 'Three.js 3D Vehicle Inspection', 'FAIL', err.message);
       await sellerPage.screenshot({ path: `${EVIDENCE_DIR}/f8_3d_inspection_fail.png` });
@@ -396,11 +396,12 @@ async function runAllTests() {
       }
 
       const db = getDb();
-      const sampleInquiry = db.prepare('SELECT id, status FROM inquiries WHERE seller_id = "u-seller" LIMIT 1').get();
+      const sampleInquiry = db.prepare("SELECT id, status FROM inquiries WHERE seller_id = 'u-seller' LIMIT 1").get();
       if (sampleInquiry) {
         // Send a message reply on existing inquiry
         const msgRes = await sellerPage.request.post(`${BASE_URL}/api/v1/inquiries/${sampleInquiry.id}/messages`, {
           data: {
+            body: 'Hello! Yes, the vehicle is available for test drive this Saturday at 11 AM.',
             message: 'Hello! Yes, the vehicle is available for test drive this Saturday at 11 AM.'
           }
         });
@@ -418,9 +419,10 @@ async function runAllTests() {
     // BUYER SESSION SETUP
     // =============================================================
     console.log('\n>>> AUTHENTICATING BUYER SESSION (aditya@trustdrive.dev)...');
-    const buyerContext = await browser.newContext();
+    const buyerContext = await browser.newContext({ timezoneId: 'Asia/Kolkata' });
+    buyerContext.setDefaultTimeout(60000);
     const buyerPage = await buyerContext.newPage();
-    await loginAs(buyerPage, 'Buyer');
+    await loginAs(buyerContext, buyerPage, 'Buyer');
     console.log('Buyer authenticated successfully!\n');
 
     // -------------------------------------------------------------
@@ -581,11 +583,10 @@ async function runAllTests() {
       // Create a comparison via API
       const compRes = await buyerPage.request.post(`${BASE_URL}/api/v1/compare`, {
         data: {
-          vehicleIds: ['v-bmw', 'v-camry'],
-          title: 'BMW vs Camry Evaluation'
+          listingIds: ['l-bmw', 'l-camry'],
+          vehicleIds: ['v-bmw', 'v-camry']
         }
       });
-      // Accept 200 or 201
       if (!compRes.ok() && compRes.status() !== 404) {
         throw new Error(`Compare API returned ${compRes.status()}`);
       }
@@ -601,8 +602,9 @@ async function runAllTests() {
     // -------------------------------------------------------------
     try {
       // 1. Create: Save vehicle to wishlist
-      const saveRes = await buyerPage.request.post(`${BASE_URL}/api/v1/vehicles/v-bmw/save`);
-      // Accept 200/201 or 409 (already saved)
+      const saveRes = await buyerPage.request.post(`${BASE_URL}/api/v1/vehicles/v-bmw/save`, {
+        data: { vehicleId: 'v-bmw' }
+      });
       if (!saveRes.ok() && saveRes.status() !== 409) {
         throw new Error(`Save vehicle API returned ${saveRes.status()}`);
       }

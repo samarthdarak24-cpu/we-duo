@@ -2,7 +2,13 @@
 // TrustDrive deterministic rules engine (design.md §9.6, §9.2, §9.7, §9.1).
 // Trust/risk is computed here — never by an LLM. The LLM (later) only explains
 // findings this engine already produced. All functions are pure and unit-tested.
+//
+// Multi-category: rules are optional parameters. With no category supplied the
+// engine reproduces the original car behaviour byte-for-byte, so every
+// QA22-verified result stays valid. Category profiles only supply thresholds
+// and document sets; the verification logic itself is shared.
 // ---------------------------------------------------------------------------
+import { mileageRulesForCategory, documentsForCategory, isElectric } from "@/lib/vehicle-categories";
 
 export type Severity = "low" | "medium" | "high" | "critical";
 export type TrustBand = "strong" | "moderate" | "caution" | "high_risk";
@@ -88,12 +94,68 @@ export interface DocInput {
   status: string;
 }
 
-export function computeCompleteness(docs: DocInput[]): number {
-  const total = Object.values(DOC_WEIGHTS).reduce((s, w) => s + w, 0); // 100
-  let got = 0;
+/** Relative importance of a document kind, shared across categories. */
+const DOC_KIND_WEIGHT: Record<string, number> = {
+  rc: 30, rc_2w: 30,
+  insurance: 10, insurance_2w: 10,
+  puc: 10,
+  service: 15, service_2w: 15, charging_service: 8,
+  ownership: 8,
+  inspection: 10, battery_inspection: 10,
+  battery_health: 8, battery_warranty: 6, battery_replacement: 6,
+  motor_controller_repair: 5, engine_chassis: 5,
+  repair: 4, accident_claim: 4,
+};
+
+/**
+ * Category-aware document coverage.
+ *
+ * Cars keep the exact legacy DOC_WEIGHTS so existing trust scores do not move.
+ * Every other category derives its required set from the shared taxonomy;
+ * weights are normalised to 100 so a scooter is never penalised for not having
+ * a 17-character VIN document set, and an EV is never penalised for lacking a
+ * PUC certificate (which does not apply to it).
+ *
+ * A document that is absent is simply not counted — it is *unverified
+ * coverage*, never evidence of a clean history and never proof of fraud.
+ */
+export function categoryDocWeights(categoryId?: string | null): Record<string, number> {
+  if (!categoryId || categoryId === "passenger_car") return { ...DOC_WEIGHTS };
+  const weights: Record<string, number> = {};
+  for (const d of documentsForCategory(categoryId)) {
+    weights[d.id] = DOC_KIND_WEIGHT[d.id] ?? 3;
+  }
+  const total = Object.values(weights).reduce((s, w) => s + w, 0);
+  if (!total) return { ...DOC_WEIGHTS };
+  const scale = 100 / total;
+  for (const k of Object.keys(weights)) weights[k] = Math.round(weights[k] * scale * 10) / 10;
+  return weights;
+}
+
+export function computeCompleteness(docs: DocInput[], categoryId?: string | null): number {
+  const legacy = !categoryId || categoryId === "passenger_car";
+  const weights = categoryDocWeights(categoryId);
+  const total = Object.values(weights).reduce((s, w) => s + w, 0); // 100 for legacy
+  if (!total) return 0;
+  if (legacy) {
+    // Byte-for-byte the original car implementation (QA22 baseline).
+    let got = 0;
+    for (const d of docs) {
+      const w = DOC_WEIGHTS[d.type];
+      if (w && d.status === "verified") got += w;
+    }
+    return Math.round((got / total) * 100);
+  }
+  // Duplicate document types count once; a verified version supersedes an
+  // unverified one rather than inflating coverage.
+  const byType = new Map<string, string>();
   for (const d of docs) {
-    const w = DOC_WEIGHTS[d.type];
-    if (w && d.status === "verified") got += w;
+    const prev = byType.get(d.type);
+    if (d.status === "verified" || !prev) byType.set(d.type, d.status);
+  }
+  let got = 0;
+  for (const [type, status] of byType) {
+    if (status === "verified" && weights[type]) got += weights[type];
   }
   return Math.round((got / total) * 100);
 }
@@ -107,17 +169,50 @@ export interface MileageReading {
 
 const DAY = 86400000;
 
-export function analyzeMileage(readings: MileageReading[]): {
+export function analyzeMileage(readings: MileageReading[], categoryId?: string | null): {
   findings: FindingInput[];
   flaggedDates: string[];
   latest: number | null;
   medianRate: number;
+  categoryId: string;
+  rules: { dailyMaxKm: number; annualPlausibleMin: number; annualPlausibleMax: number; rollbackToleranceKm: number };
 } {
+  const cid = categoryId && categoryId !== "passenger_car" ? categoryId : "passenger_car";
+  const r = mileageRulesForCategory(cid);
+  const rules = {
+    dailyMaxKm: r.dailyMaxKm,
+    annualPlausibleMin: r.annualPlausibleMin,
+    annualPlausibleMax: r.annualPlausibleMax,
+    rollbackToleranceKm: r.rollbackToleranceKm,
+  };
+  const label = isElectric(cid) ? "distance" : "odometer";
   const sorted = [...readings].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   );
   const findings: FindingInput[] = [];
   const flagged = new Set<string>();
+
+  // Two readings on the same date with different values are a conflict, not a
+  // trend. Only evaluated for explicitly categorised (non-legacy) vehicles so
+  // the QA22 car baseline is untouched.
+  if (categoryId && categoryId !== "passenger_car") {
+    const byDate = new Map<string, Set<number>>();
+    for (const x of sorted) {
+      if (!byDate.has(x.date)) byDate.set(x.date, new Set());
+      byDate.get(x.date)!.add(x.km);
+    }
+    for (const [date, values] of byDate) {
+      if (values.size < 2) continue;
+      findings.push({
+        code: "DUPLICATE_DISTANCE_READING",
+        severity: "medium",
+        title: "Conflicting readings on the same date",
+        explanation: `Two different ${label} readings (${[...values].join(" km, ")} km) were recorded on ${date.slice(0, 10)}. At least one source is unreliable; no conclusion about tampering is drawn.`,
+        points: 8,
+      });
+      flagged.add(date);
+    }
+  }
 
   const rates: number[] = [];
   for (let i = 1; i < sorted.length; i++) {
@@ -140,12 +235,18 @@ export function analyzeMileage(readings: MileageReading[]): {
 
     // Rollback: odometer decreased between readings.
     if (delta < 0) {
-      const severe = Math.abs(delta) > 5000;
+      const severe = Math.abs(delta) > rules.rollbackToleranceKm;
+      const replacementNote = dt > 365
+        ? " A long gap between readings may also indicate an instrument-cluster or odometer replacement — that must be confirmed by a service record, not inferred from the numbers alone."
+        : "";
+      const electricNote = isElectric(cid)
+        ? " Battery State of Health is a percentage and is never used as a distance reading."
+        : "";
       findings.push({
         code: "ODOMETER_ROLLBACK",
         severity: severe ? "critical" : "high",
         title: "Odometer rollback detected",
-        explanation: `Reading fell from ${prev.km.toLocaleString("en-IN")} km (${prev.date.slice(0, 10)}) to ${curr.km.toLocaleString("en-IN")} km (${curr.date.slice(0, 10)}).`,
+        explanation: `Reading fell from ${prev.km.toLocaleString("en-IN")} km (${prev.date.slice(0, 10)}) to ${curr.km.toLocaleString("en-IN")} km (${curr.date.slice(0, 10)}).${replacementNote}${electricNote}`,
         points: severe ? 40 : 30,
       });
       flagged.add(curr.date);
@@ -154,13 +255,14 @@ export function analyzeMileage(readings: MileageReading[]): {
 
     if (dt >= 30) {
       const rate = delta / dt;
-      // Suspicious jump: >400 km/day, or >4× the vehicle's median rate.
-      if (rate > 400 || (medianRate > 0 && rate > 4 * medianRate && delta > 5000)) {
+      // Suspicious jump: above the category's daily ceiling, or >4× the
+      // vehicle's own median rate. Scooters and EVs have lower ceilings.
+      if (rate > rules.dailyMaxKm || (medianRate > 0 && rate > 4 * medianRate && delta > 5000)) {
         findings.push({
           code: "MILEAGE_JUMP",
           severity: "medium",
           title: "Mileage inconsistency detected",
-          explanation: `+${delta.toLocaleString("en-IN")} km in ${Math.round(dt)} days (${Math.round(rate)} km/day) exceeds the expected rate.`,
+          explanation: `+${delta.toLocaleString("en-IN")} km in ${Math.round(dt)} days (${Math.round(rate)} km/day) exceeds the ${rules.dailyMaxKm} km/day ceiling for this vehicle category.`,
           points: 12,
         });
         flagged.add(curr.date);
@@ -175,12 +277,12 @@ export function analyzeMileage(readings: MileageReading[]): {
     const years = (new Date(last.date).getTime() - new Date(first.date).getTime()) / (365 * DAY);
     if (years >= 1) {
       const annual = (last.km - first.km) / years;
-      if (annual < 1000 || annual > 40000) {
+      if (annual < rules.annualPlausibleMin || annual > rules.annualPlausibleMax) {
         findings.push({
           code: "MILEAGE_IMPLAUSIBLE",
           severity: "low",
           title: "Mileage plausibility note",
-          explanation: `Average ${Math.round(annual).toLocaleString("en-IN")} km/year is outside the typical 1,000–40,000 km range.`,
+          explanation: `Average ${Math.round(annual).toLocaleString("en-IN")} km/year is outside the typical ${rules.annualPlausibleMin.toLocaleString("en-IN")}–${rules.annualPlausibleMax.toLocaleString("en-IN")} km range for this vehicle category.`,
           points: 8,
         });
       }
@@ -192,6 +294,8 @@ export function analyzeMileage(readings: MileageReading[]): {
     flaggedDates: Array.from(flagged),
     latest: sorted.length ? sorted[sorted.length - 1].km : null,
     medianRate,
+    categoryId: cid,
+    rules,
   };
 }
 

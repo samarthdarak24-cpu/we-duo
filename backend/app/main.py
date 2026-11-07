@@ -7,6 +7,7 @@ and is protected by TD_SERVICE_TOKEN (or bound to localhost in local mode).
 """
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 import os
@@ -20,7 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from . import (agent, blockchain, db, detectors, explain, extract, llm, ocr,
+from . import (agent, blockchain, categories, db, detectors, explain, extract, llm, ocr,
                repository, security, worker)
 from .config import settings
 from .integrations.insurance import DemoInsuranceProvider
@@ -30,15 +31,23 @@ from .intelligence import status as intelligence_status
 from .logging import emit
 from .routers import CATEGORIES, ROUTERS
 
-SERVICE_VERSION = "intelligence-1.0.0"
+SERVICE_VERSION = "intelligence-2.0.0-multicategory"
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db.ensure_soft_delete_columns()
+    app.state.llm_warm = {"warmed": False, "provider": llm.describe()["provider"]}
+    warm_task = None
+    if settings.llm_warm_start:
+        # Background, so /health stays reachable while the weights load.
+        warm_task = asyncio.create_task(asyncio.to_thread(llm.warm))
+        app.state.llm_warm_task = warm_task
     emit("service.started", version=SERVICE_VERSION, environment=settings.environment,
          db=db.health(), llm=llm.describe().get("active"), worker=worker.describe().get("backend"))
     yield
+    if warm_task is not None and not warm_task.done():
+        warm_task.cancel()
     emit("service.stopped", version=SERVICE_VERSION)
 
 
@@ -46,9 +55,11 @@ app = FastAPI(
     title="TrustDrive Intelligence API",
     version=SERVICE_VERSION,
     description=(
-        "Document intelligence, fraud detection, the 12-node investigation agent, "
-        "trust scoring and background jobs over the SHARED TrustDrive database. "
-        "No result is fabricated: every payload names its active engine/method."
+        "Multi-category document intelligence, category-aware fraud detection, the "
+        "conditional 15/16-node investigation agent, versioned trust scoring and "
+        "background jobs over the SHARED TrustDrive database. One verification engine; "
+        "category profiles supply rules only. No result is fabricated: every payload "
+        "names its active engine, category and method."
     ),
     lifespan=lifespan,
 )
@@ -152,17 +163,22 @@ class DocumentRequest(BaseModel):
     vehicle_id: str
     path: str | None = None
     doc_type: str = "rc"
+    # Optional explicit override. Normally the category is resolved from the
+    # shared vehicles row, so no client has to know the taxonomy.
+    category_id: str | None = None
     async_: bool = Field(default=True, alias="async")
 
 
 class FraudRequest(BaseModel):
     vehicle_id: str
+    category_id: str | None = None
 
 
 class InvestigateRequest(BaseModel):
     vehicle_id: str
     question: str = "Is this vehicle safe to consider buying?"
     thread_id: str | None = None
+    category_id: str | None = None
 
 
 class JobRequest(BaseModel):
@@ -190,6 +206,8 @@ def health() -> dict:
         "ocr_backends": ocr.available_backends(),
         "agent": agent.describe_graph(),
         "worker": worker.describe(),
+        "vehicle_categories": categories.describe(),
+        "trust_score": explain.describe(),
         "auth": "bearer JWT (scrypt/HS256, same users as Next.js) + optional service token",
         "backend_categories": len(CATEGORIES),
         "backend_routers": len(ROUTERS),
@@ -212,9 +230,11 @@ def capabilities(x_service_token: str | None = Header(default=None)) -> dict:
         "llm": llm.describe(),
         "agent": agent.describe_graph(),
         "worker": worker.describe(),
-        "trust_score": {"version": explain.SCORE_VERSION, "method": "additive-deterministic",
-                        "weights": explain.WEIGHTS},
-        "fraud": {"rules_version": detectors.RULES_VERSION, "ml_version": detectors.ML_VERSION},
+        "trust_score": explain.describe(),
+        "categories": categories.describe(),
+        "fraud": {"rules_version": detectors.RULES_VERSION,
+                  "legacy_rules_version": detectors.LEGACY_RULES_VERSION,
+                  "ml_version": detectors.ML_VERSION},
         "extraction": {"version": extract.EXTRACTION_VERSION},
         "database": db.health(),
         "entity_counts": db.table_summary([
@@ -227,13 +247,67 @@ def capabilities(x_service_token: str | None = Header(default=None)) -> dict:
     }
 
 
+@app.get("/api/intelligence/categories")
+def list_vehicle_categories() -> dict:
+    """Public catalogue backing the dynamic Seller form and Buyer filters."""
+    return {
+        "version": categories.spec_version(),
+        "trust_version": categories.trust_version(),
+        "default": categories.DEFAULT_CATEGORY_ID,
+        "categories": [
+            {
+                "id": c["id"], "label": c["label"], "status": c.get("status"),
+                "powertrain": c.get("powertrain"),
+                "fields": categories.fields_for(c["id"]),
+                "documents": categories.documents_for(c["id"]),
+                "identity": categories.identity_for(c["id"]),
+                "labels": categories.labels_for(c["id"]),
+                "mileage": categories.mileage_rules_for(c["id"]),
+                "trust": categories.trust_weights_for(c["id"])[1],
+                "components": categories.component_ids_for(c["id"]),
+                "damage_detector": categories.damage_detector_for(c["id"]),
+                "model3d": categories.model_asset_for(c["id"]),
+                "agent_nodes": categories.agent_nodes_for(c["id"]),
+            }
+            for c in categories.categories()
+        ],
+        "planned": categories.planned_categories(),
+        "principles": categories.spec().get("principles", []),
+        "note": "One shared verification engine and one shared database. Unavailable capabilities are reported, never fabricated.",
+    }
+
+
+@app.get("/api/intelligence/categories/{category_id}")
+def get_vehicle_category(category_id: str) -> dict:
+    """Resolve a taxonomy id or a legacy human label to one full profile.
+
+    Strict matching: an unknown label is a 404, never a silent car fallback.
+    """
+    cid = categories.match_category_id(category_id)
+    profile = categories.get_category(cid) if cid else None
+    if not profile or not cid:
+        raise HTTPException(status_code=404, detail=f"Unknown vehicle category '{category_id}'.")
+    return {
+        **profile,
+        "resolved_from": category_id,
+        "fields": categories.fields_for(cid),
+        "documents": categories.documents_for(cid),
+        "agent_nodes": categories.agent_nodes_for(cid),
+        "trust_weights": categories.trust_weights_for(cid)[1],
+        "mileage_rules": categories.mileage_rules_for(cid),
+        "components": categories.component_ids_for(cid),
+        "damage_detector": categories.damage_detector_for(cid),
+        "model3d": categories.model_asset_for(cid),
+    }
+
+
 @app.post("/api/intelligence/documents/process")
 def process_document(req: DocumentRequest, x_service_token: str | None = Header(default=None)) -> dict:
     require_service(x_service_token)
     if req.async_:
         jid = worker.enqueue("document_processing", req.vehicle_id,
                              {"path": req.path, "document_id": req.document_id,
-                              "doc_type": req.doc_type},
+                              "doc_type": req.doc_type, "category_id": req.category_id},
                              idempotency_key=f"doc:{req.document_id}")
         return {"status": "queued", "job_id": jid, "note": "Poll /api/intelligence/jobs/{id}."}
     if not req.path:
@@ -242,32 +316,35 @@ def process_document(req: DocumentRequest, x_service_token: str | None = Header(
     ok, reason = ocr.validate_file(p)
     if not ok:
         raise HTTPException(status_code=422, detail=reason)
-    return extract.process_document(p, req.document_id, req.vehicle_id, req.doc_type).model_dump()
+    return extract.process_document(p, req.document_id, req.vehicle_id, req.doc_type,
+                                    req.category_id).model_dump()
 
 
 @app.post("/api/intelligence/fraud/detect")
 def detect_fraud(req: FraudRequest, x_service_token: str | None = Header(default=None)) -> dict:
     require_service(x_service_token)
-    return detectors.detect_all(req.vehicle_id)
+    return detectors.detect_all(req.vehicle_id, req.category_id)
 
 
 @app.get("/api/intelligence/fraud/{vehicle_id}")
-def get_fraud(vehicle_id: str, x_service_token: str | None = Header(default=None)) -> dict:
+def get_fraud(vehicle_id: str, category_id: str | None = None,
+              x_service_token: str | None = Header(default=None)) -> dict:
     require_service(x_service_token)
-    return detectors.detect_all(vehicle_id)
+    return detectors.detect_all(vehicle_id, category_id)
 
 
 @app.post("/api/intelligence/investigate")
 def investigate(req: InvestigateRequest, x_service_token: str | None = Header(default=None)) -> dict:
     require_service(x_service_token)
-    return agent.investigate(req.vehicle_id, req.question, req.thread_id).model_dump()
+    return agent.investigate(req.vehicle_id, req.question, req.thread_id,
+                             req.category_id).model_dump()
 
 
 @app.get("/api/intelligence/trust-score/{vehicle_id}")
-def trust_score(vehicle_id: str, persist: bool = False,
+def trust_score(vehicle_id: str, persist: bool = False, category_id: str | None = None,
                 x_service_token: str | None = Header(default=None)) -> dict:
     require_service(x_service_token)
-    result = explain.compute(vehicle_id)
+    result = explain.compute(vehicle_id, category_id)
     if persist:
         result_dict = result.model_dump()
         result_dict["persisted"] = explain.persist(result)

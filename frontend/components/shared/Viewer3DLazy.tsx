@@ -16,6 +16,7 @@ const Viewer3D = dynamic(() => import("./Viewer3D").then((m) => m.Viewer3D), {
 
 export function Viewer3DLazy(props: {
   mode?: "buyer" | "seller";
+  vehicleId?: string;
   hotspots?: any[];
   height?: number;
 }) {

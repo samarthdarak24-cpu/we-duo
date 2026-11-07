@@ -16,7 +16,12 @@ def test_health_is_ok_and_names_active_backends():
     assert body["database"]["database"] == "connected"
     assert len(body["ocr_backends"]) == 4
     assert any(b["engine"] == "rapidocr" and b["available"] for b in body["ocr_backends"])
-    assert len(body["agent"]["nodes"]) == 12
+    assert len(body["agent"]["nodes"]) == 16
+    assert body["agent"]["conditional"] is True
+    assert body["agent"]["category_profiles"]["passenger_car"]["count"] == 15
+    assert body["agent"]["category_profiles"]["electric_scooter"]["count"] == 16
+    assert body["vehicle_categories"]["trust_version"] == "trust-v2-multicategory"
+    assert len(body["vehicle_categories"]["implemented"]) == 6
     assert body["worker"]["backend"] == "db-backed"
     assert body["llm"]["active"] is False
 
@@ -34,7 +39,10 @@ def test_capabilities_reports_real_entity_counts():
     body = r.json()
     assert body["entity_counts"]["vehicles"] >= 1
     assert body["entity_counts"]["documents"] >= 3
-    assert body["trust_score"]["version"].startswith("trust-score")
+    assert body["trust_score"]["version"] == "trust-v2-multicategory"
+    assert body["trust_score"]["profiles"]["electric_scooter"] != \
+        body["trust_score"]["profiles"]["passenger_car"]
+    assert "electric_scooter" in body["categories"]["implemented"]
     assert body["policy"]
 
 
@@ -60,14 +68,15 @@ def test_trust_score_is_deterministic_and_versioned():
     assert "not" in a["missing_data_policy"].lower()
 
 
-def test_investigation_runs_all_12_nodes_and_requests_human_review():
+def test_investigation_runs_all_conditional_nodes_and_requests_human_review():
     r = client.post("/api/intelligence/investigate", json={
         "vehicle_id": "v-test",
         "question": "Is this BMW safe to consider buying?",
     })
     assert r.status_code == 200
     body = r.json()
-    assert len(body["nodes"]) == 12
+    assert len(body["nodes"]) == 15
+    assert body["category_id"] == "passenger_car"
     assert body["orchestrator"] in ("langgraph", "sequential-fallback")
     assert body["human_review"]["required"] is True
     assert body["evidence_ids"]

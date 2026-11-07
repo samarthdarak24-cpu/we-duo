@@ -45,6 +45,35 @@ export interface HotspotItem {
 const PRIMARY_MODEL_URL = "/models/vehicles/trustdrive-sedan.glb";
 const FALLBACK_MODEL_URL = "/models/car.glb";
 
+interface ModelManifest {
+  modelVersion?: string;
+  license?: string;
+  attribution?: unknown;
+  sha256?: string;
+}
+
+interface ModelMeta {
+  assetUrl: string | null;
+  fallbackAssetUrl: string | null;
+  make?: string;
+  model?: string;
+  year?: number;
+  vin?: string;
+  manifest?: ModelManifest | null;
+  attribution?: string;
+  visibility?: string;
+  /** True only when the backend served an asset for this specific vehicle record. */
+  vehicleSpecific: boolean;
+  source: "api" | "local";
+  /** Category-aware fields returned by GET /api/v1/vehicles/:id/3d-model. */
+  assetStatus?: string | null;
+  assetScope?: string | null;
+  interactionsAvailable?: boolean;
+  categoryId?: string | null;
+  categoryLabel?: string | null;
+  note?: string | null;
+}
+
 // Local Studio Environment (no remote HDR fetch required)
 function StudioEnvironment() {
   const { gl, scene } = useThree();
@@ -90,6 +119,46 @@ function PedestalPlatform() {
   );
 }
 
+/**
+ * Labelled category schematic shown when NO licensed 3D model exists for a
+ * vehicle's category (e.g. scooters, e-motorcycles). It is an explicit,
+ * obviously-placeholder envelope — never a real GLB and never the sedan model.
+ * Raycast component interactions are disabled in this state.
+ */
+function CategorySchematic({ categoryLabel }: { categoryLabel: string }) {
+  const boxGeo = useMemo(() => new THREE.BoxGeometry(3.4, 0.7, 1.4), []);
+  return (
+    <group position={[0, 0.55, 0]}>
+      {/* Transparent envelope — clearly a placeholder, not a real body */}
+      <mesh position={[0, 0.35, 0]}>
+        <boxGeometry args={[3.4, 0.7, 1.4]} />
+        <meshStandardMaterial color="#1E293B" transparent opacity={0.16} roughness={1} metalness={0} />
+      </mesh>
+      {/* Wireframe edges */}
+      <lineSegments position={[0, 0.35, 0]}>
+        <edgesGeometry args={[boxGeo]} />
+        <lineBasicMaterial color="#64748B" />
+      </lineSegments>
+      {/* Abstract wheels — schematic discs only */}
+      {[-1.05, 1.05].map((x) => (
+        <mesh key={x} position={[x, -0.02, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[0.34, 0.05, 8, 24]} />
+          <meshStandardMaterial color="#475569" roughness={0.7} />
+        </mesh>
+      ))}
+      <Html center position={[0, 1.05, 0]} className="pointer-events-none select-none">
+        <div className="w-[230px] rounded-xl border border-amber-700/40 bg-[#161208]/90 px-4 py-2 text-center shadow-xl backdrop-blur">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-amber-300">
+            No 3D model available
+          </div>
+          <div className="mt-0.5 text-[12.5px] font-semibold text-white">{categoryLabel}</div>
+          <div className="mt-0.5 text-[10px] text-[#9CA3AF]">Labelled schematic · interactions off</div>
+        </div>
+      </Html>
+    </group>
+  );
+}
+
 interface LoadedCarScene {
   group: THREE.Group;
   nodeMap: Map<string, THREE.Object3D>;
@@ -98,17 +167,38 @@ interface LoadedCarScene {
 }
 
 /**
- * Hook to load and configure the GLTF sedan model.
+ * Hook to load and configure the GLTF vehicle model. The asset URL and
+ * provenance come from GET /api/v1/vehicles/:id/3d-model when a vehicleId is
+ * supplied; the local GLB is only the fallback when that call fails.
  */
-function useSedanModel(onLoaded?: () => void, onError?: () => void) {
+function useSedanModel(
+  vehicleId: string | undefined,
+  onLoaded?: () => void,
+  onError?: () => void
+) {
   const [data, setData] = useState<LoadedCarScene | null>(null);
   const [failed, setFailed] = useState(false);
+  const [meta, setMeta] = useState<ModelMeta>({
+    assetUrl: null,
+    fallbackAssetUrl: null,
+    manifest: null,
+    vehicleSpecific: false,
+    source: "local",
+    assetStatus: "generic-reference",
+    assetScope: "generic-reference",
+    interactionsAvailable: true,
+  });
+
+  const loadedRef = useRef(onLoaded);
+  const errorRef = useRef(onError);
+  loadedRef.current = onLoaded;
+  errorRef.current = onError;
 
   useEffect(() => {
     let cancelled = false;
     const loader = new GLTFLoader();
 
-    const tryLoad = (url: string, isFallback: boolean) => {
+    const tryLoad = (url: string, fallbackUrl: string, isFallback: boolean, base: ModelMeta) => {
       loader.load(
         url,
         (gltf) => {
@@ -148,31 +238,115 @@ function useSedanModel(onLoaded?: () => void, onError?: () => void) {
           wrap.add(scene);
 
           setData({ group: wrap, nodeMap, initialPositions, materialsMap });
+          setMeta({ ...base, assetUrl: url });
           setFailed(false);
-          onLoaded?.();
+          loadedRef.current?.();
         },
         undefined,
         (err) => {
           if (cancelled) return;
           console.warn(`Failed loading model from ${url}:`, err);
-          if (!isFallback) {
-            tryLoad(FALLBACK_MODEL_URL, true);
+          if (!isFallback && fallbackUrl !== url) {
+            tryLoad(fallbackUrl, fallbackUrl, true, base);
           } else {
             setFailed(true);
-            onError?.();
+            errorRef.current?.();
           }
         }
       );
     };
 
-    tryLoad(PRIMARY_MODEL_URL, false);
+    const local: ModelMeta = {
+      assetUrl: PRIMARY_MODEL_URL,
+      fallbackAssetUrl: FALLBACK_MODEL_URL,
+      manifest: null,
+      vehicleSpecific: false,
+      source: "local",
+    };
+
+    if (!vehicleId) {
+      tryLoad(PRIMARY_MODEL_URL, FALLBACK_MODEL_URL, false, local);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    // Resolve the asset from the backend first, then load it.
+    fetch(`/api/v1/vehicles/${vehicleId}/3d-model`, { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((json: { data?: Record<string, unknown> } | null) => {
+        if (cancelled) return;
+        const d = json?.data;
+        const resolved: ModelMeta = {
+          assetUrl: typeof d?.assetUrl === "string" ? (d.assetUrl as string) : null,
+          fallbackAssetUrl:
+            typeof d?.fallbackAssetUrl === "string" ? (d.fallbackAssetUrl as string) : null,
+          make: typeof d?.make === "string" ? (d.make as string) : undefined,
+          model: typeof d?.model === "string" ? (d.model as string) : undefined,
+          year: typeof d?.year === "number" ? d.year : undefined,
+          vin: typeof d?.vin === "string" ? (d.vin as string) : undefined,
+          manifest: (d?.manifest as ModelManifest | null) ?? null,
+          attribution: typeof d?.attribution === "string" ? d.attribution : undefined,
+          visibility: typeof d?.visibility === "string" ? d.visibility : undefined,
+          vehicleSpecific:
+            typeof d?.vehicleSpecific === "boolean"
+              ? d.vehicleSpecific
+              : typeof d?.assetUrl === "string" && (d.assetUrl as string).includes(vehicleId),
+          source: "api",
+          assetStatus:
+            typeof d?.assetStatus === "string"
+              ? d.assetStatus
+              : d?.assetUrl
+                ? "available"
+                : "unavailable",
+          assetScope: typeof d?.assetScope === "string" ? d.assetScope : null,
+          interactionsAvailable:
+            typeof d?.interactionsAvailable === "boolean"
+              ? d.interactionsAvailable
+              : !!d?.assetUrl,
+          categoryId: typeof d?.categoryId === "string" ? d.categoryId : null,
+          categoryLabel: typeof d?.categoryLabel === "string" ? d.categoryLabel : null,
+          note: typeof d?.note === "string" ? d.note : null,
+        };
+
+        if (resolved.assetUrl) {
+          // A category-matched GLB exists (car profiles). Load it for raycast interaction.
+          tryLoad(resolved.assetUrl, resolved.fallbackAssetUrl ?? PRIMARY_MODEL_URL, false, resolved);
+        } else {
+          // No licensed 3D asset for this category. NEVER substitute the sedan
+          // GLB. Surface the labelled category schematic with interactions off.
+          setMeta(resolved);
+          setFailed(false);
+          loadedRef.current?.();
+        }
+      })
+      .catch(() => {
+        if (cancelled) return;
+        // The category asset could not be resolved from the server. We must NOT
+        // silently fall back to the sedan GLB for an unknown category. Show the
+        // labelled schematic with interactions disabled instead.
+        setMeta((prev) => ({
+          ...prev,
+          assetUrl: null,
+          fallbackAssetUrl: null,
+          assetStatus: "unavailable",
+          assetScope: "labelled-schematic",
+          interactionsAvailable: false,
+          source: "api",
+          note:
+            prev.note ??
+            "Could not resolve a category-matched 3D asset from the server. A labelled schematic is shown; no car model is substituted.",
+        }));
+        setFailed(false);
+        loadedRef.current?.();
+      });
 
     return () => {
       cancelled = true;
     };
-  }, [onLoaded, onError]);
+  }, [vehicleId]);
 
-  return { data, failed };
+  return { data, failed, meta };
 }
 
 /**
@@ -519,10 +693,17 @@ export function VehicleViewer3D({
   const [theaterMode, setTheaterMode] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
 
-  const { data } = useSedanModel(
+  const { data, meta } = useSedanModel(
+    vehicleId,
     () => setModelReady(true),
     () => setModelFailed(true)
   );
+
+  // Category-aware asset state: a loadable GLB exists only for car profiles.
+  // For every other category the backend returns assetUrl: null and the viewer
+  // must render the labelled schematic with all 3D interactions disabled.
+  const assetUnavailable = meta.assetStatus === "unavailable";
+  const interactionsAvailable = meta.interactionsAvailable === true;
 
   // Extract set of component IDs that have recorded damage
   const damagedComponentIds = useMemo(() => {
@@ -660,6 +841,38 @@ export function VehicleViewer3D({
     });
   }, [hotspots, viewMode, severityFilter]);
 
+  // Honest asset provenance: the geometry shown is only the vehicle's own
+  // model when the backend says so; otherwise it is labelled as a reference body
+  // or a clearly-marked category schematic (never a substituted car GLB).
+  const assetLabel = useMemo(() => {
+    if (meta.assetStatus === "unavailable") {
+      return meta.note
+        ? meta.note
+        : "No licensed 3D model exists for this category. A labelled schematic is shown; no car model is substituted.";
+    }
+    const veh = [meta.year, meta.make, meta.model].filter(Boolean).join(" ");
+    if (meta.source === "local")
+      return vehicleId
+        ? "Reference 3D geometry loaded locally — the asset manifest request did not complete."
+        : "Reference 3D geometry (no vehicle selected).";
+    if (meta.vehicleSpecific)
+      return veh ? `${veh} — vehicle-specific 3D asset.` : "Vehicle-specific 3D asset.";
+    return veh
+      ? `Generic ${meta.manifest?.modelVersion ? `v${meta.manifest.modelVersion} ` : ""}reference body — not a scan of the ${veh}. Damage pins are real database records.`
+      : "Generic reference body — not a scan of this vehicle. Damage pins are real database records.";
+  }, [meta, vehicleId]);
+
+  const provenanceTitle = [
+    meta.manifest?.modelVersion ? `Model v${meta.manifest.modelVersion}` : null,
+    meta.manifest?.license ?? null,
+    meta.attribution ? `Source: ${meta.attribution}` : null,
+    meta.manifest?.sha256 ? `SHA-256 ${String(meta.manifest.sha256).slice(0, 16)}… (file integrity, not authenticity)` : null,
+    meta.visibility ? `Manifest visibility: ${meta.visibility}` : null,
+    `Asset: ${meta.assetUrl ?? "none (category schematic)"}`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
   return (
     <div
       ref={containerRef}
@@ -700,7 +913,7 @@ export function VehicleViewer3D({
           <directionalLight position={[0, -2, -6]} intensity={1.2} color="#C5A46D" />
 
           <Suspense fallback={null}>
-            {data && (
+            {data && !assetUnavailable && (
               <SedanModel
                 data={data}
                 viewMode={viewMode}
@@ -709,6 +922,9 @@ export function VehicleViewer3D({
                 highlightedComponentIds={damagedComponentIds}
                 onSelectMesh={handleMeshSelect}
               />
+            )}
+            {assetUnavailable && (
+              <CategorySchematic categoryLabel={meta.categoryLabel ?? "this vehicle category"} />
             )}
           </Suspense>
 
@@ -769,10 +985,10 @@ export function VehicleViewer3D({
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#08090A]/85 backdrop-blur-sm">
             <div className="flex items-center gap-3 rounded-full border border-[#23262A] bg-[#111315]/95 px-5 py-2.5 text-[12.5px] font-medium text-[#F5F5F5] shadow-2xl">
               <Icon name="Loader2" size={17} className="animate-spin text-primary" />
-              <span>Loading Executive Sedan 3D Geometry…</span>
+              <span>Loading 3D geometry…</span>
             </div>
             <p className="mt-2 text-[11px] font-mono text-[#7A8089]">
-              Khronos CC BY 4.0 PBR Vehicle Model
+              {meta.manifest?.license ?? "KhronosGroup CC BY 4.0 reference model"}
             </p>
           </div>
         )}
@@ -791,19 +1007,36 @@ export function VehicleViewer3D({
             </div>
           </div>
         )}
+
+        {/* Unavailable category 3D asset notice */}
+        {assetUnavailable && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-3 z-20 flex justify-center px-3">
+            <div className="pointer-events-none rounded-full border border-amber-700/40 bg-[#1A1407]/90 px-4 py-1.5 text-[11px] font-medium text-amber-200 shadow-lg backdrop-blur">
+              No licensed 3D model for {meta.categoryLabel ?? "this category"} — labelled schematic only · interactions disabled.
+            </div>
+          </div>
+        )}
       </div>
 
       {/* TOP BAR: Header & Mode Pills */}
       <div className="pointer-events-none absolute left-3 right-3 top-3 z-20 flex flex-wrap items-center justify-between gap-2">
         {/* Left: Studio Brand & Active Mode */}
-        <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-white/10 bg-[#111315]/90 px-3.5 py-1.5 shadow-lg backdrop-blur">
-          <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-          <span className="text-[11.5px] font-bold uppercase tracking-wider text-white">
-            TrustDrive 3D Studio
-          </span>
-          <span className="text-[10px] text-[#7A8089] font-mono">
-            | {viewMode.toUpperCase()}
-          </span>
+        <div className="pointer-events-auto flex flex-col items-start gap-1.5">
+          <div className="flex items-center gap-2 rounded-full border border-white/10 bg-[#111315]/90 px-3.5 py-1.5 shadow-lg backdrop-blur">
+            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+            <span className="text-[11.5px] font-bold uppercase tracking-wider text-white">
+              TrustDrive 3D Studio
+            </span>
+            <span className="text-[10px] text-[#7A8089] font-mono">
+              | {viewMode.toUpperCase()}
+            </span>
+          </div>
+          <p
+            title={provenanceTitle}
+            className="max-w-[min(92vw,420px)] rounded-full border border-white/10 bg-[#111315]/80 px-3 py-1 text-[10.5px] leading-tight text-[#9299A2] backdrop-blur"
+          >
+            {assetLabel}
+          </p>
         </div>
 
         {/* Right: 4 Vehicle Mode Pills & Theater Mode Toggle */}
@@ -811,29 +1044,36 @@ export function VehicleViewer3D({
           <div className="flex items-center gap-1 rounded-full border border-white/10 bg-[#111315]/90 p-1 shadow-lg backdrop-blur">
             {(
               [
-                { id: "normal", label: "Normal", icon: "Car" },
-                { id: "exploded", label: "Exploded", icon: "Layers" },
-                { id: "damage", label: "Damage", icon: "ShieldAlert" },
-                { id: "xray", label: "X-Ray", icon: "Eye" },
+                { id: "normal", label: "Normal", icon: "Car", needsModel: false },
+                { id: "exploded", label: "Exploded", icon: "Layers", needsModel: true },
+                { id: "damage", label: "Damage", icon: "ShieldAlert", needsModel: true },
+                { id: "xray", label: "X-Ray", icon: "Eye", needsModel: true },
               ] as const
-            ).map((m) => (
-              <button
-                key={m.id}
-                onClick={() => {
-                  setViewMode(m.id);
-                  if (m.id === "exploded") setExplodedProgress(1.0);
-                }}
-                className={cn(
-                  "flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold transition-all",
-                  viewMode === m.id
-                    ? "bg-primary text-[var(--on-primary)] shadow-md"
-                    : "text-[#BFC3C8] hover:text-white"
-                )}
-              >
-                <Icon name={m.icon as any} size={13} />
-                <span>{m.label}</span>
-              </button>
-            ))}
+            ).map((m) => {
+              const disabled = m.needsModel && !interactionsAvailable;
+              return (
+                <button
+                  key={m.id}
+                  disabled={disabled}
+                  onClick={() => {
+                    if (disabled) return;
+                    setViewMode(m.id);
+                    if (m.id === "exploded") setExplodedProgress(1.0);
+                  }}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold transition-all",
+                    disabled && "cursor-not-allowed opacity-35 hover:text-[#BFC3C8]",
+                    !disabled &&
+                      (viewMode === m.id
+                        ? "bg-primary text-[var(--on-primary)] shadow-md"
+                        : "text-[#BFC3C8] hover:text-white")
+                  )}
+                >
+                  <Icon name={m.icon as any} size={13} />
+                  <span>{m.label}</span>
+                </button>
+              );
+            })}
           </div>
 
           {/* Theater View Button */}
@@ -853,8 +1093,8 @@ export function VehicleViewer3D({
         </div>
       </div>
 
-      {/* QUICK DAMAGE SHORTCUT BAR: Always visible when defects exist */}
-      {damagedHotspotsList.length > 0 && (
+      {/* QUICK DAMAGE SHORTCUT BAR: Always visible when defects exist and a 3D model is present */}
+      {damagedHotspotsList.length > 0 && !assetUnavailable && (
         <div className="pointer-events-none absolute left-3 right-3 top-14 z-20 flex justify-center">
           <div className="pointer-events-auto flex flex-wrap items-center gap-1.5 rounded-full border border-amber-900/40 bg-[#14120E]/90 px-3.5 py-1 shadow-lg backdrop-blur">
             <span className="text-[10px] font-mono uppercase text-amber-400 font-bold flex items-center gap-1">

@@ -1,0 +1,14 @@
+console.info: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+console.warning: Image with src "/images/cars/auth-luxury-car.jpg" has "fill" and parent element with invalid "position". Provided "sticky" should be one of absolute,fixed,relative.
+initial url=http://127.0.0.1:3000/login
+forms=1 emailInputs=1 passInputs=1 submits=1
+LOGIN_REQUEST POST http://127.0.0.1:3000/api/v1/auth/login body={"email":"samarth@trustdrive.dev","password":"demo1234"}
+LOGIN_RESPONSE status=200 body=
+console.info: %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+redirect elapsed=5437ms
+final url=http://127.0.0.1:3000/seller
+console.warning: [.WebGL-0x248401091200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+console.warning: [.WebGL-0x248401091200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+console.warning: [.WebGL-0x248401091200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels
+body=Skip to content | TRUSTDRIVE | Seller Workspace | WORKSPACE | Overview | My Vehicles | Add Vehicle | Documents | Vehicle History | Verification Center | AI Fraud Analysis | Marketplace Listings | Buyer Inquiries | 3 | ACCOUNT | Reports | Notifications | 2 | Profile & Settings | A complete record is the fastest route to a trusted listing. | Open verification | Demo workspace · seeded data | TRUSTDRIVE | / | SELLER WORKSPACE | Seller portfolio | BMW 3 Series | · | MH01AB1234 | SECURE | 9+ | SD | Samarth Darak | Seller | SELLER WORKSPACE | Portfolio overview | Welcome back, Samarth. Track verification, clear blockers and keep every listing evidence-ready. | 23 vehicles | 6 live | 14 open findings | Add vehicle | Open vehicle | Total vehicles | 23 | In your portfolio | Active lis
+console.warning: [.WebGL-0x248401091200]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat)

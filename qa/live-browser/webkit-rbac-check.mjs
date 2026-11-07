@@ -1,0 +1,31 @@
+import { webkit } from "../../frontend/node_modules/playwright/index.mjs";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+import fs from "node:fs";
+
+const OUT = path.dirname(fileURLToPath(import.meta.url));
+const BASE = process.env.TD_BASE_URL || "http://127.0.0.1:3001";
+const log = [];
+const browser = await webkit.launch({ headless: true });
+const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+page.on("response", (r) => { if (r.url().includes("/seller/vehicles")) log.push(`seller route HTTP ${r.status()} location=${r.headers()["location"] || "-"}`); });
+
+await page.goto(BASE + "/login", { waitUntil: "commit", timeout: 60000 });
+await page.waitForLoadState("domcontentloaded", { timeout: 20000 }).catch(() => {});
+await page.waitForTimeout(1200);
+await page.getByLabel(/email/i).fill("rohan@trustdrive.dev");
+await page.getByLabel(/password/i).fill("demo1234");
+await page.locator('form button[type="submit"]').click();
+await page.waitForURL(/\/buyer/, { timeout: 30000 }).catch(() => {});
+log.push(`after buyer login: ${page.url()}`);
+log.push(`cookies: ${(await page.context().cookies()).map((c) => c.name).join(",")}`);
+await page.goto(BASE + "/seller/vehicles", { waitUntil: "commit", timeout: 60000 });
+await page.waitForLoadState("domcontentloaded", { timeout: 20000 }).catch(() => {});
+await page.waitForTimeout(2500);
+const body = (await page.locator("body").innerText().catch(() => "")) || "";
+log.push(`after seller route: ${page.url()}`);
+log.push(`blocked=${/\/login/.test(page.url())} | bodyHead=${body.slice(0, 160).replace(/\n+/g, " | ")}`);
+await page.screenshot({ path: path.join(OUT, "webkit-rbac.png") }).catch(() => {});
+fs.writeFileSync(path.join(OUT, "webkit-rbac.txt"), log.join("\n"));
+console.log(log.join("\n"));
+await browser.close();

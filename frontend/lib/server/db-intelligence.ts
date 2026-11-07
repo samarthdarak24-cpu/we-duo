@@ -469,9 +469,10 @@ export interface TrustScoreRow {
   missing_policy: string;
   evidence_coverage: number;
   computed_at: string;
+  computed_by: string | null;
 }
 
-export function recordTrustScore(input: Omit<TrustScoreRow, "id" | "computed_at"> & { computedAt?: string }) {
+export function recordTrustScore(input: Omit<TrustScoreRow, "id" | "computed_at" | "computed_by"> & { computedAt?: string; computedBy?: string | null }) {
   const id = newId("ts");
   run(
     `INSERT INTO trust_scores (id, vehicle_id, score, band, version, method, weights_json, factors_json,
@@ -479,7 +480,7 @@ export function recordTrustScore(input: Omit<TrustScoreRow, "id" | "computed_at"
      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     ...bind([id, input.vehicle_id, input.score, input.band, input.version, input.method, input.weights_json,
       input.factors_json, input.positive_json, input.negative_json, input.unverified_json,
-      input.missing_policy, input.evidence_coverage, input.computedAt ?? now(), null])
+      input.missing_policy, input.evidence_coverage, input.computedAt ?? now(), input.computedBy ?? null])
   );
   return id;
 }

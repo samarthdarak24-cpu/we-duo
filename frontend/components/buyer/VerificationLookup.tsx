@@ -17,7 +17,7 @@ interface LookupResult {
     make: string;
     model: string;
     regNo: string;
-    vin: string;
+    vin: string | null;
     year: number;
     trustdriveId: string;
     location: string;

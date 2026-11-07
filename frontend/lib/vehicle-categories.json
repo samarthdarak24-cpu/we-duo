@@ -1,0 +1,357 @@
+{
+  "version": "multicategory-1.0.0",
+  "description": "Single source of truth for TrustDrive vehicle categories. Consumed by Next.js (frontend/lib/vehicle-categories.ts) and FastAPI (backend/app/categories.py). Adding a category means adding a profile here, never rewriting the verification engine.",
+  "principles": [
+    "One shared verification engine; category profiles only supply rules, fields and component sets.",
+    "Identifier validation is category-specific. No universal 17-character VIN rule.",
+    "Electric vehicles must never be asked for engine number, engine CC, fuel type or PUC.",
+    "Missing evidence is unverified coverage, never proven fraud and never a clean record.",
+    "A 3D asset is never substituted across categories. Unavailable assets are labelled and interactions disabled.",
+    "OCR extraction is not proof that a document is genuine.",
+    "AI findings cite evidence IDs, rule/model version and method."
+  ],
+  "jurisdictions": {
+    "IN": {
+      "label": "India",
+      "registrationPattern": "^[A-Z]{2}[0-9]{1,2}[A-Z]{0,3}[0-9]{1,4}$",
+      "registrationExample": "MH12AB1234",
+      "note": "State code, district number, optional series letters and a 1-4 digit serial. Normalised to upper case with spaces and hyphens removed. Provider lookups remain an authorised-adapter concern; no Vahan/MoRTH access is assumed."
+    }
+  },
+  "defaultJurisdiction": "IN",
+  "classes": [
+    { "id": "two_wheeler", "label": "Two-wheeler", "wheels": 2 },
+    { "id": "three_wheeler", "label": "Three-wheeler", "wheels": 3 },
+    { "id": "four_wheeler", "label": "Four-wheeler", "wheels": 4 },
+    { "id": "commercial", "label": "Commercial vehicle", "wheels": null }
+  ],
+  "powertrains": [
+    { "id": "petrol", "label": "Petrol", "hasEngine": true, "hasBatteryPack": false, "pucApplicable": true },
+    { "id": "diesel", "label": "Diesel", "hasEngine": true, "hasBatteryPack": false, "pucApplicable": true },
+    { "id": "cng", "label": "CNG", "hasEngine": true, "hasBatteryPack": false, "pucApplicable": true },
+    { "id": "hybrid", "label": "Hybrid", "hasEngine": true, "hasBatteryPack": true, "pucApplicable": true },
+    { "id": "electric", "label": "Electric", "hasEngine": false, "hasBatteryPack": true, "pucApplicable": false }
+  ],
+  "fieldCatalog": {
+    "reg_no": { "label": "Registration number", "type": "text", "required": true, "placeholder": "MH12AB1234", "help": "As printed on the Registration Certificate.", "column": "reg_no" },
+    "primary_identifier": { "label": "VIN / chassis / frame number", "type": "text", "required": true, "placeholder": "", "help": "Primary factory identifier for this vehicle class.", "column": "vin" },
+    "engine_number": { "label": "Engine number", "type": "text", "required": false, "placeholder": "", "help": "Only for vehicles with a combustion engine.", "column": "specs" },
+    "motor_number": { "label": "Motor number", "type": "text", "required": false, "placeholder": "", "help": "Electric traction motor identifier, where available.", "column": "specs" },
+    "make": { "label": "Manufacturer", "type": "text", "required": true, "placeholder": "e.g. Honda", "help": "", "column": "make" },
+    "model": { "label": "Model", "type": "text", "required": true, "placeholder": "e.g. Activa 6G", "help": "", "column": "model" },
+    "variant": { "label": "Variant", "type": "text", "required": false, "placeholder": "e.g. DLX / Standard", "help": "", "column": "variant" },
+    "year": { "label": "Manufacturing year", "type": "number", "required": true, "min": 1950, "max": 2030, "help": "", "column": "year" },
+    "color": { "label": "Colour", "type": "text", "required": false, "placeholder": "", "help": "", "column": "color" },
+    "location": { "label": "Location", "type": "text", "required": false, "placeholder": "City, State", "help": "", "column": "location" },
+    "ownership_count": { "label": "Number of owners", "type": "number", "required": false, "min": 1, "max": 20, "help": "Seller-declared until ownership documents are verified.", "column": "ownership_count" },
+    "asking_price": { "label": "Asking price (INR)", "type": "number", "required": false, "min": 0, "help": "", "column": "asking_price" },
+    "odometer_km": { "label": "Current odometer reading (km)", "type": "number", "required": false, "min": 0, "max": 2000000, "help": "Seller-submitted reading; it is a claim until corroborated by evidence.", "column": "km_claimed" },
+    "engine_cc": { "label": "Engine capacity (CC)", "type": "number", "required": false, "min": 0, "max": 20000, "help": "Combustion vehicles only.", "column": "specs" },
+    "transmission": { "label": "Transmission", "type": "select", "required": false, "options": ["Manual", "Automatic", "CVT", "Direct drive"], "help": "", "column": "transmission" },
+    "bike_type": { "label": "Bike / scooter type", "type": "select", "required": false, "options": ["Commuter", "Sport", "Cruiser", "Adventure", "Scooter", "Moped", "Electric scooter", "Electric motorcycle"], "help": "", "column": "specs" },
+    "front_tyre": { "label": "Front tyre condition", "type": "select", "required": false, "options": ["Good", "Worn", "Needs replacement", "Not inspected"], "help": "Seller-declared condition, not an inspection result.", "column": "specs" },
+    "rear_tyre": { "label": "Rear tyre condition", "type": "select", "required": false, "options": ["Good", "Worn", "Needs replacement", "Not inspected"], "help": "Seller-declared condition, not an inspection result.", "column": "specs" },
+    "brake_condition": { "label": "Brake condition", "type": "select", "required": false, "options": ["Good", "Worn", "Needs replacement", "Not inspected"], "help": "Seller-declared condition, not an inspection result.", "column": "specs" },
+    "motor_type": { "label": "Motor type", "type": "select", "required": false, "options": ["Hub motor", "Mid-drive", "Belt drive", "Unknown"], "help": "", "column": "specs" },
+    "battery_chemistry": { "label": "Battery chemistry", "type": "select", "required": false, "options": ["Lithium-ion", "LFP", "NMC", "Lead-acid", "Unknown"], "help": "Only when stated by manufacturer or battery documentation.", "column": "specs" },
+    "battery_capacity_kwh": { "label": "Battery capacity (kWh)", "type": "number", "required": false, "min": 0, "max": 500, "step": 0.1, "help": "From battery documentation, not estimated.", "column": "specs" },
+    "battery_serial": { "label": "Battery serial number", "type": "text", "required": false, "placeholder": "", "help": "Where available on the battery pack or warranty card.", "column": "specs" },
+    "battery_soh": { "label": "Battery State of Health (%)", "type": "number", "required": false, "min": 0, "max": 100, "help": "Only when supported by a battery health report. Never inferred from photographs or distance.", "column": "specs" },
+    "charging_system": { "label": "Charging system", "type": "select", "required": false, "options": ["Standard AC", "Fast DC", "Removable battery", "Both", "Unknown"], "help": "", "column": "specs" },
+    "charging_port_condition": { "label": "Charging port condition", "type": "select", "required": false, "options": ["Good", "Damaged", "Corroded", "Not inspected"], "help": "Visible external condition only.", "column": "specs" },
+    "battery_warranty": { "label": "Battery warranty status", "type": "select", "required": false, "options": ["Active", "Expired", "Unknown", "Not provided"], "help": "Requires a warranty document to be verified.", "column": "specs" },
+    "battery_replacement_history": { "label": "Battery replacement history", "type": "select", "required": false, "options": ["None declared", "Replaced once", "Replaced more than once", "Unknown"], "help": "Seller-declared until invoices are supplied.", "column": "specs" },
+    "range_estimate_km": { "label": "Current range estimate (km)", "type": "number", "required": false, "min": 0, "max": 1000, "help": "Only when a source is supplied.", "column": "specs" },
+    "range_source": { "label": "Range estimate source", "type": "select", "required": false, "options": ["Manufacturer claim", "Battery health report", "Dashboard record", "Seller estimate", "Unknown"], "help": "Required whenever a range estimate is entered.", "column": "specs" },
+    "interior_condition": { "label": "Interior condition", "type": "select", "required": false, "options": ["Good", "Fair", "Worn", "Not inspected"], "help": "Seller-declared condition.", "column": "specs" },
+    "exterior_condition": { "label": "Exterior condition", "type": "select", "required": false, "options": ["Good", "Fair", "Worn", "Not inspected"], "help": "Seller-declared condition.", "column": "specs" }
+  },
+  "documentCatalog": {
+    "rc": { "label": "Registration Certificate (RC)", "appliesTo": "all" },
+    "rc_2w": { "label": "Two-wheeler Registration Certificate", "appliesTo": "two_wheeler" },
+    "insurance": { "label": "Insurance policy", "appliesTo": "all" },
+    "insurance_2w": { "label": "Bike / scooter insurance", "appliesTo": "two_wheeler" },
+    "puc": { "label": "PUC certificate", "appliesTo": "combustion" },
+    "ownership": { "label": "Ownership / transfer documents", "appliesTo": "all" },
+    "service": { "label": "Service invoice", "appliesTo": "all" },
+    "service_2w": { "label": "Two-wheeler service invoice", "appliesTo": "two_wheeler" },
+    "repair": { "label": "Repair invoice", "appliesTo": "all" },
+    "inspection": { "label": "Inspection report", "appliesTo": "all" },
+    "accident_claim": { "label": "Accident / claim record", "appliesTo": "all" },
+    "engine_chassis": { "label": "Engine / chassis details", "appliesTo": "combustion_2w" },
+    "battery_warranty": { "label": "Battery warranty document", "appliesTo": "electric" },
+    "battery_inspection": { "label": "Battery inspection report", "appliesTo": "electric" },
+    "battery_health": { "label": "Battery health / SOH report", "appliesTo": "electric" },
+    "battery_replacement": { "label": "Battery replacement invoice", "appliesTo": "electric" },
+    "motor_controller_repair": { "label": "Motor / controller repair record", "appliesTo": "electric" },
+    "charging_service": { "label": "Charging / battery service record", "appliesTo": "electric" }
+  },
+  "componentSets": {
+    "car": {
+      "label": "Passenger car components",
+      "source": "frontend/lib/vehicle-registry.ts (measured from trustdrive-sedan.glb)",
+      "visualAsset": "available",
+      "components": ["bonnet", "front_bumper", "rear_bumper", "boot", "roof", "mirrors", "front_left_door", "front_right_door", "rear_left_door", "rear_right_door", "windshield", "rear_glass", "front_left_wheel", "front_right_wheel", "rear_left_wheel", "rear_right_wheel", "headlights", "taillights", "engine", "suspension", "chassis", "interior", "steering_emblem", "license_plate"]
+    },
+    "motorcycle": {
+      "label": "Motorcycle components",
+      "source": "specification only; no measured GLB available",
+      "visualAsset": "unavailable",
+      "components": ["front_fairing", "fuel_tank", "handlebar", "headlight", "tail_light", "front_fork", "rear_suspension", "front_wheel", "rear_wheel", "front_tyre", "rear_tyre", "exhaust", "rear_body_panel", "mirror_left", "mirror_right", "engine", "seat", "chassis_frame", "brake_front", "brake_rear"]
+    },
+    "scooter": {
+      "label": "Scooter components",
+      "source": "specification only; no measured GLB available",
+      "visualAsset": "unavailable",
+      "components": ["front_apron", "side_panel_left", "side_panel_right", "footboard", "rear_body", "front_mudguard", "rear_mudguard", "handlebar", "headlight", "tail_light", "front_wheel", "rear_wheel", "front_tyre", "rear_tyre", "suspension_front", "suspension_rear", "seat", "storage_box", "engine", "exhaust"]
+    },
+    "electric_scooter": {
+      "label": "Electric scooter components",
+      "source": "specification only; no measured GLB available",
+      "visualAsset": "unavailable",
+      "components": ["front_apron", "side_panel_left", "side_panel_right", "footboard", "rear_body", "front_mudguard", "rear_mudguard", "handlebar", "headlight", "tail_light", "front_wheel", "rear_wheel", "front_tyre", "rear_tyre", "suspension_front", "suspension_rear", "seat", "storage_box", "battery_compartment", "charging_port", "wiring_enclosure", "motor_housing", "controller_enclosure"]
+    },
+    "electric_motorcycle": {
+      "label": "Electric motorcycle components",
+      "source": "specification only; no measured GLB available",
+      "visualAsset": "unavailable",
+      "components": ["front_fairing", "handlebar", "headlight", "tail_light", "front_fork", "rear_suspension", "front_wheel", "rear_wheel", "front_tyre", "rear_tyre", "rear_body_panel", "mirror_left", "mirror_right", "seat", "chassis_frame", "battery_pack", "charging_port", "motor_housing", "controller_enclosure", "wiring_enclosure"]
+    }
+  },
+  "damageDetectors": {
+    "car": { "status": "available", "engine": "ultralytics", "weights": "car_damage.pt", "classes": ["dent", "scratch", "crack", "shattered_glass", "broken_lamp", "flat_tire"], "note": "Existing car detector. Output is a candidate visible-damage finding and requires human confirmation." },
+    "two_wheeler": { "status": "unavailable", "engine": null, "weights": null, "classes": [], "note": "No trained, licensed motorcycle/scooter damage weights are present. Visible damage is recorded from seller submissions and inspector evidence only. No AI damage prediction is claimed for two-wheelers." },
+    "electric": { "status": "unavailable", "engine": null, "weights": null, "classes": [], "note": "Exterior photographs cannot establish internal battery damage. Battery findings require a battery inspection or SOH report." }
+  },
+  "modelAssets": {
+    "car_sedan": { "assetId": "trustdrive-sedan", "url": "/models/vehicles/trustdrive-sedan.glb", "fallbackUrl": "/models/car.glb", "manifest": "/models/vehicles/model-manifest.json", "license": "CC BY 4.0", "status": "available", "class": "four_wheeler", "note": "Real GLB with measured component hierarchy." },
+    "labelled_schematic": { "assetId": null, "url": null, "fallbackUrl": null, "manifest": null, "license": null, "status": "unavailable", "class": null, "note": "No licensed GLB exists for this category. A clearly labelled category-specific schematic is rendered instead; no car model and no primitive placeholder is substituted. All 3D component interactions are marked unavailable." }
+  },
+  "ocrFields": ["registrationNo", "vin", "chassisNumber", "frameNumber", "engineNumber", "motorNumber", "batterySerial", "batteryCapacityKwh", "odometerKm", "policyNumber", "date", "amount", "ownerName", "model"],
+  "trustVersion": "trust-v2-multicategory",
+  "categories": [
+    {
+      "id": "petrol_motorcycle",
+      "label": "Petrol Motorcycle",
+      "shortLabel": "Motorcycle",
+      "class": "two_wheeler",
+      "type": "motorcycle",
+      "powertrain": "petrol",
+      "priority": 1,
+      "status": "implemented",
+      "legacyCategories": ["Motorcycle", "Superbike", "Adventure Bike"],
+      "identity": {
+        "primaryField": "primary_identifier",
+        "primaryLabel": "Chassis / frame number",
+        "primaryPattern": "^[A-Z0-9]{8,22}$",
+        "primaryExample": "ME4JC259E8T000123",
+        "primaryNote": "Two-wheeler frame numbers are not uniformly 17 characters. Older Indian motorcycles use shorter stamped frame numbers. Do not apply the car VIN rule.",
+        "vinApplicable": false,
+        "engineNumberRequired": false,
+        "engineNumberLabel": "Engine number",
+        "engineNumberPattern": "^[A-Z0-9]{5,20}$"
+      },
+      "fieldGroups": [
+        { "id": "identity", "label": "Identity & registration", "fields": ["reg_no", "primary_identifier", "engine_number", "make", "model", "variant", "year", "color", "location", "ownership_count", "asking_price"] },
+        { "id": "two_wheeler", "label": "Motorcycle specifications", "fields": ["bike_type", "engine_cc", "transmission", "odometer_km", "front_tyre", "rear_tyre", "brake_condition"] }
+      ],
+      "documents": ["rc_2w", "insurance_2w", "puc", "ownership", "service_2w", "repair", "inspection", "accident_claim", "engine_chassis"],
+      "requiredDocuments": ["rc_2w", "insurance_2w"],
+      "mileage": { "label": "Odometer", "unit": "km", "annualPlausibleMin": 500, "annualPlausibleMax": 25000, "dailyMaxKm": 300, "rollbackToleranceKm": 2000, "sohIsOdometer": false, "sources": ["service_invoice", "authorized_service_record", "inspection_report", "dashboard_photo", "seller_submitted"] },
+      "damage": { "componentSet": "motorcycle", "detector": "two_wheeler" },
+      "model3d": { "asset": "labelled_schematic", "interactionsAvailable": false },
+      "trust": { "version": "trust-v2-multicategory", "weights": { "identity_consistency": 12, "document_coverage": 10, "mileage_consistency": 10, "service_history": 6, "damage_inspection": 6, "record_integrity": 6 } },
+      "agentNodes": ["VehicleResolverNode", "VehicleCategoryDetectionNode", "DocumentRetrievalNode", "OCRAnalysisNode", "MileageAnalysisNode", "DamageAnalysisNode", "IdentityVerificationNode", "HistoryCorrelationNode", "AnomalyDetectionNode", "EvidenceGraphNode", "ConflictDetectionNode", "RiskExplanationNode", "HumanReviewNode", "ReportGenerationNode", "ResultPersistenceNode"],
+      "labels": { "primaryIdentifier": "Chassis / frame number", "odometer": "Odometer", "propulsion": "Engine", "puc": "PUC certificate" }
+    },
+    {
+      "id": "petrol_scooter",
+      "label": "Petrol Scooter",
+      "shortLabel": "Scooter",
+      "class": "two_wheeler",
+      "type": "scooter",
+      "powertrain": "petrol",
+      "priority": 2,
+      "status": "implemented",
+      "legacyCategories": ["Scooter"],
+      "identity": {
+        "primaryField": "primary_identifier",
+        "primaryLabel": "Chassis / frame number",
+        "primaryPattern": "^[A-Z0-9]{8,22}$",
+        "primaryExample": "ME4JF401H9T012345",
+        "primaryNote": "Scooter frame numbers are not uniformly 17 characters; the car VIN rule must not be applied.",
+        "vinApplicable": false,
+        "engineNumberRequired": false,
+        "engineNumberLabel": "Engine number",
+        "engineNumberPattern": "^[A-Z0-9]{5,20}$"
+      },
+      "fieldGroups": [
+        { "id": "identity", "label": "Identity & registration", "fields": ["reg_no", "primary_identifier", "engine_number", "make", "model", "variant", "year", "color", "location", "ownership_count", "asking_price"] },
+        { "id": "two_wheeler", "label": "Scooter specifications", "fields": ["bike_type", "engine_cc", "transmission", "odometer_km", "front_tyre", "rear_tyre", "brake_condition"] }
+      ],
+      "documents": ["rc_2w", "insurance_2w", "puc", "ownership", "service_2w", "repair", "inspection", "accident_claim", "engine_chassis"],
+      "requiredDocuments": ["rc_2w", "insurance_2w"],
+      "mileage": { "label": "Odometer", "unit": "km", "annualPlausibleMin": 300, "annualPlausibleMax": 15000, "dailyMaxKm": 200, "rollbackToleranceKm": 1500, "sohIsOdometer": false, "sources": ["service_invoice", "authorized_service_record", "inspection_report", "dashboard_photo", "seller_submitted"] },
+      "damage": { "componentSet": "scooter", "detector": "two_wheeler" },
+      "model3d": { "asset": "labelled_schematic", "interactionsAvailable": false },
+      "trust": { "version": "trust-v2-multicategory", "weights": { "identity_consistency": 12, "document_coverage": 10, "mileage_consistency": 10, "service_history": 6, "damage_inspection": 6, "record_integrity": 6 } },
+      "agentNodes": ["VehicleResolverNode", "VehicleCategoryDetectionNode", "DocumentRetrievalNode", "OCRAnalysisNode", "MileageAnalysisNode", "DamageAnalysisNode", "IdentityVerificationNode", "HistoryCorrelationNode", "AnomalyDetectionNode", "EvidenceGraphNode", "ConflictDetectionNode", "RiskExplanationNode", "HumanReviewNode", "ReportGenerationNode", "ResultPersistenceNode"],
+      "labels": { "primaryIdentifier": "Chassis / frame number", "odometer": "Odometer", "propulsion": "Engine", "puc": "PUC certificate" }
+    },
+    {
+      "id": "electric_scooter",
+      "label": "Electric Scooter",
+      "shortLabel": "E-Scooter",
+      "class": "two_wheeler",
+      "type": "electric_scooter",
+      "powertrain": "electric",
+      "priority": 3,
+      "status": "implemented",
+      "legacyCategories": [],
+      "identity": {
+        "primaryField": "primary_identifier",
+        "primaryLabel": "Chassis / frame number",
+        "primaryPattern": "^[A-Z0-9]{8,22}$",
+        "primaryExample": "MD2DSB123K1A00421",
+        "primaryNote": "Electric scooters use a stamped frame number. There is no combustion engine number and no PUC requirement.",
+        "vinApplicable": false,
+        "engineNumberRequired": false,
+        "motorNumberLabel": "Motor number",
+        "motorNumberPattern": "^[A-Z0-9]{5,22}$"
+      },
+      "fieldGroups": [
+        { "id": "identity", "label": "Identity & registration", "fields": ["reg_no", "primary_identifier", "motor_number", "make", "model", "variant", "year", "color", "location", "ownership_count", "asking_price"] },
+        { "id": "electric", "label": "Electric powertrain & battery", "fields": ["motor_type", "battery_chemistry", "battery_capacity_kwh", "battery_serial", "battery_soh", "charging_system", "charging_port_condition", "battery_warranty", "battery_replacement_history", "range_estimate_km", "range_source"] },
+        { "id": "two_wheeler", "label": "Distance & running condition", "fields": ["odometer_km", "front_tyre", "rear_tyre", "brake_condition"] }
+      ],
+      "documents": ["rc_2w", "insurance_2w", "ownership", "service_2w", "repair", "inspection", "accident_claim", "battery_warranty", "battery_inspection", "battery_health", "battery_replacement", "motor_controller_repair", "charging_service"],
+      "requiredDocuments": ["rc_2w", "insurance_2w"],
+      "mileage": { "label": "Total distance", "unit": "km", "annualPlausibleMin": 300, "annualPlausibleMax": 12000, "dailyMaxKm": 150, "rollbackToleranceKm": 1200, "sohIsOdometer": false, "sohNote": "Battery State of Health is NEVER treated as an odometer reading.", "sources": ["service_invoice", "battery_service_record", "inspection_report", "dashboard_photo", "seller_submitted"] },
+      "damage": { "componentSet": "electric_scooter", "detector": "electric" },
+      "model3d": { "asset": "labelled_schematic", "interactionsAvailable": false },
+      "trust": { "version": "trust-v2-multicategory", "weights": { "identity_consistency": 12, "document_coverage": 9, "distance_consistency": 8, "battery_health_evidence": 7, "battery_replacement_history": 4, "motor_service_information": 3, "damage_inspection": 4, "record_integrity": 3 } },
+      "agentNodes": ["VehicleResolverNode", "VehicleCategoryDetectionNode", "DocumentRetrievalNode", "OCRAnalysisNode", "MileageAnalysisNode", "EVBatteryAnalysisNode", "DamageAnalysisNode", "IdentityVerificationNode", "HistoryCorrelationNode", "AnomalyDetectionNode", "EvidenceGraphNode", "ConflictDetectionNode", "RiskExplanationNode", "HumanReviewNode", "ReportGenerationNode", "ResultPersistenceNode"],
+      "labels": { "primaryIdentifier": "Chassis / frame number", "odometer": "Total distance", "propulsion": "Motor", "puc": "Not applicable" }
+    },
+    {
+      "id": "electric_motorcycle",
+      "label": "Electric Motorcycle",
+      "shortLabel": "E-Motorcycle",
+      "class": "two_wheeler",
+      "type": "electric_motorcycle",
+      "powertrain": "electric",
+      "priority": 4,
+      "status": "implemented",
+      "legacyCategories": [],
+      "identity": {
+        "primaryField": "primary_identifier",
+        "primaryLabel": "Chassis / frame number",
+        "primaryPattern": "^[A-Z0-9]{8,22}$",
+        "primaryExample": "MD2DSA001K2B00987",
+        "primaryNote": "Electric motorcycles have a frame number and motor number, not an engine number.",
+        "vinApplicable": false,
+        "engineNumberRequired": false,
+        "motorNumberLabel": "Motor number",
+        "motorNumberPattern": "^[A-Z0-9]{5,22}$"
+      },
+      "fieldGroups": [
+        { "id": "identity", "label": "Identity & registration", "fields": ["reg_no", "primary_identifier", "motor_number", "make", "model", "variant", "year", "color", "location", "ownership_count", "asking_price"] },
+        { "id": "electric", "label": "Electric powertrain & battery", "fields": ["motor_type", "battery_chemistry", "battery_capacity_kwh", "battery_serial", "battery_soh", "charging_system", "charging_port_condition", "battery_warranty", "battery_replacement_history", "range_estimate_km", "range_source"] },
+        { "id": "two_wheeler", "label": "Distance & running condition", "fields": ["odometer_km", "front_tyre", "rear_tyre", "brake_condition"] }
+      ],
+      "documents": ["rc_2w", "insurance_2w", "ownership", "service_2w", "repair", "inspection", "accident_claim", "battery_warranty", "battery_inspection", "battery_health", "battery_replacement", "motor_controller_repair", "charging_service"],
+      "requiredDocuments": ["rc_2w", "insurance_2w"],
+      "mileage": { "label": "Total distance", "unit": "km", "annualPlausibleMin": 500, "annualPlausibleMax": 20000, "dailyMaxKm": 250, "rollbackToleranceKm": 1800, "sohIsOdometer": false, "sohNote": "Battery State of Health is NEVER treated as an odometer reading.", "sources": ["service_invoice", "battery_service_record", "inspection_report", "dashboard_photo", "seller_submitted"] },
+      "damage": { "componentSet": "electric_motorcycle", "detector": "electric" },
+      "model3d": { "asset": "labelled_schematic", "interactionsAvailable": false },
+      "trust": { "version": "trust-v2-multicategory", "weights": { "identity_consistency": 12, "document_coverage": 9, "distance_consistency": 8, "battery_health_evidence": 7, "battery_replacement_history": 4, "motor_service_information": 3, "damage_inspection": 4, "record_integrity": 3 } },
+      "agentNodes": ["VehicleResolverNode", "VehicleCategoryDetectionNode", "DocumentRetrievalNode", "OCRAnalysisNode", "MileageAnalysisNode", "EVBatteryAnalysisNode", "DamageAnalysisNode", "IdentityVerificationNode", "HistoryCorrelationNode", "AnomalyDetectionNode", "EvidenceGraphNode", "ConflictDetectionNode", "RiskExplanationNode", "HumanReviewNode", "ReportGenerationNode", "ResultPersistenceNode"],
+      "labels": { "primaryIdentifier": "Chassis / frame number", "odometer": "Total distance", "propulsion": "Motor", "puc": "Not applicable" }
+    },
+    {
+      "id": "passenger_car",
+      "label": "Petrol Car",
+      "shortLabel": "Car",
+      "class": "four_wheeler",
+      "type": "sedan",
+      "powertrain": "petrol",
+      "priority": 5,
+      "status": "implemented",
+      "legacyCategories": ["Sedan", "SUV", "Hatchback", "MUV", "Coupe", "Car", ""],
+      "identity": {
+        "primaryField": "primary_identifier",
+        "primaryLabel": "VIN (17 characters)",
+        "primaryPattern": "^[A-HJ-NPR-Z0-9]{17}$",
+        "primaryExample": "WBA5R1C50KAK12345",
+        "primaryNote": "Passenger cars use the ISO 3779 17-character VIN. I, O and Q are excluded. This rule applies ONLY to four-wheelers.",
+        "vinApplicable": true,
+        "engineNumberRequired": false,
+        "engineNumberLabel": "Engine number",
+        "engineNumberPattern": "^[A-Z0-9]{6,22}$"
+      },
+      "fieldGroups": [
+        { "id": "identity", "label": "Identity & registration", "fields": ["reg_no", "primary_identifier", "engine_number", "make", "model", "variant", "year", "color", "location", "ownership_count", "asking_price"] },
+        { "id": "car", "label": "Car specifications", "fields": ["engine_cc", "transmission", "odometer_km", "interior_condition", "exterior_condition"] }
+      ],
+      "documents": ["rc", "insurance", "puc", "ownership", "service", "repair", "inspection", "accident_claim"],
+      "requiredDocuments": ["rc", "insurance"],
+      "mileage": { "label": "Odometer", "unit": "km", "annualPlausibleMin": 1000, "annualPlausibleMax": 40000, "dailyMaxKm": 400, "rollbackToleranceKm": 5000, "sohIsOdometer": false, "sources": ["service_invoice", "authorized_service_record", "inspection_report", "dashboard_photo", "seller_submitted"] },
+      "damage": { "componentSet": "car", "detector": "car" },
+      "model3d": { "asset": "car_sedan", "interactionsAvailable": true },
+      "trust": { "version": "trust-v2-multicategory", "weights": { "document_coverage": 12, "identity_consistency": 10, "mileage_consistency": 10, "service_history": 6, "damage_inspection": 6, "record_integrity": 6 } },
+      "agentNodes": ["VehicleResolverNode", "VehicleCategoryDetectionNode", "DocumentRetrievalNode", "OCRAnalysisNode", "MileageAnalysisNode", "DamageAnalysisNode", "IdentityVerificationNode", "HistoryCorrelationNode", "AnomalyDetectionNode", "EvidenceGraphNode", "ConflictDetectionNode", "RiskExplanationNode", "HumanReviewNode", "ReportGenerationNode", "ResultPersistenceNode"],
+      "labels": { "primaryIdentifier": "VIN", "odometer": "Odometer", "propulsion": "Engine", "puc": "PUC certificate" }
+    },
+    {
+      "id": "electric_car",
+      "label": "Electric Car",
+      "shortLabel": "EV Car",
+      "class": "four_wheeler",
+      "type": "sedan",
+      "powertrain": "electric",
+      "priority": 6,
+      "status": "implemented",
+      "legacyCategories": ["Electric Car"],
+      "identity": {
+        "primaryField": "primary_identifier",
+        "primaryLabel": "VIN (17 characters)",
+        "primaryPattern": "^[A-HJ-NPR-Z0-9]{17}$",
+        "primaryExample": "WBY1Z210X0V123456",
+        "primaryNote": "Electric cars still carry an ISO 3779 VIN. They have no engine number and no PUC requirement.",
+        "vinApplicable": true,
+        "engineNumberRequired": false,
+        "motorNumberLabel": "Motor number",
+        "motorNumberPattern": "^[A-Z0-9]{5,22}$"
+      },
+      "fieldGroups": [
+        { "id": "identity", "label": "Identity & registration", "fields": ["reg_no", "primary_identifier", "motor_number", "make", "model", "variant", "year", "color", "location", "ownership_count", "asking_price"] },
+        { "id": "electric", "label": "Electric powertrain & battery", "fields": ["motor_type", "battery_chemistry", "battery_capacity_kwh", "battery_serial", "battery_soh", "charging_system", "charging_port_condition", "battery_warranty", "battery_replacement_history", "range_estimate_km", "range_source"] },
+        { "id": "car", "label": "Distance & condition", "fields": ["odometer_km", "interior_condition", "exterior_condition"] }
+      ],
+      "documents": ["rc", "insurance", "ownership", "service", "repair", "inspection", "accident_claim", "battery_warranty", "battery_inspection", "battery_health", "battery_replacement", "motor_controller_repair", "charging_service"],
+      "requiredDocuments": ["rc", "insurance"],
+      "mileage": { "label": "Total distance", "unit": "km", "annualPlausibleMin": 1000, "annualPlausibleMax": 35000, "dailyMaxKm": 350, "rollbackToleranceKm": 4000, "sohIsOdometer": false, "sohNote": "Battery State of Health is NEVER treated as an odometer reading.", "sources": ["service_invoice", "battery_service_record", "inspection_report", "dashboard_photo", "seller_submitted"] },
+      "damage": { "componentSet": "car", "detector": "car" },
+      "model3d": { "asset": "car_sedan", "interactionsAvailable": true, "note": "The shipped sedan GLB is a generic-reference body asset. It is labelled as such and is not claimed to be the exact EV model." },
+      "trust": { "version": "trust-v2-multicategory", "weights": { "identity_consistency": 11, "document_coverage": 10, "distance_consistency": 8, "battery_health_evidence": 7, "battery_replacement_history": 4, "motor_service_information": 3, "damage_inspection": 4, "record_integrity": 3 } },
+      "agentNodes": ["VehicleResolverNode", "VehicleCategoryDetectionNode", "DocumentRetrievalNode", "OCRAnalysisNode", "MileageAnalysisNode", "EVBatteryAnalysisNode", "DamageAnalysisNode", "IdentityVerificationNode", "HistoryCorrelationNode", "AnomalyDetectionNode", "EvidenceGraphNode", "ConflictDetectionNode", "RiskExplanationNode", "HumanReviewNode", "ReportGenerationNode", "ResultPersistenceNode"],
+      "labels": { "primaryIdentifier": "VIN", "odometer": "Total distance", "propulsion": "Motor", "puc": "Not applicable" }
+    }
+  ],
+  "plannedCategories": [
+    { "id": "moped", "label": "Moped", "class": "two_wheeler", "powertrain": "petrol", "status": "planned" },
+    { "id": "electric_bike", "label": "Electric Bike / E-Bike", "class": "two_wheeler", "powertrain": "electric", "status": "planned" },
+    { "id": "auto_rickshaw", "label": "Auto Rickshaw", "class": "three_wheeler", "powertrain": "petrol", "status": "planned" },
+    { "id": "electric_three_wheeler", "label": "Electric Three-Wheeler", "class": "three_wheeler", "powertrain": "electric", "status": "planned" },
+    { "id": "passenger_three_wheeler", "label": "Passenger Three-Wheeler", "class": "three_wheeler", "powertrain": "petrol", "status": "planned" },
+    { "id": "cargo_three_wheeler", "label": "Cargo Three-Wheeler", "class": "three_wheeler", "powertrain": "diesel", "status": "planned" },
+    { "id": "hatchback", "label": "Hatchback", "class": "four_wheeler", "powertrain": "petrol", "status": "planned" },
+    { "id": "suv", "label": "SUV", "class": "four_wheeler", "powertrain": "petrol", "status": "planned" },
+    { "id": "muv", "label": "MUV", "class": "four_wheeler", "powertrain": "petrol", "status": "planned" },
+    { "id": "hybrid_car", "label": "Hybrid Car", "class": "four_wheeler", "powertrain": "hybrid", "status": "planned" },
+    { "id": "light_commercial", "label": "Light Commercial Vehicle", "class": "commercial", "powertrain": "diesel", "status": "planned" },
+    { "id": "truck", "label": "Truck", "class": "commercial", "powertrain": "diesel", "status": "planned" },
+    { "id": "bus", "label": "Bus", "class": "commercial", "powertrain": "diesel", "status": "planned" },
+    { "id": "electric_commercial", "label": "Electric Commercial Vehicle", "class": "commercial", "powertrain": "electric", "status": "planned" }
+  ]
+}

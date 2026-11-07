@@ -16,6 +16,12 @@ import {
   THEME_STORAGE_KEY,
   type Theme,
 } from "@/lib/theme";
+import { installSessionRecovery } from "@/lib/client/api";
+
+// Installed at module evaluation (before any child effect fires) so expired
+// sessions are refreshed and replayed for every seller/buyer API action,
+// including components that call fetch directly instead of apiCall().
+installSessionRecovery();
 
 interface ThemeContextValue {
   theme: Theme;
