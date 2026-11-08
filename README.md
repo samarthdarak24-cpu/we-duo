@@ -176,10 +176,14 @@ FastAPI + the job worker from a single image, with a 10 GB persistent disk at
 FastAPI service reads the same file, and Render cannot mount one disk into
 several services.
 
-1. Push the repository to GitHub.
+1. Push the repository to GitHub (already done for `master`).
 2. Render → **New → Blueprint** → select the repository (it reads `render.yaml`).
 3. Set `ADMIN_EMAIL` and `ADMIN_PASSWORD` in the dashboard on first deploy.
 4. Health check: `/api/v1/health/ready`.
+
+The blueprint uses `plan: starter` because Render's **free** instance type does
+not support a persistent disk, and this service needs one for the SQLite
+database and uploads. On free the app would lose every record on each deploy.
 
 `project/infra/render/services.yaml` documents the optional three-service
 split (`trustdrive-web`, `trustdrive-api`, `trustdrive-ai-worker`). It requires

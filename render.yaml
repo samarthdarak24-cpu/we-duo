@@ -23,7 +23,12 @@ services:
     name: trustdrive
     runtime: docker
     dockerfilePath: ./project/infra/docker/Dockerfile.render
-    plan: free
+    # Persistent disks are NOT available on Render's free instance type, and
+    # this service needs one (SQLite database + uploads). Starter is the
+    # cheapest plan that supports a disk. If you must use free, delete the
+    # `disk:` block below and point TD_DATA_DIR/TD_DB_FILE/TD_UPLOAD_DIR at
+    # /tmp/trustdrive -- accepting that all data resets on every deploy.
+    plan: starter
     region: singapore
     healthCheckPath: /api/v1/health/ready
     autoDeploy: true
