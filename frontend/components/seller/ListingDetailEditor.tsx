@@ -8,6 +8,7 @@ import { AiAssistant } from "@/components/shared/AiAssistant";
 import { ListingActionBar } from "@/components/seller/ListingActionBar";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { InlineAlert } from "@/components/shared/InlineAlert";
+import { AiDamageScan } from "@/components/seller/AiDamageScan";
 import { cn } from "@/lib/cn";
 import { formatINR, formatKm } from "@/lib/format";
 
@@ -83,6 +84,7 @@ export function ListingDetailEditor({ detail }: { detail: ListingDetailData }) {
   });
   const [photos, setPhotos] = useState<Photo[]>(detail.photos);
   const [cover, setCover] = useState<string | null>(listing.coverImage);
+  const [scanPhotoId, setScanPhotoId] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -481,6 +483,7 @@ export function ListingDetailEditor({ detail }: { detail: ListingDetailData }) {
                 multiple
                 accept="image/png,image/jpeg,image/webp"
                 aria-label="Listing photos"
+                suppressHydrationWarning
                 className="block w-full cursor-pointer text-[12px] text-muted file:mr-3 file:cursor-pointer file:rounded-[9px] file:border-0 file:bg-surface-tint file:px-3 file:py-2 file:text-[12px] file:font-semibold file:text-ink"
               />
               <button
@@ -535,6 +538,14 @@ export function ListingDetailEditor({ detail }: { detail: ListingDetailData }) {
                           >
                             <Icon name="Trash2" size={11} />
                           </button>
+                          <button
+                            onClick={() => setScanPhotoId((id) => (id === p.id ? null : p.id))}
+                            aria-label="Run AI damage scan"
+                            title="Run AI damage scan"
+                            className="rounded-[5px] bg-[var(--primary)] p-1 text-[var(--on-primary)] hover:brightness-110"
+                          >
+                            <Icon name="ScanSearch" size={11} />
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -545,6 +556,14 @@ export function ListingDetailEditor({ detail }: { detail: ListingDetailData }) {
                   <Icon name="ImagePlus" size={22} className="mx-auto text-muted" />
                   <p className="mt-2 text-[12.5px] text-muted">No photos uploaded yet.</p>
                 </div>
+              )}
+
+              {scanPhotoId && (
+                <AiDamageScan
+                  vehicleId={vehicle.id}
+                  photoId={scanPhotoId}
+                  onReviewed={() => router.refresh()}
+                />
               )}
             </div>
           </SectionCard>

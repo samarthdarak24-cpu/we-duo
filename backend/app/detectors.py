@@ -377,7 +377,7 @@ def document_findings(vehicle_id: str, category_id: str | None = None) -> Detect
             recommended_review_action="Request the missing category-specific documents before publishing.",
         ))
         doc_limitations.append("Missing required documents are reported as unverified coverage, not as fraud.")
-    if categories.is_electric(cid):
+    if categories.has_battery_pack(cid):
         doc_limitations.append(categories.soh_note(cid) or
                                "Battery State of Health is never treated as an odometer reading.")
 
@@ -391,19 +391,19 @@ def document_findings(vehicle_id: str, category_id: str | None = None) -> Detect
 
 
 def battery_findings(vehicle_id: str, category_id: str | None = None) -> DetectorReport:
-    """EV-only battery evidence check. Never invents a State of Health value.
+    """Battery evidence check for battery-electric AND hybrid vehicles.
 
-    Only rows actually persisted in `battery_records` with a source document
-    count as evidence. Absence is reported as unverified, not as a healthy
-    battery and not as fraud.
+    Never invents a State of Health value. Only rows actually persisted in
+    `battery_records` with a source document count as evidence. Absence is
+    reported as unverified, not as a healthy battery and not as fraud.
     """
     cat, legacy_car, _ = _category_context(vehicle_id, category_id)
     cid = str(cat["id"])
-    electric = categories.is_electric(cid)
+    electric = categories.has_battery_pack(cid)
     records = _rows("battery_records", vehicle_id) if db.has_table("battery_records") else []
     findings: list[Finding] = []
     limitations = [
-        f"Category '{cid}' is {'electric' if electric else 'combustion'}; battery checks "
+        f"Category '{cid}' has a battery pack; battery checks "
         f"{'apply' if electric else 'do not apply'}.",
         "Battery State of Health is never inferred, estimated or substituted for a distance reading.",
     ]
@@ -412,7 +412,7 @@ def battery_findings(vehicle_id: str, category_id: str | None = None) -> Detecto
         if not sourced:
             findings.append(Finding(
                 anomaly_type="unverified_battery_health", severity="low",
-                explanation=("No battery health record with a source document exists for this electric vehicle. "
+                explanation=("No battery health record with a source document exists for this vehicle. "
                              "Battery condition is UNVERIFIED; no SOH value has been invented."),
                 evidence=[], readings=[], method="battery-evidence-coverage",
                 model_version=RULES_VERSION, confidence=1.0,

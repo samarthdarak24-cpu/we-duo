@@ -1,0 +1,557 @@
+[
+  {
+    "src": "tests/frontend/ai-assistant-wiring.test.ts",
+    "dst": "frontend/tests/ai-assistant-wiring.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/anchor-route.test.ts",
+    "dst": "frontend/tests/anchor-route.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/anchoring.test.ts",
+    "dst": "frontend/tests/anchoring.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/auth-security.test.ts",
+    "dst": "frontend/tests/auth-security.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/chain.test.ts",
+    "dst": "frontend/tests/chain.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/clamd.test.ts",
+    "dst": "frontend/tests/clamd.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/component",
+    "dst": "frontend/tests/component",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/db-intelligence.test.ts",
+    "dst": "frontend/tests/db-intelligence.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/engine.test.ts",
+    "dst": "frontend/tests/engine.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/evm-anchoring.test.ts",
+    "dst": "frontend/tests/evm-anchoring.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/format.test.ts",
+    "dst": "frontend/tests/format.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/live-audit-regressions.test.ts",
+    "dst": "frontend/tests/live-audit-regressions.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/llm-provider.test.ts",
+    "dst": "frontend/tests/llm-provider.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/mailer.test.ts",
+    "dst": "frontend/tests/mailer.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/multicategory.test.ts",
+    "dst": "frontend/tests/multicategory.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/public-site.test.ts",
+    "dst": "frontend/tests/public-site.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/ratelimit.test.ts",
+    "dst": "frontend/tests/ratelimit.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/registry-adapters.test.ts",
+    "dst": "frontend/tests/registry-adapters.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/s3-storage.test.ts",
+    "dst": "frontend/tests/s3-storage.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/scan.test.ts",
+    "dst": "frontend/tests/scan.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/seller-buyer-workflow.test.ts",
+    "dst": "frontend/tests/seller-buyer-workflow.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/setup-db.ts",
+    "dst": "frontend/tests/setup-db.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/signed.test.ts",
+    "dst": "frontend/tests/signed.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/sms.test.ts",
+    "dst": "frontend/tests/sms.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/sqlite-shim.mjs",
+    "dst": "frontend/tests/sqlite-shim.mjs",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/validation.test.ts",
+    "dst": "frontend/tests/validation.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/frontend/vehicle-3d-inspection.test.ts",
+    "dst": "frontend/tests/vehicle-3d-inspection.test.ts",
+    "kind": "restore-frontend-test"
+  },
+  {
+    "src": "tests/e2e/live-audit.spec.ts",
+    "dst": "frontend/e2e/live-audit.spec.ts",
+    "kind": "restore-e2e"
+  },
+  {
+    "src": "tests/e2e/trustdrive-deep.spec.ts",
+    "dst": "frontend/e2e/trustdrive-deep.spec.ts",
+    "kind": "restore-e2e"
+  },
+  {
+    "src": "tests/e2e/trustdrive.spec.ts",
+    "dst": "frontend/e2e/trustdrive.spec.ts",
+    "kind": "restore-e2e"
+  },
+  {
+    "src": "tests/backend/conftest.py",
+    "dst": "backend/tests/conftest.py",
+    "kind": "restore-backend-test"
+  },
+  {
+    "src": "tests/backend/test_api.py",
+    "dst": "backend/tests/test_api.py",
+    "kind": "restore-backend-test"
+  },
+  {
+    "src": "tests/backend/test_backend.py",
+    "dst": "backend/tests/test_backend.py",
+    "kind": "restore-backend-test"
+  },
+  {
+    "src": "tests/backend/test_config.py",
+    "dst": "backend/tests/test_config.py",
+    "kind": "restore-backend-test"
+  },
+  {
+    "src": "tests/backend/test_damage_ocr_providers.py",
+    "dst": "backend/tests/test_damage_ocr_providers.py",
+    "kind": "restore-backend-test"
+  },
+  {
+    "src": "tests/backend/test_detectors.py",
+    "dst": "backend/tests/test_detectors.py",
+    "kind": "restore-backend-test"
+  },
+  {
+    "src": "tests/backend/test_models.py",
+    "dst": "backend/tests/test_models.py",
+    "kind": "restore-backend-test"
+  },
+  {
+    "src": "tests/backend/test_multicategory.py",
+    "dst": "backend/tests/test_multicategory.py",
+    "kind": "restore-backend-test"
+  },
+  {
+    "src": "tests/backend/test_ocr_provider_selection.py",
+    "dst": "backend/tests/test_ocr_provider_selection.py",
+    "kind": "restore-backend-test"
+  },
+  {
+    "src": "tests/backend/test_pipeline.py",
+    "dst": "backend/tests/test_pipeline.py",
+    "kind": "restore-backend-test"
+  },
+  {
+    "src": "tests/backend/test_registry_adapters.py",
+    "dst": "backend/tests/test_registry_adapters.py",
+    "kind": "restore-backend-test"
+  },
+  {
+    "src": "tests/backend/test_registry_api.py",
+    "dst": "backend/tests/test_registry_api.py",
+    "kind": "restore-backend-test"
+  },
+  {
+    "src": "tests/backend/test_security.py",
+    "dst": "backend/tests/test_security.py",
+    "kind": "restore-backend-test"
+  },
+  {
+    "src": "tests/backend/test_security_regression.py",
+    "dst": "backend/tests/test_security_regression.py",
+    "kind": "restore-backend-test"
+  },
+  {
+    "src": "docs",
+    "dst": "project/docs",
+    "kind": "docs"
+  },
+  {
+    "src": "qa",
+    "dst": "project/qa",
+    "kind": "qa"
+  },
+  {
+    "src": "scripts",
+    "dst": "project/scripts",
+    "kind": "scripts"
+  },
+  {
+    "src": "infra/docker",
+    "dst": "project/infra/docker",
+    "kind": "infra-docker"
+  },
+  {
+    "src": "infra/deployment",
+    "dst": "project/infra/deployment",
+    "kind": "infra-deployment"
+  },
+  {
+    "src": "infrastructure",
+    "dst": "project/archive/infrastructure",
+    "kind": "legacy-empty"
+  },
+  {
+    "src": "infra",
+    "dst": "project/archive/infra-remainder",
+    "kind": "legacy-remainder"
+  },
+  {
+    "src": "deploy/_static_showcase_backup",
+    "dst": "project/legacy/deploy/_static_showcase_backup",
+    "kind": "legacy-deploy"
+  },
+  {
+    "src": "deploy/app",
+    "dst": "project/legacy/deploy/app",
+    "kind": "legacy-deploy"
+  },
+  {
+    "src": "deploy/components",
+    "dst": "project/legacy/deploy/components",
+    "kind": "legacy-deploy"
+  },
+  {
+    "src": "deploy/lib",
+    "dst": "project/legacy/deploy/lib",
+    "kind": "legacy-deploy"
+  },
+  {
+    "src": "deploy/next-env.d.ts",
+    "dst": "project/legacy/deploy/next-env.d.ts",
+    "kind": "legacy-deploy"
+  },
+  {
+    "src": "deploy/next.config.mjs",
+    "dst": "project/legacy/deploy/next.config.mjs",
+    "kind": "legacy-deploy"
+  },
+  {
+    "src": "deploy/package.json",
+    "dst": "project/legacy/deploy/package.json",
+    "kind": "legacy-deploy"
+  },
+  {
+    "src": "deploy/ping",
+    "dst": "project/legacy/deploy/ping",
+    "kind": "legacy-deploy"
+  },
+  {
+    "src": "deploy/postcss.config.mjs",
+    "dst": "project/legacy/deploy/postcss.config.mjs",
+    "kind": "legacy-deploy"
+  },
+  {
+    "src": "deploy/probe",
+    "dst": "project/legacy/deploy/probe",
+    "kind": "legacy-deploy"
+  },
+  {
+    "src": "deploy/public",
+    "dst": "project/legacy/deploy/public",
+    "kind": "legacy-deploy"
+  },
+  {
+    "src": "deploy/SOURCE_SNAPSHOT.txt",
+    "dst": "project/legacy/deploy/SOURCE_SNAPSHOT.txt",
+    "kind": "legacy-deploy"
+  },
+  {
+    "src": "deploy/tailwind.config.ts",
+    "dst": "project/legacy/deploy/tailwind.config.ts",
+    "kind": "legacy-deploy"
+  },
+  {
+    "src": "deploy/tsconfig.json",
+    "dst": "project/legacy/deploy/tsconfig.json",
+    "kind": "legacy-deploy"
+  },
+  {
+    "src": "deploy/types",
+    "dst": "project/legacy/deploy/types",
+    "kind": "legacy-deploy"
+  },
+  {
+    "src": "IMPLEMENTATION_STATUS.md",
+    "dst": "project/docs/IMPLEMENTATION_STATUS.md",
+    "kind": "root-report"
+  },
+  {
+    "src": "PRODUCTION_READINESS_REPORT.md",
+    "dst": "project/docs/PRODUCTION_READINESS_REPORT.md",
+    "kind": "root-report"
+  },
+  {
+    "src": "e2e-run.log",
+    "dst": "project/archive/logs/e2e-run.log",
+    "kind": "root-output"
+  },
+  {
+    "src": "qa-deep-run.log",
+    "dst": "project/archive/logs/qa-deep-run.log",
+    "kind": "root-output"
+  },
+  {
+    "src": "server.log",
+    "dst": "project/archive/logs/server.log",
+    "kind": "root-output"
+  },
+  {
+    "src": "frontend/.next_broken_1793958781",
+    "dst": "project/archive/builds/.next_broken_1793958781",
+    "kind": "stale-build"
+  },
+  {
+    "src": "frontend/.next_broken_1794122065",
+    "dst": "project/archive/builds/.next_broken_1794122065",
+    "kind": "stale-build"
+  },
+  {
+    "src": "frontend/.next_browser_prod",
+    "dst": "project/archive/builds/.next_browser_prod",
+    "kind": "stale-build"
+  },
+  {
+    "src": "frontend/.next_browser_verify",
+    "dst": "project/archive/builds/.next_browser_verify",
+    "kind": "stale-build"
+  },
+  {
+    "src": "frontend/.next_e2e",
+    "dst": "project/archive/builds/.next_e2e",
+    "kind": "stale-build"
+  },
+  {
+    "src": "frontend/.next_independent",
+    "dst": "project/archive/builds/.next_independent",
+    "kind": "stale-build"
+  },
+  {
+    "src": "frontend/.next_live",
+    "dst": "project/archive/builds/.next_live",
+    "kind": "stale-build"
+  },
+  {
+    "src": "frontend/.next_live_fix",
+    "dst": "project/archive/builds/.next_live_fix",
+    "kind": "stale-build"
+  },
+  {
+    "src": "frontend/.next_prev2_1794123773",
+    "dst": "project/archive/builds/.next_prev2_1794123773",
+    "kind": "stale-build"
+  },
+  {
+    "src": "frontend/.next_prev_1794123165",
+    "dst": "project/archive/builds/.next_prev_1794123165",
+    "kind": "stale-build"
+  },
+  {
+    "src": "frontend/.next_qa",
+    "dst": "project/archive/builds/.next_qa",
+    "kind": "stale-build"
+  },
+  {
+    "src": "frontend/.next_qa22",
+    "dst": "project/archive/builds/.next_qa22",
+    "kind": "stale-build"
+  },
+  {
+    "src": "frontend/.next_verify",
+    "dst": "project/archive/builds/.next_verify",
+    "kind": "stale-build"
+  },
+  {
+    "src": "frontend/.next_verify_build",
+    "dst": "project/archive/builds/.next_verify_build",
+    "kind": "stale-build"
+  },
+  {
+    "src": "frontend/.next_verify_final",
+    "dst": "project/archive/builds/.next_verify_final",
+    "kind": "stale-build"
+  },
+  {
+    "src": "project/docs/project/AGENTS.md",
+    "dst": "AGENTS.md",
+    "kind": "copy-agents"
+  },
+  {
+    "src": ".data-e2e",
+    "dst": "project/archive/test-data/data-e2e",
+    "kind": "root-cleanup"
+  },
+  {
+    "src": ".data-e2e2",
+    "dst": "project/archive/test-data/data-e2e2",
+    "kind": "root-cleanup"
+  },
+  {
+    "src": ".data-test-sms",
+    "dst": "project/archive/test-data/data-test-sms",
+    "kind": "root-cleanup"
+  },
+  {
+    "src": ".data-test-smtp",
+    "dst": "project/archive/test-data/data-test-smtp",
+    "kind": "root-cleanup"
+  },
+  {
+    "src": ".pytest_cache",
+    "dst": "project/archive/caches/pytest_cache",
+    "kind": "root-cleanup"
+  },
+  {
+    "src": ".next_verify_static",
+    "dst": "project/archive/builds/next_verify_static",
+    "kind": "root-cleanup"
+  },
+  {
+    "src": ".freebuff",
+    "dst": "project/archive/tooling/freebuff",
+    "kind": "root-cleanup"
+  },
+  {
+    "src": ".kombai",
+    "dst": "project/archive/tooling/kombai",
+    "kind": "root-cleanup"
+  },
+  {
+    "src": "qa",
+    "dst": "project/archive/leftovers/qa-root",
+    "kind": "app-clutter"
+  },
+  {
+    "src": "backend/.data",
+    "dst": "project/archive/leftovers/backend-data",
+    "kind": "app-clutter"
+  },
+  {
+    "src": "backend/ai-services",
+    "dst": "project/archive/duplicates/backend-ai-services",
+    "kind": "app-clutter"
+  },
+  {
+    "src": "frontend/.tmp-exp",
+    "dst": "project/archive/leftovers/frontend-tmp-exp",
+    "kind": "app-clutter"
+  },
+  {
+    "src": "frontend/qa",
+    "dst": "project/qa/frontend-legacy",
+    "kind": "app-clutter"
+  },
+  {
+    "src": "frontend/playwright-deep.log",
+    "dst": "project/archive/logs/frontend/playwright-deep.log",
+    "kind": "app-clutter"
+  },
+  {
+    "src": "frontend/playwright-deep2.log",
+    "dst": "project/archive/logs/frontend/playwright-deep2.log",
+    "kind": "app-clutter"
+  },
+  {
+    "src": "frontend/playwright-deep3.log",
+    "dst": "project/archive/logs/frontend/playwright-deep3.log",
+    "kind": "app-clutter"
+  },
+  {
+    "src": "frontend/playwright-full-run.log",
+    "dst": "project/archive/logs/frontend/playwright-full-run.log",
+    "kind": "app-clutter"
+  },
+  {
+    "src": "frontend/playwright-full.exitcode",
+    "dst": "project/archive/logs/frontend/playwright-full.exitcode",
+    "kind": "app-clutter"
+  },
+  {
+    "src": "frontend/playwright-full.log",
+    "dst": "project/archive/logs/frontend/playwright-full.log",
+    "kind": "app-clutter"
+  },
+  {
+    "src": "frontend/playwright-s123.log",
+    "dst": "project/archive/logs/frontend/playwright-s123.log",
+    "kind": "app-clutter"
+  },
+  {
+    "src": "frontend/playwright-s123b.log",
+    "dst": "project/archive/logs/frontend/playwright-s123b.log",
+    "kind": "app-clutter"
+  },
+  {
+    "src": "frontend/playwright-s3.log",
+    "dst": "project/archive/logs/frontend/playwright-s3.log",
+    "kind": "app-clutter"
+  },
+  {
+    "src": "frontend/playwright-workflows.log",
+    "dst": "project/archive/logs/frontend/playwright-workflows.log",
+    "kind": "app-clutter"
+  },
+  {
+    "src": "frontend/tsconfig.tsbuildinfo",
+    "dst": "project/archive/builds/tsconfig.tsbuildinfo",
+    "kind": "app-clutter"
+  }
+]

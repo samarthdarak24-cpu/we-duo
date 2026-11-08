@@ -307,7 +307,7 @@ export interface RunRow {
 
 export interface AuditRow {
   id: string;
-  actor_id: string;
+  actor_id: string | null;
   action: string;
   entity_type: string;
   entity_id: string;
@@ -562,6 +562,25 @@ function ensurePublicTables(conn: DatabaseSync) {
     hit_at INTEGER NOT NULL);
   CREATE INDEX IF NOT EXISTS idx_rate_limit_lookup ON rate_limit_hits(bucket, subject, hit_at);
   CREATE INDEX IF NOT EXISTS idx_rate_limit_age ON rate_limit_hits(hit_at);
+  -- Persisted malware-scan evidence. A scan row is append-only: a re-scan adds
+  -- a new row so the original verdict is never overwritten.
+  CREATE TABLE IF NOT EXISTS file_scans(
+    id TEXT PRIMARY KEY, subject_key TEXT, document_id TEXT, vehicle_id TEXT,
+    file_name TEXT, sha256 TEXT, engine TEXT, scanner TEXT, status TEXT NOT NULL,
+    detail TEXT, signature_version TEXT, duration_ms INTEGER, scan_at TEXT NOT NULL);
+  CREATE INDEX IF NOT EXISTS idx_file_scans_key ON file_scans(subject_key, scan_at);
+  CREATE INDEX IF NOT EXISTS idx_file_scans_doc ON file_scans(document_id, scan_at);
+  -- External notification delivery attempts (email/SMS). In-app rows always
+  -- exist in the notifications table; this table records what an external
+  -- provider actually did, including failures. No row is written for a
+  -- pretend send.
+  CREATE TABLE IF NOT EXISTS notification_deliveries(
+    id TEXT PRIMARY KEY, notification_id TEXT, channel TEXT NOT NULL,
+    provider TEXT NOT NULL, status TEXT NOT NULL, attempts INTEGER DEFAULT 0,
+    message_id TEXT, error TEXT, recipient TEXT, created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL);
+  CREATE INDEX IF NOT EXISTS idx_notification_deliveries_notification
+    ON notification_deliveries(notification_id);
   `);
 }
 
@@ -1343,8 +1362,134 @@ function ensureDamageGeometry(conn: DatabaseSync) {
   if (backfilled) g.__tdDamageBackfill = backfilled;
 }
 
+// ---------------------------------------------------------------------------
+// Fail-closed production configuration validation (Phase 2).
+//
+// Runs once at DB bootstrap. In production (TD_ENV=production) it:
+//   1. Forces TD_SEED_DEMO=0 so the published demo accounts/vehicles are NEVER
+//      silently recreated (demo seeding is an opt-in local convenience).
+//   2. Refuses to boot if any required signing secret is missing, too short, or
+//      still the .env.example placeholder.
+//   3. Refuses to boot if the data directory is not writable (ephemeral /tmp
+//      disks lose every audit row on restart).
+// It NEVER logs secret values. Gated on TD_ENV (not NODE_ENV) because Next.js
+// forces NODE_ENV=production even for a local `next start`, which must keep
+// working with placeholder dev secrets.
+// ---------------------------------------------------------------------------
+function validateProductionConfig(): void {
+  if (process.env.TD_ENV !== "production") return;
+
+  if (process.env.TD_SEED_DEMO && process.env.TD_SEED_DEMO !== "0") {
+    console.warn(
+      "[security] TD_SEED_DEMO is set in production; forcing it OFF so demo " +
+      "accounts/vehicles are never seeded. Set TD_SEED_DEMO=0 explicitly."
+    );
+  }
+  // Production must reject anonymous/demo seeding unconditionally.
+  process.env.TD_SEED_DEMO = "0";
+
+  const secretChecks: [string, (v: string) => boolean][] = [
+    ["JWT_SECRET", (v) => v.length >= 16 && !/replace-with/i.test(v)],
+    ["DOWNLOAD_SIGNING_SECRET", (v) => v.length >= 16 && !/replace-with/i.test(v)],
+    ["QR_SIGNING_SECRET", (v) => v.length >= 16 && !/replace-with/i.test(v)],
+    ["TD_SHARE_SECRET", (v) => v.length >= 16 && !/replace-with/i.test(v)],
+    ["TD_SERVICE_TOKEN", (v) => v.length >= 16 && !/replace-with/i.test(v)],
+  ];
+  const insecure: string[] = [];
+  for (const [name, ok] of secretChecks) {
+    if (!ok(process.env[name] ?? "")) insecure.push(name);
+  }
+  if (insecure.length) {
+    throw new Error(
+      `Refusing to start in production: insecure or missing required secret(s): ${insecure.join(", ")}. ` +
+      "Set a long random value for each (see .env.example). Secrets are never logged."
+    );
+  }
+
+  const dataDir =
+    process.env.TD_DATA_DIR ||
+    path.dirname(process.env.TD_DB_FILE || ".data/trustdrive.db");
+  try {
+    fs.mkdirSync(dataDir, { recursive: true });
+    fs.accessSync(dataDir, fs.constants.W_OK);
+  } catch {
+    throw new Error(
+      `Refusing to start in production: data directory is not writable: ${dataDir}`
+    );
+  }
+}
+
+/**
+ * Additive schema step for optional on-chain document anchoring (Phase 10).
+ *
+ * `chain_records` stays the append-only local integrity chain — an on-chain
+ * anchor is a SEPARATE fact with its own row, so the immutable chain is never
+ * rewritten. The table is created with IF NOT EXISTS and never drops a row.
+ */
+function ensureAnchorTables(conn: DatabaseSync) {
+  conn.exec(`
+  CREATE TABLE IF NOT EXISTS document_anchors(
+    id TEXT PRIMARY KEY,
+    document_id TEXT,
+    vehicle_id TEXT,
+    hash_hex TEXT NOT NULL,
+    chain_id TEXT,
+    tx_hash TEXT,
+    block_number INTEGER,
+    contract TEXT,
+    network TEXT,
+    confirmations INTEGER DEFAULT 0,
+    anchored_at TEXT NOT NULL);
+  CREATE INDEX IF NOT EXISTS idx_document_anchors_hash ON document_anchors(hash_hex);
+  CREATE INDEX IF NOT EXISTS idx_document_anchors_doc ON document_anchors(document_id);
+  `);
+}
+
+export interface AnchorRow {
+  id: string;
+  document_id: string | null;
+  vehicle_id: string | null;
+  hash_hex: string;
+  chain_id: string | null;
+  tx_hash: string | null;
+  block_number: number | null;
+  contract: string | null;
+  network: string | null;
+  confirmations: number;
+  anchored_at: string;
+}
+
+/** Persist one confirmed on-chain anchor. Idempotent on (hash, tx). */
+export function insertAnchorRecord(row: AnchorRow) {
+  run(
+    `INSERT OR IGNORE INTO document_anchors
+       (id, document_id, vehicle_id, hash_hex, chain_id, tx_hash, block_number, contract, network, confirmations, anchored_at)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+    row.id, row.document_id, row.vehicle_id, row.hash_hex, row.chain_id, row.tx_hash,
+    row.block_number, row.contract, row.network, row.confirmations, row.anchored_at
+  );
+  return row;
+}
+
+export function listAnchorRecords(limit = 50): AnchorRow[] {
+  return all<AnchorRow>(
+    "SELECT * FROM document_anchors ORDER BY anchored_at DESC LIMIT ?",
+    limit
+  );
+}
+
+export function getAnchorByHash(hashHex: string): AnchorRow | null {
+  return (
+    one<AnchorRow>(
+      "SELECT * FROM document_anchors WHERE hash_hex = ? ORDER BY anchored_at DESC LIMIT 1",
+      hashHex
+    ) ?? null
+  );
+}
+
 export function getDb(): DatabaseSync {
   if (g.__tdDb) return g.__tdDb;
+  validateProductionConfig();
   // TD_DB_FILE lets a container/Render disk own the database path. The default
   // stays `.data/trustdrive.db` for local development.
   const rawDb = process.env.TD_DB_FILE || ".data/trustdrive.db";
@@ -1366,15 +1511,21 @@ export function getDb(): DatabaseSync {
   ensureBackendTables(conn);
   ensureSoftDeleteColumns(conn);
   ensureEntityAliases(conn);
+  ensureAnchorTables(conn);
   seed(conn);
-  seedDemoPhotos(conn);
+  // Demo photos/vehicles are local-only: never seed them in production
+  // (validateProductionConfig already forces TD_SEED_DEMO=0, this is defence in depth).
+  if (process.env.TD_SEED_DEMO !== "0") {
+    seedDemoPhotos(conn);
+  }
   g.__tdFkReport = upgradeCoreForeignKeys(conn, dbFile);
   // Additive multi-category step runs AFTER the FK rebuild so no table is
   // dropped or recreated underneath the live 69-vehicle evidence history.
   // SCHEMA_VERSION stays at 3 on purpose: migrate() is destructive.
   ensureDamageGeometry(conn);
   g.__tdMultiCategory = ensureMultiCategorySchema(conn);
-  g.__tdMultiCategoryDemo = seedMultiCategoryDemo(conn);
+  g.__tdMultiCategoryDemo =
+    process.env.TD_SEED_DEMO !== "0" ? seedMultiCategoryDemo(conn) : undefined;
   // Mark the schema only after a successful seed so a failed seed is retried.
   conn.exec(`PRAGMA user_version = ${SCHEMA_VERSION}`);
   g.__tdDb = conn;
@@ -2015,3 +2166,93 @@ export function subscribeNewsletter(email: string) {
 export function getContactMessageCount() {
   return (one<{ c: number }>("SELECT COUNT(*) AS c FROM contact_messages")?.c ?? 0);
 }
+
+// ---- Malware scan evidence ------------------------------------------------
+export interface FileScanRow {
+  id: string;
+  subject_key: string | null;
+  document_id: string | null;
+  vehicle_id: string | null;
+  file_name: string | null;
+  sha256: string | null;
+  engine: string;
+  scanner: string;
+  status: string;
+  detail: string;
+  signature_version: string | null;
+  duration_ms: number | null;
+  scan_at: string;
+}
+
+export function recordFileScan(scan: Omit<FileScanRow, "id" | "scan_at"> & { id?: string; scan_at?: string }) {
+  const id = scan.id ?? `scan-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  const at = scan.scan_at ?? new Date().toISOString();
+  run(
+    `INSERT INTO file_scans (id, subject_key, document_id, vehicle_id, file_name, sha256, engine,
+       scanner, status, detail, signature_version, duration_ms, scan_at)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    id, scan.subject_key, scan.document_id, scan.vehicle_id, scan.file_name, scan.sha256,
+    scan.engine, scan.scanner, scan.status, scan.detail, scan.signature_version,
+    scan.duration_ms, at
+  );
+  return { ...scan, id, scan_at: at };
+}
+
+export function getLatestFileScan(subjectKey: string): FileScanRow | undefined {
+  return one<FileScanRow>(
+    "SELECT * FROM file_scans WHERE subject_key = ? ORDER BY scan_at DESC LIMIT 1",
+    subjectKey
+  );
+}
+
+export function attachFileScanDocument(subjectKey: string, documentId: string, vehicleId: string) {
+  run(
+    "UPDATE file_scans SET document_id = ?, vehicle_id = ? WHERE subject_key = ? AND document_id IS NULL",
+    documentId, vehicleId, subjectKey
+  );
+}
+
+// ---- External notification delivery evidence ------------------------------
+export interface DeliveryRow {
+  id: string;
+  notification_id: string | null;
+  channel: string;
+  provider: string;
+  status: string;
+  attempts: number;
+  message_id: string | null;
+  error: string | null;
+  recipient: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function recordNotificationDelivery(input: {
+  id: string;
+  notification_id?: string | null;
+  channel: string;
+  provider: string;
+  status: string;
+  attempts: number;
+  message_id?: string | null;
+  error?: string | null;
+  recipient?: string | null;
+}) {
+  const now = new Date().toISOString();
+  run(
+    `INSERT INTO notification_deliveries (id, notification_id, channel, provider, status, attempts,
+       message_id, error, recipient, created_at, updated_at)
+     VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+    input.id, input.notification_id ?? null, input.channel, input.provider, input.status,
+    input.attempts, input.message_id ?? null, input.error ?? null, input.recipient ?? null,
+    now, now
+  );
+}
+
+export function getNotificationDeliveries(notificationId: string): DeliveryRow[] {
+  return all<DeliveryRow>(
+    "SELECT * FROM notification_deliveries WHERE notification_id = ? ORDER BY created_at DESC",
+    notificationId
+  );
+}
+

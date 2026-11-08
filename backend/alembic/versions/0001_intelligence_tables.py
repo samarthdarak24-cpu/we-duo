@@ -39,13 +39,13 @@ SPEC = {
     ],
     "background_jobs": [
         Column("id", String, primary_key=True),
-        Column("type", String, index=True),
+        Column("type", String),
         Column("status", String, index=True),
-        Column("vehicle_id", String),
+        Column("vehicle_id", String, index=True),
         Column("payload", Text),
         Column("progress", Integer, default=0),
         Column("attempts", Integer, default=0),
-        Column("idempotency_key", String, index=True),
+        Column("idempotency_key", String),
         Column("max_attempts", Integer, default=3),
         Column("timeout_seconds", Integer, default=120),
         Column("result", Text),
@@ -69,7 +69,7 @@ SPEC = {
         Column("id", String, primary_key=True),
         Column("vehicle_id", String, index=True),
         Column("question", Text),
-        Column("status", String),
+        Column("status", String, index=True),
         Column("version", String),
         Column("result", Text),
         Column("created_at", String),
@@ -91,10 +91,10 @@ def upgrade() -> None:
     for name, cols in SPEC.items():
         if name in existing:
             continue
+        # `op.create_table` already materialises every `index=True` column as
+        # `ix_<table>_<column>`; creating them again here raised
+        # "index ... already exists" and aborted the baseline migration.
         op.create_table(name, *cols)
-        for col in cols:
-            if col.index and col.name:
-                op.create_index(f"ix_{name}_{col.name}", name, [col.name])
 
 
 def downgrade() -> None:

@@ -16,6 +16,11 @@ export async function POST(req: Request) {
   const token = issueToken(user.id, "verify_email");
   const base = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
   const link = `${base}/verify-email/${token}`;
-  sendMail({ to: user.email, subject: "Verify your TrustDrive email", body: "Confirm your address.", link });
-  return ok({ sent: true, ...(isProd() ? {} : { verificationLink: link }) });
+  const delivery = await sendMail({
+    to: user.email,
+    subject: "Verify your TrustDrive email",
+    body: "Confirm your address.",
+    link,
+  });
+  return ok({ sent: delivery.ok, emailDelivery: delivery, ...(isProd() ? {} : { verificationLink: link }) });
 }

@@ -21,7 +21,7 @@ def test_health_is_ok_and_names_active_backends():
     assert body["agent"]["category_profiles"]["passenger_car"]["count"] == 15
     assert body["agent"]["category_profiles"]["electric_scooter"]["count"] == 16
     assert body["vehicle_categories"]["trust_version"] == "trust-v2-multicategory"
-    assert len(body["vehicle_categories"]["implemented"]) == 6
+    assert len(body["vehicle_categories"]["implemented"]) == 20
     assert body["worker"]["backend"] == "db-backed"
     assert body["llm"]["active"] is False
 

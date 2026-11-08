@@ -3,7 +3,8 @@ import {
   updateListing, updateListingImage,
 } from "@/lib/server/db";
 import { created, fail, ok, requireRole } from "@/lib/server/http";
-import { MAX_IMAGE_BYTES, saveUpload } from "@/lib/server/files";
+import { MAX_IMAGE_BYTES, sniffUpload } from "@/lib/server/files";
+import { guardedSaveUpload } from "@/lib/server/upload-guard";
 import { randomUUID } from "node:crypto";
 
 export const runtime = "nodejs";
@@ -48,9 +49,24 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   for (const file of files) {
     if (file.size > MAX_IMAGE_BYTES) return fail(413, "FILE_TOO_LARGE", `${file.name} exceeds 6 MB.`);
     const bytes = Buffer.from(await file.arrayBuffer());
+    const sniffed = sniffUpload(bytes);
+    if (!sniffed) return fail(415, "UNSUPPORTED_FILE_TYPE", `${file.name} is not a valid PNG, JPEG or WebP image.`);
     try {
-      const stored = saveUpload(`photos/${params.id}`, bytes, MAX_IMAGE_BYTES);
-      createListingImage(`img-${randomUUID()}`, listing.id, stored.key, position + 1);
+      const guarded = await guardedSaveUpload({
+        bytes,
+        fileName: file.name,
+        mime: sniffed.mime,
+        folder: `photos/${params.id}`,
+        maxBytes: MAX_IMAGE_BYTES,
+        actorId: guard.user.sub,
+        actorRole: guard.user.role,
+        vehicleId: params.id,
+        req,
+      });
+      if (!guarded.ok) {
+        return fail(guarded.status, guarded.code, `${file.name}: ${guarded.message}`, { scan: guarded.scan });
+      }
+      createListingImage(`img-${randomUUID()}`, listing.id, guarded.stored.key, position + 1);
       position += 1;
       added += 1;
     } catch (err) {

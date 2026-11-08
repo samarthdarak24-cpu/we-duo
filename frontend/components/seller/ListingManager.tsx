@@ -366,6 +366,7 @@ export function ListingManager({ rows, initialId }: { rows: SellerListingRow[]; 
                 type="file"
                 multiple
                 accept="image/jpeg,image/png,image/webp"
+                suppressHydrationWarning
                 className="td-input block cursor-pointer py-2 text-[12px] file:mr-3 file:rounded-[8px] file:border-0 file:bg-info-bg file:px-3 file:py-1.5 file:text-[11.5px] file:font-semibold file:text-ink"
               />
               <button onClick={uploadPhotos} disabled={busy === "photos" || !row.listing} className="td-btn td-btn-secondary mt-2.5 w-full">

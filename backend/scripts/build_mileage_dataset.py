@@ -20,7 +20,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 DB = ROOT / ".data" / "trustdrive.db"
-DEFAULT_OUT = ROOT / "ai-services" / "shared" / "data" / "mileage_training.csv"
+DEFAULT_OUT = ROOT / "services" / "ai" / "shared" / "data" / "mileage_training.csv"
 
 
 def synthetic_rows(n: int, seed: int = 42) -> list[dict]:

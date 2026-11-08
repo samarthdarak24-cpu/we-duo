@@ -231,6 +231,7 @@ export function SecurityCenter({ profile }: { profile: SecurityProfile }) {
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
                 aria-label="Profile photo"
+                suppressHydrationWarning
                 className="block max-w-[220px] text-[11px] text-muted file:mr-2 file:rounded-[7px] file:border-0 file:bg-surface-tint file:px-2.5 file:py-1.5 file:text-[11px] file:font-semibold file:text-ink"
               />
               <button onClick={uploadAvatar} disabled={busy === "avatar"} className="td-btn td-btn-primary td-btn-sm">
@@ -332,6 +333,7 @@ export function SecurityCenter({ profile }: { profile: SecurityProfile }) {
               type="file"
               accept="application/pdf,image/png,image/jpeg,image/webp"
               aria-label="KYC document"
+              suppressHydrationWarning
               className="block w-full text-[11px] text-muted file:mr-2 file:rounded-[7px] file:border-0 file:bg-surface-tint file:px-2.5 file:py-1.5 file:text-[11px] file:font-semibold file:text-ink"
             />
             <button onClick={uploadKyc} disabled={busy === "kyc"} className="td-btn td-btn-secondary td-btn-sm">

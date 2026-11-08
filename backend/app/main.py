@@ -25,6 +25,7 @@ from . import (agent, blockchain, categories, db, detectors, explain, extract, l
                repository, security, worker)
 from .config import settings
 from .integrations.insurance import DemoInsuranceProvider
+from .migrations_add_ai_fields import ensure_ai_columns
 from .integrations.storage import get_storage
 from .integrations.vehicle_data import DemoVehicleDataProvider
 from .intelligence import status as intelligence_status
@@ -37,6 +38,12 @@ SERVICE_VERSION = "intelligence-2.0.0-multicategory"
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db.ensure_soft_delete_columns()
+    # Additive, idempotent: adds the AI/damage/OCR columns the new endpoints need
+    # without touching existing rows. Never blocks startup on a schema miss.
+    try:
+        ensure_ai_columns()
+    except Exception as exc:  # pragma: no cover - defensive; missing table is non-fatal
+        emit("migration.failed", error=f"{type(exc).__name__}: {exc}")
     app.state.llm_warm = {"warmed": False, "provider": llm.describe()["provider"]}
     warm_task = None
     if settings.llm_warm_start:

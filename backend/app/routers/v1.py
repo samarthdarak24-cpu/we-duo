@@ -18,7 +18,7 @@ from .. import agent, db, repository, worker
 from ..config import settings
 from ..ratelimit import enforce_auth_limit
 from ..security import current_user, optional_user, require_role
-from . import auth, inquiries, marketplace, notifications, reports, users, vehicles
+from . import auth, inquiries, marketplace, notifications, reports, system, users, vehicles
 
 router = APIRouter(prefix="/api/v1", tags=["v1"])
 
@@ -295,6 +295,33 @@ def v1_add_inspection(vehicle_id: str, req: vehicles.InspectionCreate,
 def v1_add_damage(vehicle_id: str, req: vehicles.DamageCreate,
                   user: dict = Depends(require_role("seller", "admin"))) -> dict:
     return vehicles.add_damage(vehicle_id, req, user)
+
+
+# ---- damage CV detection + review ------------------------------------------
+@router.post("/vehicles/{vehicle_id}/photos/{photo_id}/detect")
+def v1_detect_damage(vehicle_id: str, photo_id: str,
+                     user: dict = Depends(require_role("seller", "admin"))) -> dict:
+    return vehicles.detect_damage_on_photo(vehicle_id, photo_id, user)
+
+
+@router.patch("/vehicles/{vehicle_id}/damage/{damage_id}/review")
+def v1_review_damage(vehicle_id: str, damage_id: str, req: vehicles.DamageReview,
+                     user: dict = Depends(require_role("seller", "admin"))) -> dict:
+    return vehicles.review_damage(vehicle_id, damage_id, req, user)
+
+
+# ---- document OCR ----------------------------------------------------------
+@router.post("/vehicles/{vehicle_id}/documents/{doc_id}/ocr")
+def v1_document_ocr(vehicle_id: str, doc_id: str,
+                   user: dict = Depends(require_role("seller", "admin"))) -> dict:
+    return vehicles.run_document_ocr(vehicle_id, doc_id, user)
+
+
+@router.patch("/vehicles/{vehicle_id}/documents/{doc_id}/ocr")
+def v1_correct_document_ocr(vehicle_id: str, doc_id: str, req: vehicles.OcrCorrection,
+                           user: dict = Depends(require_role("seller", "admin"))) -> dict:
+    return vehicles.correct_document_ocr(vehicle_id, doc_id, req, user)
+
 
 
 # ---- verification / investigations ---------------------------------------

@@ -122,7 +122,7 @@ def match_category_id(raw: str | None, fuel: str | None = None) -> str | None:
             candidate = "muv"
         elif re.search(r"hybrid", raw, re.I):
             candidate = "hybrid_car"
-        elif re.search(r"electric commercial|e-?truck|electric van|electric lcv|electric bus|electric lorry", raw, re.I):
+        elif re.search(r"electric commercial|e-?truck|electric\s*truck|electric van|electric lcv|electric bus|electric lorry", raw, re.I):
             candidate = "electric_commercial"
         elif re.search(r"light commercial|\blcv\b|pickup|delivery van", raw, re.I):
             candidate = "light_commercial"

@@ -4,7 +4,7 @@
 Governance:
   * A licence string is REQUIRED (`--license`). We do not bundle unlicensed weights.
   * The download is size-capped and SHA-256 is recorded (and verified if supplied).
-  * Every fetch is appended to `ai-services/shared/models/MODEL_REGISTER.json`.
+  * Every fetch is appended to `services/ai/shared/models/MODEL_REGISTER.json`.
 
 Examples:
   python backend/scripts/fetch_models.py --list
@@ -30,7 +30,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-MODELS = REPO_ROOT / "ai-services" / "shared" / "models"
+MODELS = REPO_ROOT / "services" / "ai" / "shared" / "models"
 REGISTER = MODELS / "MODEL_REGISTER.json"
 MAX_BYTES = 800 * 1024 * 1024
 
@@ -100,7 +100,7 @@ def verify_register() -> int:
     def asset_path(name: str) -> Path:
         parts = Path(name).parts
         if parts and parts[0] in ("models", "data"):
-            return REPO_ROOT / "ai-services" / "shared" / parts[0] / Path(*parts[1:])
+            return REPO_ROOT / "services" / "ai" / "shared" / parts[0] / Path(*parts[1:])
         return REPO_ROOT / name
     checks += [(f["name"], asset_path(f["name"]), f.get("sha256"))
                for f in data.get("fixtures", [])]
@@ -147,7 +147,7 @@ def main() -> int:
     ap.add_argument("--hf", help="Hugging Face repo id, e.g. owner/model")
     ap.add_argument("--file", help="file path inside the HF repo")
     ap.add_argument("--url", help="direct download URL")
-    ap.add_argument("--name", help="destination filename in ai-services/shared/models/")
+    ap.add_argument("--name", help="destination filename in services/ai/shared/models/")
     ap.add_argument("--license", dest="licence", help="SPDX licence of the weights")
     ap.add_argument("--purpose", default="damage detection")
     ap.add_argument("--sha256", help="expected SHA-256 (optional)")

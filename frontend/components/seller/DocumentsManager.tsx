@@ -8,6 +8,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { StatCard } from "@/components/ui/StatCard";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { InlineAlert } from "@/components/shared/InlineAlert";
+import { OcrExtract } from "@/components/seller/OcrExtract";
 import { cn } from "@/lib/cn";
 import { apiCall } from "@/lib/client/api";
 
@@ -117,6 +118,7 @@ export function DocumentsManager({
   >({});
   const [fieldsMeta, setFieldsMeta] = useState<Record<string, string>>({});
   const [fieldsOpen, setFieldsOpen] = useState<string | null>(null);
+  const [ocrTarget, setOcrTarget] = useState<string | null>(null);
 
   function describeOcr(ocr: OcrOutcome | null | undefined) {
     if (!ocr) return { tone: "info" as const, text: "Document stored. The extraction service did not return a result." };
@@ -523,6 +525,9 @@ export function DocumentsManager({
                               </dl>
                             </details>
                           )}
+                          {ocrTarget === d.id && (
+                            <OcrExtract vehicleId={vehicleId} docId={d.id} onSaved={() => router.refresh()} />
+                          )}
                         </div>
                       </div>
                     </td>
@@ -571,6 +576,14 @@ export function DocumentsManager({
                         </button>
                         <button onClick={() => reverify(d)} disabled={busy === d.id} className="td-btn td-btn-ghost td-btn-sm">
                           <Icon name="ScanSearch" size={13} /> Re-verify
+                        </button>
+                        <button
+                          onClick={() => setOcrTarget((id) => (id === d.id ? null : d.id))}
+                          disabled={busy === d.id}
+                          aria-pressed={ocrTarget === d.id}
+                          className="td-btn td-btn-ghost td-btn-sm"
+                        >
+                          <Icon name="FileSearch" size={13} /> OCR
                         </button>
                         <button onClick={() => remove(d)} disabled={busy === d.id} className="td-btn td-btn-ghost td-btn-sm">
                           <Icon name="Trash2" size={13} /> Delete

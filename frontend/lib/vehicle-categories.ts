@@ -190,7 +190,7 @@ export function matchCategoryId(raw: string | null | undefined, fuel?: string | 
     else if (/suv|sport utility/i.test(raw)) id = "suv";
     else if (/muv|mpv|multi utility/i.test(raw)) id = "muv";
     else if (/hybrid/i.test(raw)) id = "hybrid_car";
-    else if (/electric commercial|e-?truck|electric van|electric lcv|electric bus|electric lorry/i.test(raw)) id = "electric_commercial";
+    else if (/electric commercial|e-?truck|electric\s*truck|electric van|electric lcv|electric bus|electric lorry/i.test(raw)) id = "electric_commercial";
     else if (/light commercial|\blcv\b|pickup|delivery van/i.test(raw)) id = "light_commercial";
     else if (/truck|lorry|heavy vehicle/i.test(raw)) id = "truck";
     else if (/\bbus\b|coach|stage carriage/i.test(raw)) id = "bus";
@@ -266,6 +266,9 @@ export function validateIdentity(
       errors.push("Motor number has an unexpected format.");
     }
   }
+  if (!pt?.hasEngine && input.engineNumber) {
+    errors.push("Engine number is not applicable to this vehicle; use the motor number instead.");
+  }
   return { ok: errors.length === 0, errors, normalized: { reg, identifier } };
 }
 
@@ -322,7 +325,9 @@ export function documentsForCategory(categoryId: string): { id: string; label: s
 }
 
 export function isAllowedDocument(categoryId: string, type: string): boolean {
-  return documentsForCategory(categoryId).some((d) => d.id === type) || documentsForCategory(DEFAULT_CATEGORY_ID).some((d) => d.id === type);
+  // Category-specific allowlist only. A scooter must not accept a car RC, and
+  // a commercial vehicle must not accept a private two-wheeler policy.
+  return documentsForCategory(categoryId).some((d) => d.id === type);
 }
 
 export function componentsForCategory(categoryId: string): { id: string; set: string; label: string; source: string; visualAsset: string } {

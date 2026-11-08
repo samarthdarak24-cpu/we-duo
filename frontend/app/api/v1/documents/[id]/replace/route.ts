@@ -1,7 +1,8 @@
 import { replaceDocumentForActor } from "@/lib/server/data";
 import { fail, ok, requireRole } from "@/lib/server/http";
-import { MAX_DOC_BYTES, saveUpload } from "@/lib/server/files";
-import { getDocument } from "@/lib/server/db";
+import { MAX_DOC_BYTES, sniffUpload } from "@/lib/server/files";
+import { attachFileScanDocument, getDocument } from "@/lib/server/db";
+import { guardedSaveUpload } from "@/lib/server/upload-guard";
 import { runDocumentOcr } from "@/lib/server/document-ocr";
 
 export const runtime = "nodejs";
@@ -23,12 +24,29 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     const existing = getDocument(params.id);
     if (!existing) return fail(404, "NOT_FOUND", "Document not found.");
     const bytes = Buffer.from(await file.arrayBuffer());
+    const sniffed = sniffUpload(bytes);
+    if (!sniffed) return fail(415, "UNSUPPORTED_FILE_TYPE", "The file content is not a valid PDF, PNG, JPEG or WebP.");
     try {
-      const stored = saveUpload(`documents/${existing.vehicle_id}`, bytes, MAX_DOC_BYTES);
-      input.fileKey = stored.key;
-      input.sha256 = stored.sha256;
-      input.sizeBytes = stored.size;
-      input.mime = stored.mime;
+      // Same scan gate as the original upload: infected files are quarantined,
+      // an unavailable scanner fails closed, and a clean verdict is persisted.
+      const guarded = await guardedSaveUpload({
+        bytes,
+        fileName: file.name,
+        mime: sniffed.mime,
+        folder: `documents/${existing.vehicle_id}`,
+        maxBytes: MAX_DOC_BYTES,
+        actorId: guard.user.sub,
+        actorRole: guard.user.role,
+        vehicleId: existing.vehicle_id,
+        req,
+      });
+      if (!guarded.ok) {
+        return fail(guarded.status, guarded.code, guarded.message, { scan: guarded.scan });
+      }
+      input.fileKey = guarded.stored.key;
+      input.sha256 = guarded.stored.sha256;
+      input.sizeBytes = guarded.stored.size;
+      input.mime = guarded.stored.mime;
       input.fileName = file.name;
       input.content = `${file.name}:${file.size}`;
     } catch (err) {
@@ -43,6 +61,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
   const result = replaceDocumentForActor(guard.user.sub, params.id, input);
   if (!result.ok) return fail(result.code === "NOT_FOUND" ? 404 : 403, result.code, result.message);
+  if (result.id && input.fileKey) attachFileScanDocument(input.fileKey, result.id, getDocument(result.id)?.vehicle_id ?? "");
   // A replacement is a new document row; run the same real extraction on it.
   const ocr = result.id && input.fileKey ? await runDocumentOcr(result.id) : null;
   return ok({ ...result, ocr });

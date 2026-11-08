@@ -1,4 +1,2 @@
-"""Deterministic rule entry points (single source: app.detectors)."""
-from ...detectors import detect_all, document_findings, mileage_findings
-
-__all__ = ["mileage_findings", "document_findings", "detect_all"]
+"""Deterministic rule helpers, re-exported from services/ai/langchain/rules."""
+from services.ai.langchain.rules import *  # noqa: F401,F403

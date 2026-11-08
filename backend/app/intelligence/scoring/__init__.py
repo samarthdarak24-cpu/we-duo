@@ -1,4 +1,2 @@
-"""Trust-score entry points (single source: app.explain)."""
-from ...explain import SCORE_VERSION, WEIGHTS, compute, persist
-
-__all__ = ["compute", "persist", "WEIGHTS", "SCORE_VERSION"]
+"""Trust scoring helpers, re-exported from services/ai/langchain/scoring."""
+from services.ai.langchain.scoring import *  # noqa: F401,F403

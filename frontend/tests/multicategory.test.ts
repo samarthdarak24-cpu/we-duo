@@ -70,12 +70,24 @@ afterAll(() => {
   }
 });
 
+const EXPECTED_CATEGORIES = [
+  "petrol_motorcycle", "petrol_scooter", "electric_scooter", "electric_motorcycle",
+  "passenger_car", "electric_car", "moped", "electric_bike", "auto_rickshaw",
+  "electric_three_wheeler", "passenger_three_wheeler", "cargo_three_wheeler",
+  "hatchback", "suv", "muv", "hybrid_car", "light_commercial", "truck", "bus",
+  "electric_commercial",
+];
+const ELECTRIC_CATEGORIES = [
+  "electric_scooter", "electric_motorcycle", "electric_car", "electric_bike",
+  "electric_three_wheeler", "electric_commercial",
+];
+
 describe("shared taxonomy (single source of truth)", () => {
-  it("ships six implemented categories in the required priority order", () => {
-    expect(vehicleCategories.implementedCategories().map((c) => c.id)).toEqual([
-      "petrol_motorcycle", "petrol_scooter", "electric_scooter",
-      "electric_motorcycle", "passenger_car", "electric_car",
-    ]);
+  it("ships all 20 implemented categories in the required priority order", () => {
+    expect(vehicleCategories.implementedCategories().map((c) => c.id)).toEqual(EXPECTED_CATEGORIES);
+    const priorities = vehicleCategories.implementedCategories().map((c) => c.priority);
+    expect(new Set(priorities).size).toBe(priorities.length);
+    expect(vehicleCategories.plannedCategories()).toEqual([]);
   });
 
   it("uses a car VIN only for four-wheelers", () => {
@@ -83,6 +95,10 @@ describe("shared taxonomy (single source of truth)", () => {
     expect(car.ok).toBe(true);
     const tooShortForCar = vehicleCategories.validateIdentity("passenger_car", { regNo: "MH12AB1234", primaryIdentifier: "ME4JF401" });
     expect(tooShortForCar.errors.join(" ")).toContain("VIN must be 17 characters");
+    for (const id of ["hatchback", "suv", "muv", "hybrid_car"]) {
+      expect(vehicleCategories.validateIdentity(id, { regNo: "MH12AB1234", primaryIdentifier: "WBA5R1C50KAK12345" }).ok, id).toBe(true);
+      expect(vehicleCategories.validateIdentity(id, { regNo: "MH12AB1234", primaryIdentifier: "ME4JF401" }).ok, id).toBe(false);
+    }
     const shortFrame = vehicleCategories.validateIdentity("petrol_scooter", { regNo: "MH12AB1234", primaryIdentifier: "ME4JF401" });
     expect(shortFrame.ok).toBe(true);
     const badFrame = vehicleCategories.validateIdentity("petrol_scooter", { regNo: "MH12AB1234", primaryIdentifier: "ABC" });
@@ -90,17 +106,90 @@ describe("shared taxonomy (single source of truth)", () => {
     expect(badFrame.errors.join(" ")).toContain("17-character car VIN rule does not apply");
   });
 
-  it("never asks an EV for engine number, engine CC or PUC", () => {
-    for (const id of ["electric_scooter", "electric_motorcycle", "electric_car"]) {
+  it("validates moped, three-wheeler and commercial chassis numbers without the car VIN rule", () => {
+    for (const [id, identifier] of [
+      ["moped", "ME4JF401H9T012345"],
+      ["auto_rickshaw", "MAT12345678901234"],
+      ["passenger_three_wheeler", "MAT12345678901234"],
+      ["cargo_three_wheeler", "MAT12345678901234"],
+      ["light_commercial", "MAT12345678901234"],
+      ["truck", "MAT12345678901234"],
+      ["bus", "MAT12345678901234"],
+      ["electric_commercial", "MAT12345678901234"],
+    ] as const) {
+      expect(vehicleCategories.validateIdentity(id, { regNo: "MH12AB1234", primaryIdentifier: identifier }).ok, id).toBe(true);
+      expect(vehicleCategories.validateIdentity(id, { regNo: "MH12AB1234", primaryIdentifier: "ABC" }).ok, id).toBe(false);
+    }
+  });
+
+  it("never asks a battery-electric vehicle for engine number, engine CC or PUC", () => {
+    for (const id of ELECTRIC_CATEGORIES) {
       const names = vehicleCategories.fieldsForCategory(id).flatMap((g) => g.fields.map((f) => f.name));
       expect(names, id).not.toContain("engine_number");
       expect(names, id).not.toContain("engine_cc");
       expect(vehicleCategories.pucApplicable(id), id).toBe(false);
+      expect(vehicleCategories.hasBatteryPack(id), id).toBe(true);
       const docs = vehicleCategories.documentsForCategory(id).map((d) => d.id);
       expect(docs, id).toContain("battery_health");
+      const rejected = vehicleCategories.validateIdentity(id, {
+        regNo: "MH12AB1234",
+        primaryIdentifier: "MAT12345678901234",
+        engineNumber: "ENG12345",
+      });
+      expect(rejected.ok, id).toBe(false);
+      expect(rejected.errors.join(" "), id).toContain("Engine number is not applicable");
     }
     const ev = vehicleCategories.mileageRulesForCategory("electric_scooter");
     expect(ev.sohIsOdometer).toBe(false);
+    expect(vehicleCategories.mileageRulesForCategory("electric_commercial").sohIsOdometer).toBe(false);
+  });
+
+  it("keeps engine fields and adds battery evidence for a hybrid", () => {
+    const names = vehicleCategories.fieldsForCategory("hybrid_car").flatMap((g) => g.fields.map((f) => f.name));
+    expect(names).toContain("engine_cc");
+    expect(names).toContain("battery_soh");
+    expect(vehicleCategories.hasBatteryPack("hybrid_car")).toBe(true);
+    expect(vehicleCategories.pucApplicable("hybrid_car")).toBe(true);
+    expect(vehicleCategories.documentsForCategory("hybrid_car").map((d) => d.id)).toContain("battery_health");
+    expect(vehicleCategories.agentNodesForCategory("hybrid_car")).toContain("EVBatteryAnalysisNode");
+  });
+
+  it("requires category-specific commercial and three-wheeler documents", () => {
+    const docs = (id: string) => vehicleCategories.documentsForCategory(id).map((d) => d.id);
+    for (const id of ["auto_rickshaw", "passenger_three_wheeler", "cargo_three_wheeler"]) {
+      expect(docs(id), id).toContain("rc_3w");
+      expect(docs(id), id).toContain("insurance_3w");
+      expect(docs(id), id).toContain("fitness");
+    }
+    expect(docs("auto_rickshaw")).toContain("permit");
+    expect(docs("passenger_three_wheeler")).toContain("passenger_permit");
+    expect(docs("cargo_three_wheeler")).toContain("goods_permit");
+    for (const id of ["light_commercial", "truck", "electric_commercial"]) {
+      expect(docs(id), id).toContain("rc_commercial");
+      expect(docs(id), id).toContain("fitness");
+      expect(docs(id), id).toContain("road_tax");
+      expect(docs(id), id).toContain("goods_permit");
+    }
+    expect(docs("bus")).toContain("passenger_permit");
+    expect(docs("hatchback")).not.toContain("rc_commercial");
+    expect(vehicleCategories.isAllowedDocument("petrol_scooter", "rc_2w")).toBe(true);
+    expect(vehicleCategories.isAllowedDocument("petrol_scooter", "rc")).toBe(false);
+    expect(vehicleCategories.isAllowedDocument("truck", "rc_commercial")).toBe(true);
+    expect(vehicleCategories.isAllowedDocument("truck", "rc_2w")).toBe(false);
+  });
+
+  it("gives every category a real component registry, including commercial sets", () => {
+    for (const id of EXPECTED_CATEGORIES) {
+      expect(vehicleCategories.componentIdsForCategory(id).length, id).toBeGreaterThan(0);
+    }
+    const threeWheeler = vehicleCategories.componentIdsForCategory("auto_rickshaw");
+    expect(threeWheeler).toContain("canopy");
+    expect(threeWheeler).toContain("cargo_box");
+    const commercial = vehicleCategories.componentIdsForCategory("truck");
+    expect(commercial).toContain("chassis_frame");
+    expect(commercial).toContain("load_body");
+    expect(vehicleCategories.componentIdsForCategory("electric_commercial")).toContain("battery_pack");
+    expect(vehicleCategories.componentIdsForCategory("electric_bike")).toContain("pedals");
   });
 
   it("maps legacy rows with fuel without changing the original text", () => {
@@ -108,12 +197,28 @@ describe("shared taxonomy (single source of truth)", () => {
     expect(vehicleCategories.categoryForVehicle({ category: "Sedan", fuel: "Electric" }).id).toBe("electric_car");
     expect(vehicleCategories.categoryForVehicle({ category: "Superbike", fuel: "Petrol" }).id).toBe("petrol_motorcycle");
     expect(vehicleCategories.categoryForVehicle({ category: "Scooter", fuel: "Electric" }).id).toBe("electric_scooter");
+    expect(vehicleCategories.categoryForVehicle({ category: "Hatchback", fuel: "Petrol" }).id).toBe("hatchback");
+    expect(vehicleCategories.categoryForVehicle({ category: "SUV", fuel: "Diesel" }).id).toBe("suv");
+    expect(vehicleCategories.categoryForVehicle({ category: "MUV", fuel: "Petrol" }).id).toBe("muv");
+    expect(vehicleCategories.categoryForVehicle({ category: "Hybrid", fuel: "Hybrid" }).id).toBe("hybrid_car");
+    expect(vehicleCategories.categoryForVehicle({ category: "Auto Rickshaw", fuel: "Petrol" }).id).toBe("auto_rickshaw");
+    expect(vehicleCategories.categoryForVehicle({ category: "Electric Rickshaw", fuel: "Electric" }).id).toBe("electric_three_wheeler");
+    expect(vehicleCategories.categoryForVehicle({ category: "Truck", fuel: "Diesel" }).id).toBe("truck");
+    expect(vehicleCategories.categoryForVehicle({ category: "Bus", fuel: "Diesel" }).id).toBe("bus");
+    expect(vehicleCategories.categoryForVehicle({ category: "Pickup", fuel: "Diesel" }).id).toBe("light_commercial");
     expect(vehicleCategories.categoryForVehicle({ vehicle_category_id: "electric_scooter", category: "Sedan", fuel: "Petrol" }).id).toBe("electric_scooter");
   });
 
-  it("never substitutes a car GLB for a two-wheeler", () => {
+  it("never substitutes a car GLB for a two-wheeler, three-wheeler or commercial vehicle", () => {
     expect(vehicleCategories.modelAssetForCategory("passenger_car").url).toContain("trustdrive-sedan.glb");
-    for (const id of ["petrol_motorcycle", "petrol_scooter", "electric_scooter", "electric_motorcycle"]) {
+    expect(vehicleCategories.modelAssetForCategory("electric_car").url).toContain("trustdrive-sedan.glb");
+    const noCarModel = [
+      "petrol_motorcycle", "petrol_scooter", "electric_scooter", "electric_motorcycle",
+      "moped", "electric_bike", "auto_rickshaw", "electric_three_wheeler",
+      "passenger_three_wheeler", "cargo_three_wheeler", "hatchback", "suv", "muv",
+      "hybrid_car", "light_commercial", "truck", "bus", "electric_commercial",
+    ];
+    for (const id of noCarModel) {
       const asset = vehicleCategories.modelAssetForCategory(id);
       expect(asset.url, id).toBeNull();
       expect(asset.status, id).toBe("unavailable");
@@ -121,9 +226,20 @@ describe("shared taxonomy (single source of truth)", () => {
     }
   });
 
-  it("runs the EV battery node only for electric profiles", () => {
+  it("runs the EV battery node only for profiles with a battery pack", () => {
     expect(vehicleCategories.agentNodesForCategory("passenger_car")).not.toContain("EVBatteryAnalysisNode");
-    expect(vehicleCategories.agentNodesForCategory("electric_scooter")).toContain("EVBatteryAnalysisNode");
+    expect(vehicleCategories.agentNodesForCategory("hybrid_car")).toContain("EVBatteryAnalysisNode");
+    for (const id of ELECTRIC_CATEGORIES) {
+      expect(vehicleCategories.agentNodesForCategory(id), id).toContain("EVBatteryAnalysisNode");
+    }
+  });
+
+  it("reports commercial and three-wheeler damage detection as unavailable, never substituted", () => {
+    expect(vehicleCategories.damageDetectorForCategory("passenger_car").status).toBe("available");
+    for (const id of ["auto_rickshaw", "electric_three_wheeler", "cargo_three_wheeler", "truck", "bus", "electric_commercial"]) {
+      expect(vehicleCategories.damageDetectorForCategory(id).status, id).toBe("unavailable");
+      expect(vehicleCategories.damageDetectorForCategory(id).classes, id).toEqual([]);
+    }
   });
 });
 
@@ -311,13 +427,22 @@ describe("category-aware verification engine", () => {
 
   it("exposes a category catalogue and honest capability profile", () => {
     const catalog = categoryService.categoryCatalog();
-    expect(catalog.implemented).toHaveLength(6);
+    expect(catalog.implemented).toHaveLength(20);
+    expect(catalog.planned).toHaveLength(0);
     expect(catalog.trustVersion).toBe("trust-v2-multicategory");
     const scooter = categoryService.categoryProfile("electric_scooter")!;
     expect(scooter.isElectric).toBe(true);
     expect(scooter.pucApplicable).toBe(false);
     expect(scooter.model3d.status).toBe("unavailable");
     expect(scooter.damageDetection.status).toBe("unavailable");
+    const truck = categoryService.categoryProfile("truck")!;
+    expect(truck.class).toBe("commercial");
+    expect(truck.pucApplicable).toBe(true);
+    expect(truck.documents.map((d) => d.id)).toContain("fitness");
+    expect(truck.damageDetection.status).toBe("unavailable");
+    const hybrid = categoryService.categoryProfile("hybrid_car")!;
+    expect(hybrid.isElectric).toBe(false);
+    expect(hybrid.capabilityNotes.join(" ")).toContain("Hybrid battery evidence");
     expect(categoryService.categoryProfile("not-a-category")).toBeNull();
   });
 
@@ -393,6 +518,19 @@ describe("strict category resolution at API boundaries", () => {
     expect(vehicleCategories.matchCategoryId("Sedan")).toBe("passenger_car");
     expect(vehicleCategories.matchCategoryId("Sedan", "Electric")).toBe("electric_car");
     expect(vehicleCategories.matchCategoryId("Sedan", "Petrol")).toBe("passenger_car");
+    expect(vehicleCategories.matchCategoryId("Hatchback")).toBe("hatchback");
+    expect(vehicleCategories.matchCategoryId("SUV")).toBe("suv");
+    expect(vehicleCategories.matchCategoryId("MUV")).toBe("muv");
+    expect(vehicleCategories.matchCategoryId("Hybrid")).toBe("hybrid_car");
+    expect(vehicleCategories.matchCategoryId("Moped")).toBe("moped");
+    expect(vehicleCategories.matchCategoryId("E-Bike")).toBe("electric_bike");
+    expect(vehicleCategories.matchCategoryId("Auto Rickshaw")).toBe("auto_rickshaw");
+    expect(vehicleCategories.matchCategoryId("E-Rickshaw")).toBe("electric_three_wheeler");
+    expect(vehicleCategories.matchCategoryId("Cargo Three-Wheeler")).toBe("cargo_three_wheeler");
+    expect(vehicleCategories.matchCategoryId("LCV")).toBe("light_commercial");
+    expect(vehicleCategories.matchCategoryId("Lorry")).toBe("truck");
+    expect(vehicleCategories.matchCategoryId("Coach")).toBe("bus");
+    expect(vehicleCategories.matchCategoryId("Electric Truck")).toBe("electric_commercial");
   });
 
   it("never silently falls back to car rules for an unknown category", () => {
@@ -513,6 +651,90 @@ describe("category-aware Seller registration (Task #9)", () => {
     expect(dataService.addDocumentForVehicle("u-seller", id, { type: "battery_warranty", fileName: "bw.pdf" }).ok).toBe(true);
     const bad = dataService.addDocumentForVehicle("u-seller", id, { type: "not_a_real_doc", fileName: "x.pdf" });
     expect(bad.ok).toBe(false);
+    const carDocOnScooter = dataService.addDocumentForVehicle("u-seller", id, { type: "rc", fileName: "car-rc.pdf" });
+    expect(carDocOnScooter.ok).toBe(false);
+  });
+
+  it("rejects an unknown explicit category instead of silently applying car rules", () => {
+    const res = dataService.createVehicleDraft("u-seller", {
+      make: "Unknown",
+      model: "Prototype",
+      year: 2024,
+      regNo: newReg(),
+      vin: "MAT12345678901234",
+      categoryId: "not-a-category",
+    });
+    expect(res.ok).toBe(false);
+    expect((res as { code: string }).code).toBe("VALIDATION_FAILED");
+    expect((res as { message: string }).message).toContain("Unknown vehicle category");
+  });
+
+  it("creates a three-wheeler draft with category documents and components", () => {
+    const reg = newReg();
+    const res = dataService.createVehicleDraft("u-seller2", {
+      make: "Bajaj",
+      model: "RE Maxima",
+      year: 2021,
+      regNo: reg,
+      vin: "MAT12345678901234",
+      fuel: "Diesel",
+      categoryId: "cargo_three_wheeler",
+      specs: { engine_cc: "447", seating_capacity: "1", payload_kg: "500", permit_type: "Goods carriage" },
+    });
+    expect(res.ok).toBe(true);
+    const id = (res as { id: string }).id;
+    expect(getVehicle(id).vehicle_category_id).toBe("cargo_three_wheeler");
+    expect(getVehicleSpecs(id).payload_kg).toBe("500");
+    expect(dataService.addDocumentForVehicle("u-seller2", id, { type: "rc_3w", fileName: "rc.pdf" }).ok).toBe(true);
+    expect(dataService.addDocumentForVehicle("u-seller2", id, { type: "fitness", fileName: "fitness.pdf" }).ok).toBe(true);
+    expect(dataService.addDocumentForVehicle("u-seller2", id, { type: "goods_permit", fileName: "permit.pdf" }).ok).toBe(true);
+    const components = dataService.componentsForVehicle(id);
+    expect(components.categoryId).toBe("cargo_three_wheeler");
+    expect(components.defs.map((d) => d.id)).toContain("cargo_box");
+    expect(components.interactionsAvailable).toBe(false);
+  });
+
+  it("creates a commercial truck draft with permit and weight fields", () => {
+    const reg = newReg();
+    const res = dataService.createVehicleDraft("u-seller2", {
+      make: "Tata",
+      model: "LPT 1618",
+      year: 2019,
+      regNo: reg,
+      vin: "MAT98765432109876",
+      fuel: "Diesel",
+      categoryId: "truck",
+      specs: { engine_cc: "5883", axle_count: "2", gross_vehicle_weight_kg: "16200", payload_kg: "10000", permit_type: "Goods carriage" },
+    });
+    expect(res.ok).toBe(true);
+    const id = (res as { id: string }).id;
+    expect(getVehicle(id).vehicle_category_id).toBe("truck");
+    expect(getVehicleSpecs(id).gross_vehicle_weight_kg).toBe("16200");
+    expect(dataService.addDocumentForVehicle("u-seller2", id, { type: "rc_commercial", fileName: "rc.pdf" }).ok).toBe(true);
+    expect(dataService.addDocumentForVehicle("u-seller2", id, { type: "road_tax", fileName: "tax.pdf" }).ok).toBe(true);
+    expect(dataService.addDocumentForVehicle("u-seller2", id, { type: "rc_2w", fileName: "wrong.pdf" }).ok).toBe(false);
+    expect(vehicleCategories.componentIdsForCategory("truck")).toContain("chassis_frame");
+  });
+
+  it("creates a hybrid car draft with both engine and battery specifications", () => {
+    const reg = newReg();
+    const res = dataService.createVehicleDraft("u-seller", {
+      make: "Toyota",
+      model: "Hyryder",
+      year: 2023,
+      regNo: reg,
+      vin: "MBJ11JV3001234567".slice(0, 17),
+      fuel: "Hybrid",
+      categoryId: "hybrid_car",
+      specs: { engine_cc: "1490", battery_capacity_kwh: "0.76", battery_soh: "96", battery_serial: "HYB-2023-001" },
+    });
+    expect(res.ok).toBe(true);
+    const id = (res as { id: string }).id;
+    expect(getVehicle(id).vehicle_category_id).toBe("hybrid_car");
+    expect(getVehicleSpecs(id).engine_cc).toBe("1490");
+    expect(getVehicleSpecs(id).battery_soh).toBe("96");
+    expect(dataService.addDocumentForVehicle("u-seller", id, { type: "battery_health", fileName: "battery.pdf" }).ok).toBe(true);
+    expect(dataService.addDocumentForVehicle("u-seller", id, { type: "puc", fileName: "puc.pdf" }).ok).toBe(true);
   });
 });
 
@@ -541,6 +763,30 @@ describe("buyer marketplace category filtering (Task #10)", () => {
     expect(ids).toContain("v-demo-scooter");
     expect(ids).toContain("v-demo-escooter");
     expect(res.items.every((i) => i.categoryId !== "passenger_car" && i.categoryId !== "electric_car")).toBe(true);
+  });
+
+  it("filters three-wheelers and commercial vehicles by class", () => {
+    const reg = `MH14TC${String(Date.now()).slice(-4)}`;
+    const created = dataService.createVehicleDraft("u-seller2", {
+      make: "Piaggio",
+      model: "Ape City",
+      year: 2022,
+      regNo: reg,
+      vin: `MAT${String(Date.now()).slice(-13)}`,
+      fuel: "Petrol",
+      categoryId: "auto_rickshaw",
+      specs: { engine_cc: "395", seating_capacity: "3", permit_type: "Passenger transport" },
+    });
+    expect(created.ok).toBe(true);
+    const id = (created as { id: string }).id;
+    getDb().prepare("UPDATE listings SET status = 'published', published_at = ? WHERE vehicle_id = ?").run(new Date().toISOString(), id);
+
+    const three = dataService.getMarketplace({ category: "three_wheeler", pageSize: 48 });
+    expect(three.items.some((i) => i.id === id)).toBe(true);
+    expect(three.items.every((i) => vehicleCategories.getCategory(i.categoryId)?.class === "three_wheeler")).toBe(true);
+
+    const two = dataService.getMarketplace({ category: "two_wheeler", pageSize: 48 });
+    expect(two.items.some((i) => i.id === id)).toBe(false);
   });
 
   it("surfaces categoryLabel on every marketplace card", () => {

@@ -307,4 +307,8 @@ _conn.executescript(SCHEMA)
 _seed(_conn)
 _conn.close()
 
+# Additive, idempotent AI-field migration (same file the app runs at startup).
+from app.migrations_add_ai_fields import ensure_ai_columns  # noqa: E402
+ensure_ai_columns()
+
 (TMP / "uploads").mkdir(parents=True, exist_ok=True)

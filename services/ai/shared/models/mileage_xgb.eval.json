@@ -1,0 +1,40 @@
+{
+  "dataset": "C:\\Users\\darak\\Downloads\\finall caranimation\\ai-services\\shared\\data\\mileage_training.csv",
+  "dataset_label": "synthetic-demo-600",
+  "model": "C:\\Users\\darak\\Downloads\\finall caranimation\\ai-services\\shared\\models\\mileage_xgb.json",
+  "features": [
+    "year",
+    "km",
+    "delta",
+    "age_years",
+    "km_per_year"
+  ],
+  "rows": 600,
+  "positives": 300,
+  "negatives": 300,
+  "hold_out": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0,
+    "roc_auc": 1.0,
+    "tp": 75,
+    "tn": 75,
+    "fp": 0,
+    "fn": 0
+  },
+  "cross_validation_5fold": {
+    "f1_mean": 0.9967,
+    "f1_std": 0.0041,
+    "roc_auc_mean": 0.9999,
+    "roc_auc_std": 0.0001
+  },
+  "feature_importance": {
+    "year": 0.1217,
+    "km": 0.2922,
+    "delta": 15.7192,
+    "age_years": 0.1094,
+    "km_per_year": 2.766
+  },
+  "status": "EXPERIMENTAL",
+  "disclaimer": "Synthetic, perfectly-separable demo data. High scores here do not generalise to real-world odometer fraud. Retain deterministic mileage checks as the active functionality."
+}

@@ -1,0 +1,64 @@
+# ---------------------------------------------------------------------------
+# TrustDrive — combined Render image.
+#
+# Why one image: the Next.js app owns the SQLite database through `node:sqlite`
+# and the FastAPI service reads the SAME file. Two Render services cannot share
+# a disk, so the supported deployment is one web service with a persistent disk
+# at /data, running Next + FastAPI + the DB-backed worker under one supervisor.
+# Scaling out requires moving the Next data layer to Postgres first (see
+# project/docs/deployment/DEPLOYMENT.md, "Scale-out path").
+# ---------------------------------------------------------------------------
+
+FROM node:22-bookworm-slim AS node-build
+WORKDIR /app
+COPY frontend/package.json frontend/package-lock.json* ./
+RUN npm ci
+COPY frontend/. .
+ENV NEXT_OUTPUT=standalone \
+    NEXT_TELEMETRY_DISABLED=1 \
+    NODE_OPTIONS=--max-old-space-size=4096
+RUN npm run build
+
+FROM node:22-bookworm-slim AS runtime
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends python3 python3-venv python3-pip curl ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+# Self-contained Next server + static assets.
+COPY --from=node-build /app/.next/standalone ./
+COPY --from=node-build /app/.next/static ./.next/static
+COPY --from=node-build /app/public ./public
+RUN npm install --no-package-lock sharp
+
+# AI/ML assets (OCR / YOLO / XGBoost / LLM weights + metadata). backend/app/config.py
+# defaults TD_MODEL_DIR to services/ai/shared/models, so this must be in the image.
+COPY services ./services
+
+# Intelligence service (slim deps only).
+COPY backend ./backend
+COPY backend/requirements-render.txt ./requirements-render.txt
+RUN python3 -m venv /opt/venv \
+ && /opt/venv/bin/pip install --no-cache-dir --upgrade pip \
+ && /opt/venv/bin/pip install --no-cache-dir -r /app/requirements-render.txt
+
+COPY project/infra/deployment/start-render.sh /app/start-render.sh
+RUN chmod +x /app/start-render.sh
+
+ENV PATH="/opt/venv/bin:$PATH" \
+    NODE_ENV=production \
+    PORT=10000 \
+    TD_ENV=production \
+    TD_DATA_DIR=/tmp/trustdrive \
+    TD_DB_FILE=/tmp/trustdrive/trustdrive.db \
+    TD_UPLOAD_DIR=/tmp/trustdrive/uploads \
+    TD_DB_URL=sqlite+pysqlite:////tmp/trustdrive/trustdrive.db \
+    TD_INTELLIGENCE_URL=http://127.0.0.1:8000 \
+    TD_SEED_DEMO=1 \
+    TD_LLM_PROVIDER=none
+
+EXPOSE 10000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+  CMD curl -fsS "http://127.0.0.1:${PORT}/api/v1/health/ready" || exit 1
+
+CMD ["/app/start-render.sh"]

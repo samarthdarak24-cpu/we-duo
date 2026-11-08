@@ -1,10 +1,11 @@
 import { addDocumentForVehicle, getDocumentsView } from "@/lib/server/data";
-import { getListingByVehicle, getVehicle } from "@/lib/server/db";
+import { attachFileScanDocument, getListingByVehicle, getVehicle } from "@/lib/server/db";
 import { fail, created, ok, requireRole } from "@/lib/server/http";
 import { paginate } from "@/lib/server/pagination";
-import { MAX_DOC_BYTES, saveUpload, sniffUpload } from "@/lib/server/files";
+import { MAX_DOC_BYTES, sniffUpload } from "@/lib/server/files";
 import { nearDuplicateDocuments, recordDocumentExtractions } from "@/lib/server/evidence";
-import { scanBuffer, type ScanResult } from "@/lib/server/scan";
+import type { ScanResult } from "@/lib/server/scan";
+import { guardedSaveUpload } from "@/lib/server/upload-guard";
 import { withIdempotency } from "@/lib/server/idempotency";
 import { LIMITS, enforceRateLimit } from "@/lib/server/ratelimit";
 import { signedDownloadPath } from "@/lib/server/signed";
@@ -68,19 +69,29 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     const bytes = Buffer.from(await file.arrayBuffer());
     const sniffed = sniffUpload(bytes);
     if (!sniffed) return fail(415, "UNSUPPORTED_FILE_TYPE", "The file content is not a valid PDF, PNG, JPEG or WebP.");
-    scan = await scanBuffer(bytes, { fileName: file.name, mime: sniffed.mime });
-    if (scan.status === "infected") return fail(422, "MALWARE_DETECTED", scan.detail);
-    try {
-      const stored = saveUpload(`documents/${params.id}`, bytes, MAX_DOC_BYTES);
-      fileKey = stored.key;
-      mime = stored.mime;
-      sizeBytes = stored.size;
-      sha256 = stored.sha256;
-    } catch (err) {
-      const code = (err as Error).message;
-      if (code === "FILE_TOO_LARGE") return fail(413, "FILE_TOO_LARGE", "Documents must be under 10 MB.");
-      return fail(415, "UNSUPPORTED_FILE_TYPE", "The file content is not a valid PDF, PNG, JPEG or WebP.");
+    // Scan + store as one gate. Infected files are quarantined and never enter
+    // the upload root; an unavailable configured scanner fails closed (503).
+    const guarded = await guardedSaveUpload({
+      bytes,
+      fileName: file.name,
+      mime: sniffed.mime,
+      folder: `documents/${params.id}`,
+      maxBytes: MAX_DOC_BYTES,
+      actorId: guard.user.sub,
+      actorRole: guard.user.role,
+      vehicleId: params.id,
+      req,
+    });
+    if (!guarded.ok) {
+      return fail(guarded.status, guarded.code, guarded.message, {
+        scan: guarded.scan,
+      });
     }
+    scan = guarded.scan;
+    fileKey = guarded.stored.key;
+    mime = guarded.stored.mime;
+    sizeBytes = guarded.stored.size;
+    sha256 = guarded.stored.sha256;
     fileName = file.name;
     consent = form.get("consent") !== "false";
     content = `${file.name}:${file.size}`;
@@ -109,6 +120,9 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   });
   if (!result.ok) return fail(result.code === "NOT_FOUND" ? 404 : result.code === "FORBIDDEN" ? 403 : 400, result.code, result.message);
   const documentId = (result as { id?: string }).id;
+  // Link the persisted scan verdict to the document row so the UI/report can
+  // show the engine that actually scanned the bytes.
+  if (documentId && fileKey) attachFileScanDocument(fileKey, documentId, params.id);
   // Real OCR bridge: when a file was stored, run the intelligence extraction
   // synchronously and persist its fields/status before returning. If the service
   // is down the document stays pending with the honest reason in status_reason.

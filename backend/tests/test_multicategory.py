@@ -38,11 +38,21 @@ def _readings(vid: str, points: list[tuple[str, int]]) -> None:
 
 # --- Canonical taxonomy ----------------------------------------------------
 
-def test_one_canonical_taxonomy_has_six_implemented_profiles():
-    assert categories.spec_version() == "multicategory-1.0.0"
+EXPECTED_CATEGORIES = [
+    "petrol_motorcycle", "petrol_scooter", "electric_scooter", "electric_motorcycle",
+    "passenger_car", "electric_car", "moped", "electric_bike", "auto_rickshaw",
+    "electric_three_wheeler", "passenger_three_wheeler", "cargo_three_wheeler",
+    "hatchback", "suv", "muv", "hybrid_car", "light_commercial", "truck", "bus",
+    "electric_commercial",
+]
+
+
+def test_one_canonical_taxonomy_has_twenty_implemented_profiles():
+    assert categories.spec_version() == "multicategory-2.0.0"
     assert categories.trust_version() == "trust-v2-multicategory"
-    assert len([c for c in categories.categories() if c.get("status") == "implemented"]) == 6
-    assert len(categories.planned_categories()) >= 10
+    implemented = [c for c in categories.categories() if c.get("status") == "implemented"]
+    assert [c["id"] for c in implemented] == EXPECTED_CATEGORIES
+    assert categories.planned_categories() == []
 
 
 @pytest.mark.parametrize("raw,fuel,expected", [
@@ -50,9 +60,23 @@ def test_one_canonical_taxonomy_has_six_implemented_profiles():
     ("Sedan", "Electric", "electric_car"),
     ("Scooter", "Electric", "electric_scooter"),
     ("electric_scooter", "Petrol", "electric_scooter"),  # explicit id is authoritative
+    ("Hatchback", "Petrol", "hatchback"),
+    ("SUV", "Diesel", "suv"),
+    ("MUV", "Petrol", "muv"),
+    ("Hybrid", "Hybrid", "hybrid_car"),
+    ("Moped", "Petrol", "moped"),
+    ("E-Bike", "Electric", "electric_bike"),
+    ("Auto Rickshaw", "Petrol", "auto_rickshaw"),
+    ("E-Rickshaw", "Electric", "electric_three_wheeler"),
+    ("Cargo Three-Wheeler", "Diesel", "cargo_three_wheeler"),
+    ("LCV", "Diesel", "light_commercial"),
+    ("Lorry", "Diesel", "truck"),
+    ("Coach", "Diesel", "bus"),
+    ("Electric Truck", "Electric", "electric_commercial"),
 ])
 def test_category_resolution_handles_legacy_and_explicit_ids(raw, fuel, expected):
     assert categories.resolve_category_id(raw, fuel) == expected
+    assert categories.match_category_id(raw, fuel) == expected
 
 
 def test_identifier_validation_is_category_specific():
@@ -70,19 +94,74 @@ def test_identifier_validation_is_category_specific():
                                          identifier="MD2DS123", require_all=True)
     assert short[0] is True, "8-character scooter frame numbers are valid"
 
+    for cid in ("moped", "auto_rickshaw", "passenger_three_wheeler", "cargo_three_wheeler",
+                "light_commercial", "truck", "bus", "electric_commercial"):
+        ok = categories.validate_identity(cid, reg="MH12AB3456",
+                                          identifier="MAT12345678901234", require_all=True)
+        assert ok[0] is True, cid
+        bad = categories.validate_identity(cid, reg="MH12AB3456",
+                                           identifier="ABC", require_all=True)
+        assert bad[0] is False, cid
+
+    for cid in ("hatchback", "suv", "muv", "hybrid_car"):
+        assert categories.validate_identity(
+            cid, reg="MH12AB3456", identifier="WBA8E9G50GNU12345", require_all=True)[0] is True
+        assert categories.validate_identity(
+            cid, reg="MH12AB3456", identifier="ME4JC259", require_all=True)[0] is False
+
 
 def test_electric_vehicles_never_require_an_engine_number():
-    bad = categories.validate_identity("electric_scooter", reg="MH12AB3456",
-                                       identifier="MD2DSB123K1A00421",
-                                       engine_number="ENG123", require_all=True)
-    assert bad[0] is False
-    assert any("Engine number is not applicable" in e for e in bad[1])
-    fields = {f["name"] for f in categories.fields_for("electric_scooter")}
-    assert "engine_number" not in fields and "engine_cc" not in fields
-    assert "motor_number" in fields
-    assert categories.puc_applicable("electric_scooter") is False
+    for cid in ("electric_scooter", "electric_bike", "electric_three_wheeler", "electric_commercial"):
+        bad = categories.validate_identity(cid, reg="MH12AB3456",
+                                           identifier="MAT12345678901234",
+                                           engine_number="ENG123", require_all=True)
+        assert bad[0] is False, cid
+        assert any("Engine number is not applicable" in e for e in bad[1]), cid
+        fields = {f["name"] for f in categories.fields_for(cid)}
+        assert "engine_number" not in fields and "engine_cc" not in fields, cid
+        assert "motor_number" in fields, cid
+        assert categories.puc_applicable(cid) is False, cid
+        assert categories.has_battery_pack(cid) is True, cid
     assert categories.puc_applicable("petrol_scooter") is True
     assert categories.has_engine("electric_car") is False
+
+
+def test_hybrid_keeps_engine_fields_and_requires_battery_evidence():
+    fields = {f["name"] for f in categories.fields_for("hybrid_car")}
+    assert "engine_cc" in fields
+    assert "battery_soh" in fields
+    assert categories.has_engine("hybrid_car") is True
+    assert categories.has_battery_pack("hybrid_car") is True
+    assert categories.has_battery_pack("passenger_car") is False
+    assert categories.puc_applicable("hybrid_car") is True
+    docs = {d["id"] for d in categories.documents_for("hybrid_car")}
+    assert {"battery_health", "battery_warranty", "puc"} <= docs
+
+
+def test_commercial_and_three_wheeler_documents_are_category_specific():
+    three = {d["id"] for d in categories.documents_for("cargo_three_wheeler")}
+    assert {"rc_3w", "insurance_3w", "fitness", "goods_permit"} <= three
+    auto = categories.required_document_ids("auto_rickshaw")
+    assert {"rc_3w", "insurance_3w", "fitness", "permit"} <= set(auto)
+    truck = {d["id"] for d in categories.documents_for("truck")}
+    assert {"rc_commercial", "insurance_commercial", "fitness", "road_tax", "goods_permit"} <= truck
+    assert {"passenger_permit"} <= {d["id"] for d in categories.documents_for("bus")}
+    assert "rc_commercial" not in {d["id"] for d in categories.documents_for("petrol_scooter")}
+
+
+def test_category_component_sets_cover_three_wheelers_and_commercial_vehicles():
+    three = categories.component_ids_for("auto_rickshaw")
+    assert "canopy" in three and "cargo_box" in three
+    commercial = categories.component_ids_for("truck")
+    assert "chassis_frame" in commercial and "load_body" in commercial
+    assert "battery_pack" in categories.component_ids_for("electric_commercial")
+    assert "pedals" in categories.component_ids_for("electric_bike")
+    assert categories.damage_detector_for("passenger_car")["status"] == "available"
+    for cid in ("auto_rickshaw", "electric_three_wheeler", "cargo_three_wheeler",
+                "truck", "bus", "electric_commercial"):
+        detector = categories.damage_detector_for(cid)
+        assert detector["status"] == "unavailable", cid
+        assert detector["classes"] == [], cid
 
 
 # --- Category-aware deterministic detectors --------------------------------
@@ -123,7 +202,13 @@ def test_battery_findings_report_provenance_and_never_invent_soh():
         any("never" in x.lower() for x in ev.limitations)
     combustion = detectors.battery_findings("v-test")
     assert combustion.findings == []
-    assert any("combustion" in x for x in combustion.limitations)
+    assert any("do not apply" in x for x in combustion.limitations)
+
+    hybrid_id = _vehicle("hybrid_car", "hybrid")
+    hybrid = detectors.battery_findings(hybrid_id)
+    assert hybrid.category_id == "hybrid_car"
+    assert any("battery pack" in x for x in hybrid.limitations)
+    assert any(f.anomaly_type == "unverified_battery_health" for f in hybrid.findings)
 
 
 def test_detect_all_is_category_aware_and_reports_capabilities():
@@ -222,9 +307,14 @@ def test_extraction_workflow_is_category_aware_and_still_18_steps(tmp_path):
 def test_agent_node_lists_are_conditional():
     assert len(agent.nodes_for("passenger_car")) == 15
     assert len(agent.nodes_for("petrol_scooter")) == 15
+    assert len(agent.nodes_for("truck")) == 15
     assert len(agent.nodes_for("electric_scooter")) == 16
+    assert len(agent.nodes_for("hybrid_car")) == 16
+    assert len(agent.nodes_for("electric_commercial")) == 16
     assert "EVBatteryAnalysisNode" not in agent.nodes_for("petrol_motorcycle")
+    assert "EVBatteryAnalysisNode" not in agent.nodes_for("truck")
     assert "EVBatteryAnalysisNode" in agent.nodes_for("electric_motorcycle")
+    assert "EVBatteryAnalysisNode" in agent.nodes_for("hybrid_car")
 
 
 def test_investigation_executes_only_relevant_nodes_and_names_category():
@@ -256,12 +346,14 @@ def test_category_catalogue_endpoint_is_public_and_complete():
     assert r.status_code == 200
     body = r.json()
     ids = {c["id"] for c in body["categories"]}
-    assert {"petrol_motorcycle", "petrol_scooter", "electric_scooter",
-            "electric_motorcycle", "passenger_car", "electric_car"} <= ids
+    assert set(EXPECTED_CATEGORIES) <= ids
     scooter = next(c for c in body["categories"] if c["id"] == "electric_scooter")
     assert "EVBatteryAnalysisNode" in scooter["agent_nodes"]
     assert scooter["model3d"]["status"] == "unavailable"
     assert scooter["damage_detector"]["status"] == "unavailable"
+    truck = next(c for c in body["categories"] if c["id"] == "truck")
+    assert {"rc_commercial", "fitness", "goods_permit"} <= {d["id"] for d in truck["documents"]}
+    assert truck["damage_detector"]["status"] == "unavailable"
 
 
 def test_category_profile_endpoint_resolves_legacy_labels():

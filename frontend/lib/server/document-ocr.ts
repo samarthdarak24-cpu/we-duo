@@ -14,11 +14,9 @@
 //  * "verified" here means the automated extraction checks passed — it is not a
 //    claim that the paper document is authentic.
 // ---------------------------------------------------------------------------
-import fs from "node:fs";
-
 import { getDocument, updateDocument } from "./db";
 import { recordDocumentExtractions } from "./evidence";
-import { absoluteUploadPath } from "./files";
+import { materializeUpload } from "./files";
 import { callIntelligence } from "./intelligence";
 
 interface PythonExtraction {
@@ -74,76 +72,82 @@ export async function runDocumentOcr(documentId: string): Promise<DocumentOcrOut
     // an OCR run against bytes that do not exist.
     return { status: "not_applicable", reason: "No stored file is linked to this document." };
   }
-  const absolute = absoluteUploadPath(doc.file_key);
-  if (!absolute || !fs.existsSync(absolute)) {
-    return markUnavailable(documentId, "the stored file could not be found on disk.");
+  // Local storage returns the existing path; S3 downloads to a transient temp
+  // file that is removed in `finally` after the Python service has read it.
+  const materialized = await materializeUpload(doc.file_key).catch(() => null);
+  if (!materialized) {
+    return markUnavailable(documentId, "the stored file could not be found in storage.");
   }
 
-  const response = await callIntelligence<PythonExtraction>(
-    "/api/intelligence/documents/process",
-    {
-      document_id: doc.id,
-      vehicle_id: doc.vehicle_id,
-      path: absolute,
-      doc_type: doc.type,
-      async: false,
-    },
-    { timeout: 150_000 }
-  );
+  try {
+    const response = await callIntelligence<PythonExtraction>(
+      "/api/intelligence/documents/process",
+      {
+        document_id: doc.id,
+        vehicle_id: doc.vehicle_id,
+        path: materialized.path,
+        doc_type: doc.type,
+        async: false,
+      },
+      { timeout: 150_000 }
+    );
 
-  if (!response.ok || !response.data) {
-    return markUnavailable(documentId, response.error ?? "the extraction service returned no result.");
+    if (!response.ok || !response.data) {
+      return markUnavailable(documentId, response.error ?? "the extraction service returned no result.");
+    }
+
+    const result = response.data;
+    const lowConfidence = result.low_confidence || result.confidence < 0.55;
+    const flags = Array.isArray(result.flags) ? result.flags : [];
+    const hasMismatch = (result.comparison?.checks ?? []).some((check) => check.result === "mismatch");
+    const needsCorrection = lowConfidence || hasMismatch || flags.length > 0;
+    const status = needsCorrection ? "needs_correction" : "verified";
+    const statusReason = needsCorrection
+      ? flags.join(", ") || (hasMismatch ? "Extracted values conflict with the vehicle record." : "Low extraction confidence.")
+      : null;
+
+    // Store the real fields plus the traceability metadata the UI and PDF report
+    // need. `fields` is nested so `recordDocumentExtractions` can write one row per
+    // field without treating the engine metadata as an extracted value.
+    const extracted = {
+      fields: result.fields ?? {},
+      confidence: result.confidence,
+      method: result.method,
+      engine: result.engine,
+      is_ocr: result.is_ocr,
+      flags,
+      comparison: result.comparison ?? {},
+      workflow: result.workflow ?? [],
+      expiry: result.expiry,
+      duplicate_of: result.duplicate_of,
+      review_id: result.manual_review_id,
+      version: result.version,
+      source: "python-intelligence",
+      warning: result.warning ?? "Machine-read text is not proof of document authenticity.",
+    };
+
+    updateDocument(documentId, {
+      extracted: JSON.stringify(extracted),
+      status,
+      status_reason: statusReason,
+      verified_at: status === "verified" ? new Date().toISOString() : null,
+    });
+    const fieldsStored = recordDocumentExtractions(documentId);
+
+    return {
+      status: "processed",
+      engine: result.engine,
+      method: result.method,
+      isOcr: result.is_ocr,
+      confidence: result.confidence,
+      flags,
+      reviewId: result.manual_review_id,
+      fieldsStored,
+      documentStatus: status,
+    };
+  } finally {
+    materialized.cleanup();
   }
-
-  const result = response.data;
-  const lowConfidence = result.low_confidence || result.confidence < 0.55;
-  const flags = Array.isArray(result.flags) ? result.flags : [];
-  const hasMismatch = (result.comparison?.checks ?? []).some((check) => check.result === "mismatch");
-  const needsCorrection = lowConfidence || hasMismatch || flags.length > 0;
-  const status = needsCorrection ? "needs_correction" : "verified";
-  const statusReason = needsCorrection
-    ? flags.join(", ") || (hasMismatch ? "Extracted values conflict with the vehicle record." : "Low extraction confidence.")
-    : null;
-
-  // Store the real fields plus the traceability metadata the UI and PDF report
-  // need. `fields` is nested so `recordDocumentExtractions` can write one row per
-  // field without treating the engine metadata as an extracted value.
-  const extracted = {
-    fields: result.fields ?? {},
-    confidence: result.confidence,
-    method: result.method,
-    engine: result.engine,
-    is_ocr: result.is_ocr,
-    flags,
-    comparison: result.comparison ?? {},
-    workflow: result.workflow ?? [],
-    expiry: result.expiry,
-    duplicate_of: result.duplicate_of,
-    review_id: result.manual_review_id,
-    version: result.version,
-    source: "python-intelligence",
-    warning: result.warning ?? "Machine-read text is not proof of document authenticity.",
-  };
-
-  updateDocument(documentId, {
-    extracted: JSON.stringify(extracted),
-    status,
-    status_reason: statusReason,
-    verified_at: status === "verified" ? new Date().toISOString() : null,
-  });
-  const fieldsStored = recordDocumentExtractions(documentId);
-
-  return {
-    status: "processed",
-    engine: result.engine,
-    method: result.method,
-    isOcr: result.is_ocr,
-    confidence: result.confidence,
-    flags,
-    reviewId: result.manual_review_id,
-    fieldsStored,
-    documentStatus: status,
-  };
 }
 
 /**

@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { PortalShell } from "@/components/shared/PortalShell";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { SectionCard } from "@/components/shared/SectionCard";
 import { SettingsForm } from "@/components/shared/SettingsForm";
 import { SecurityCenter } from "@/components/shared/SecurityCenter";
 import { AccountDangerZone } from "@/components/shared/AccountDangerZone";
+import { IntegrationStatus } from "@/components/seller/IntegrationStatus";
 import { portalUser } from "@/lib/server/page";
 
 export const metadata: Metadata = { title: "Settings — TrustDrive" };

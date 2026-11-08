@@ -149,7 +149,7 @@ def extract_fields(text: str, category_id: str | None = None) -> ExtractedFields
 
     battery_serial = None
     battery_capacity = None
-    if categories.is_electric(cid):
+    if categories.has_battery_pack(cid):
         m = BATTERY_SERIAL_RE.search(text)
         battery_serial = m.group(1).upper() if m else None
         m = BATTERY_CAPACITY_RE.search(text)

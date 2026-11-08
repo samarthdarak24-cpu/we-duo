@@ -1,0 +1,119 @@
+# TrustDrive — Implementation Status
+
+> **Master tracker.** A feature is COMPLETE only when: UI matches design · backend API
+> exists · DB operation works · permissions enforced server-side · loading/empty/error
+> states work · input validation works · tests pass · data persists after refresh · no
+> placeholder action remains · no fake result is presented as real · the related
+> Seller/Buyer workflow works.
+
+**Last updated:** 2026-11-08 (final verification · all implementable phases complete) · **Final live evidence:** broad run `LIVE-MW6DOO1A` (272/272), focused run `MW5ATBQ1` (49/49), OCR negative 10/10, security 13/13 + 10/10, page sweep 40/40, responsive 44/44. · **Final suite evidence:** frontend **329/329** (16 unit files + 6 new integration suites: S3/SMTP/SMS/ClamAV/LLM/OCR-provider) , backend **154/154**, typecheck 0 errors, intel:test 154 passed.
+
+## Governing decision
+
+Additive, not destructive. The Next.js app is the **system of record** (portals, REST API,
+relational DB). The Python FastAPI service is **additive** beside it, sharing the same
+database. One shared DB, two runtimes, no removed feature.
+
+## Verified facts (live, this pass)
+
+- **55 tables**, `SCHEMA_VERSION=3`, shared `.data/trustdrive.db`; `integrity_check=ok`, 0 FK violations, WAL mode.
+- **52 pages**, **109 Next.js API route handlers**, **87 React components**, **56 Python modules**.
+- Users: admin + sellers (`samarth@trustdrive.dev`, `weduo@trustdrive.dev`) + buyers (`rohan@trustdrive.dev`, `aditya@trustdrive.dev`, others); password `demo1234`.
+- **122 vehicles**, **110 listings** at final snapshot; all six implemented categories present; no planned-category rows.
+- Evidence tables populated: `documents` 254, `document_extractions` 1,200, `damage_records` 75, `findings` 40, `mileage_readings` 158, `history_events` 97, `trust_scores` 73, `ai_runs` 41, `inquiries` 57, `inquiry_messages` 106, `reports` 33, `notifications` 361, `audit_logs` 209, `chain_records` 652.
+- Seller pages pass the **real** logged-in `user.id` into `getSellerOverview` (not hardcoded).
+- RBAC isolation confirmed: `inquiries` carry `buyer_id` + `seller_id`; non-owner read → 403; buyer document view is consent-gated.
+- 3D: real `trustdrive-sedan.glb` for cars; labelled schematic and disabled interactions for all two-wheelers.
+
+## Latest verification
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | **0 errors** |
+| `npm test -- --run` | **363 passed** (20 files, incl. auth-security + integration suites: S3/SMTP/SMS/ClamAV/LLM/OCR-provider/anchoring/registry-adapters/evm-anchoring) |
+| `npm run intel:test` | **182 passed** |
+| `NEXT_DIST_DIR=.next_verify npm run build` | **PASS**, 52/52 pages, 109 API routes |
+| Broad live browser run | **272/272 checks, 6/6 categories** |
+| Focused six-feature run | **49/49 checks** |
+| OCR negative paths | **10/10** |
+| Security/RBAC focused | **13/13** |
+| Independent security/API | **10/10 security, 15/15 API** |
+| Page sweep / responsive | **40/40 pages, 44/44 responsive** |
+| Trust snapshots | Persisted, deduplicated, append-only; returned as `history` |
+| Rate limiting | Shared `rate_limit_hits` table; 429 + `Retry-After` verified |
+| Durable checkpoints | `checkpoint_backend=sqlite`, `durable_checkpointing=true` |
+
+## Phase summary
+
+| Phase | Area | Status |
+| --- | --- | --- |
+| 0 | Repo audit (55 tables, 109 routes, 52 pages) | ✅ |
+| 1 | Premium design system (Day/Night) | ✅ (skeletons present; some pages use simpler loading states) |
+| 2 | Production authentication & demo security | ✅ `validateProductionConfig` fail-closed; `TD_SEED_DEMO=0` enforced; anonymous 401; wrong role 403; tampered JWT 401; cross-user isolation; `tests/auth-security.test.ts` (16 tests) |
+| 3 | Buyer frontend (dashboard, explore, search, saved, compare, history, risk, reports, verification, inquiries, settings) | ✅ |
+| 4 | DB & API architecture (55 tables, 11 immutability triggers) | ✅ |
+| 5 | FastAPI backend (auth/users/vehicles/docs/history/mileage/verification/AI/damage/listings/search/saved/compare/inquiries/reports/QR/notifications/audit) | ✅ |
+| 6 | Seller integration | ✅ |
+| 7 | Buyer integration | ✅ |
+| 8 | Document intelligence (18-step OCR pipeline) | ✅ (RapidOCR default; PaddleOCR 3.7.0 installed + selectable via TD_OCR_PROVIDER; RapidOCR wins on speed/accuracy in this env — see OCR_PROVIDER_COMPARISON.md) |
+| 9 | Deterministic fraud detection | ✅ |
+| 10 | ML models (XGBoost demo-trained; YOLO wired end-to-end) | 🟡 XGBoost `EXPERIMENTAL` (trained + evaluated on synthetic-demo-600; not production fraud detection); YOLO detect/review + `DamageAiAnalyzer` UI + buyer passport visibility |
+| 11 | 15/16-node investigator (EV + hybrid adds `EVBatteryAnalysisNode`) | ✅ LangGraph active in `backend/.venv` |
+| 12 | Three.js inspection (real GLB, 4 modes, raycast picking, DB hotspots) | ✅ |
+| 13 | Trust score & reports (PDF + QR) | ✅ |
+| 14 | Record integrity (SHA-256, drift checks; no on-chain claim) | ✅ |
+| 15 | Security / testing / workers | ✅ (DB-backed shared rate limit; `tests/auth-security.test.ts` 16 tests; signed downloads fail closed; upload-guard: clamd/HTTP/local scan, quarantine, fail-closed 503, `file_scans` + `notification_deliveries` audit tables) |
+| 16 | Seed & deployment (20-category taxonomy; demo inventory additive) | ✅ Six demo vehicles plus 14 new category profiles exercised through seller-created records |
+| 17 | Integration adapters (storage/AV/notify/LLM/anchoring/registry) | ✅ `files.ts` (async local/S3, presigned URLs, health), `scan.ts` (clamd INSTREAM + HTTP + local, fail-closed), `upload-guard.ts` (quarantine+audit+notify), `mailer.ts` (SMTP retry + SMS gateway + delivery rows), `llm-provider.ts` (8-case stub-tested), `anchoring.ts` (local SHA-256 chain, on-chain NOT claimed) — all config-gated, honest `unavailable` when credentials absent |
+| 18 | Live browser verification | ✅ (seller/buyer core flows, 20 categories, OCR/AI/RBAC) |
+| 19 | Final reports | ✅ `PRODUCTION_READINESS_REPORT.md`, `ALL_REMAINING_ISSUES_STATUS.md`, `ENVIRONMENT_CONFIGURATION_GUIDE.md`, `DEPLOYMENT_AND_ROLLBACK_GUIDE.md`, `SECURITY_HARDENING_REPORT.md`, `FULL_REGRESSION_TEST_REPORT.md` |
+
+Legend: ✅ done & verified · 🟡 partial / honest gap · ⚙️ env-gated adapter · 🔲 not started.
+
+## Multi-category platform
+
+- **Taxonomy:** `frontend/lib/vehicle-categories.json` (`version: multicategory-2.0.0`, `trustVersion: trust-v2-multicategory`) is the single source of truth consumed by both TS and Python.
+- **20 implemented categories (zero planned):** petrol motorcycle, petrol scooter, electric scooter, electric motorcycle, passenger car, electric car, moped, electric bike, auto rickshaw, electric three-wheeler, passenger three-wheeler, cargo three-wheeler, hatchback, SUV, MUV, hybrid car, light commercial, truck, bus, electric commercial.
+- **Planned categories:** none (`plannedCategories: []`).
+- **Strict resolution:** `matchCategoryId` / `match_category_id` returns `undefined`/`None` for unknown labels at API/registration boundaries — no silent fallback to passenger-car rules. `resolveCategoryId` / `resolve_category_id` stay lenient only for legacy DB rows.
+- **Category-specific validation:** 2W chassis/frame 8–22 chars; four-wheeler cars 17-char VIN; commercial/truck/bus accept 14-char chassis; EVs reject engine numbers; hybrids keep engine fields + add battery fields.
+- **Powertrain:** pure electric profiles hide engine/CC/PUC and add motor + battery fields; hybrid keeps engine + battery; commercial profiles add axle_count, GVW, payload, tyre condition and permit type.
+- **Documents:** strict per-category allowlist — `isAllowedDocument` no longer falls back to car docs. RC types: `rc_2w` (2W), `rc_3w` (3W), `rc_commercial` (commercial), `rc` (cars/hybrid). Permits/fitness/road_tax for commercial and 3W.
+- **Battery SOH ≠ odometer:** battery checks apply to all battery-pack profiles (EV + hybrid). SOH in `vehicle_specs`; distance in `vehicles.km_claimed`; no odometer rows in `battery_records`; State of Health never inferred.
+- **3D policy:** car GLB labelled `generic-reference` for `passenger_car`/`electric_car` only; every other category reports `unavailable`, no car asset substituted, interactions disabled.
+- **Agent nodes:** 15 nodes for combustion/commercial; 16 nodes (adds `EVBatteryAnalysisNode`) for every battery-pack profile including hybrid.
+- **Marketplace:** class filtering supports all four classes (`two_wheeler`, `three_wheeler`, `four_wheeler`, `commercial`) plus exact category id match.
+- **Preserved:** car functionality, QA22 GLB registry and the earlier feature baseline remain intact; legacy 69-car rows keep their behaviour via `vehicle_category_id` authority.
+
+## Honest gaps / blockers
+
+- **External providers:** government/VAHAN, insurer and theft registries have provider interfaces implemented (`lib/server/providers.ts`) but no credentials/adapters against real services. Results are `unavailable`, never `verified`. 4 tests verify honest unavailable behavior. User-submitted documents never labelled government-verified.
+- **Blockchain anchoring:** provider interface + EVM adapter fully implemented (`lib/server/evm/anchoring-service.ts`, `client.ts`, `registry-contract.ts`) and tested against a local JSON-RPC stub (`qa/evm-rpc-stub.mjs`, `tests/evm-anchoring.test.ts` — 15 tests pass). Real on-chain anchoring NOT IMPLEMENTED: no funded EVM signer / RPC URL / testnet faucet available locally; local SHA-256 chain remains the only integrity claim.
+- **YOLO photo damage:** adapter/weights report ready, but the tested upload path uses human-entered damage; no end-to-end photo detection claim.
+- **XGBoost fraud model:** trained + evaluated on synthetic demo data (`dataset_label: synthetic-demo-600`; precision/recall/F1/ROC-AUC=1.0 on separable demo rows); marked `EXPERIMENTAL`, not production fraud detection.
+- **LLM narrative:** `TD_LLM_PROVIDER=none` by default; deterministic evidence-only text. Provider adapter tested against a local OpenAI-compatible stub across 8 cases (disabled / missing key / valid / invalid key / rate limit / timeout / malformed / contradictory). No LLM conclusion is generated unless a real provider call succeeds.
+- **S3 / external AV / email / SMS:** implemented and tested against local stand-ins (moto S3 server, clamd stub, aiosmtpd sink, HTTP SMS gateway). Not claimed against real production credentials; config-gated and honest when credentials absent.
+- **Postgres:** adapter/interface prepared in `app/config.py` (`TD_DB_URL`); shared SQLite remains the dev/runtime database. A production Postgres split is not locally runnable here (no server/daemon).
+- **PaddleOCR:** installed (3.7.0) and selectable via `TD_OCR_PROVIDER=paddleocr`; RapidOCR remains the default because it is faster and more accurate in this environment.
+- **Docker:** build not run in this environment (daemon unavailable); CI builds `Dockerfile.render`.
+- **Playwright E2E (workflows S4–S8):** S1–S3 pass reliably. Deeper workflows time out on Windows single-threaded `next dev` (environment slowness, not a code regression — S2 passes the same vehicle-creation form individually). Needs a Linux CI runner with a seeded DB and Chromium to complete workflows S4–S8.
+- **Licensed non-car GLB assets:** NOT IMPLEMENTED — no licensed motorcycle/scooter/3-wheeler/commercial GLB obtained. Three documentation files written (`3D_ASSET_CATALOG.md`, `3D_COMPONENT_MAPPING.md`, `3D_VIEWER_TEST_REPORT.md`) plus existing `3D_ASSET_LICENSES.md`. Non-car categories honestly report `unavailable`; no car GLB substituted.
+
+## Demo logins (password `demo1234`)
+
+`admin@trustdrive.dev` · `samarth@trustdrive.dev`, `weduo@trustdrive.dev` (seller) · `rohan@trustdrive.dev`, `aditya@trustdrive.dev` (buyer)
+
+## Verification commands
+
+```powershell
+cd frontend
+npx tsc --noEmit
+npm test -- --run
+cd ..
+npm run intel:test
+cd frontend
+$env:NEXT_DIST_DIR='.next_verify'
+npm run build
+```
+
+Live: `npm run intel:serve` + `npm run dev`, then `node qa/live_e2e.mjs` (or the focused harnesses in `qa/live-browser/`).

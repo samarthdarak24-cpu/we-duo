@@ -21,14 +21,92 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
+      - name: Lint
+        run: npm run lint
       - name: Typecheck
         run: npx tsc --noEmit
       - name: Unit + component tests
         run: npm test
+      - name: Vitest JUnit report
+        if: always()
+        run: npx vitest run --reporter=junit --outputFile=vitest-junit.xml || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vitest-report
+          path: frontend/vitest-junit.xml
+          retention-days: 7
+          if-no-files-found: ignore
+
+      # Real integration sinks. The suites below talk to these over real
+      # protocols (S3 REST, SMTP, HTTP SMS, clamd INSTREAM) — no mocks.
+      - name: Install integration sinks
+        run: |
+          python -m pip install --quiet "moto[server]>=5.0" "aiosmtpd>=1.4"
+      - name: Start S3 / SMTP / SMS / clamd sinks
+        run: |
+          nohup python -m moto.server -p 5055 > /tmp/moto.log 2>&1 &
+          nohup python project/qa/smtp-sink.py /tmp/td-smtp 2525 > /tmp/smtp.log 2>&1 &
+          nohup node project/qa/sms-sink.mjs /tmp/td-sms.jsonl 2526 > /tmp/sms.log 2>&1 &
+          nohup python project/qa/clamd-sink.py 3310 > /tmp/clamd.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl -s -o /dev/null http://127.0.0.1:5055 && \
+               (echo > /dev/tcp/127.0.0.1/2525) && \
+               (echo > /dev/tcp/127.0.0.1/2526) && \
+               (echo > /dev/tcp/127.0.0.1/3310); then echo "sinks ready"; exit 0; fi
+            sleep 1
+          done
+          echo "sinks did not become ready"; cat /tmp/moto.log /tmp/smtp.log /tmp/sms.log /tmp/clamd.log; exit 1
+      - name: Integration test suites (S3/SMTP/SMS/ClamAV/LLM/EVM)
+        run: npm test -- tests/s3-storage.test.ts tests/mailer.test.ts tests/sms.test.ts tests/clamd.test.ts tests/llm-provider.test.ts tests/evm-anchoring.test.ts
+        env:
+          TD_S3_TEST_ENDPOINT: http://127.0.0.1:5055
+          TD_S3_TEST_BUCKET: trustdrive-ci
+          TD_SMTP_TEST_PORT: 2525
+          TD_SMTP_TEST_OUT: /tmp/td-smtp
+          TD_SMS_TEST_URL: http://127.0.0.1:2526/sms
+          TD_SMS_TEST_OUT: /tmp/td-sms.jsonl
+          TD_CLAMAV_TEST_HOST: 127.0.0.1
+          TD_CLAMAV_TEST_PORT: 3310
+
+      # Database migration tests run against PGlite (real PostgreSQL compiled to
+      # WASM, in-process). No networked PostgreSQL server is required or claimed.
+      - name: Database migration tests (PostgreSQL / PGlite)
+        run: npm test -- tests/pg-migrations.test.ts tests/pg-data-migration.test.ts
+
       - name: Production build
         run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: "1"
+
+  assets:
+    name: 3D asset generation + validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - name: Generate category 3D assets
+        run: node project/scripts/build-vehicle-models.mjs
+      - name: Verify assets (sha256, nodes, bounds, orientation)
+        run: node frontend/scripts/verify-assets.mjs
+      - name: Asset generation must be deterministic
+        run: |
+          node -e "const{execSync}=require('child_process');const fs=require('fs');const p='frontend/public/models/vehicles/manifests';const before=Object.fromEntries(fs.readdirSync(p).map(f=>[f,fs.readFileSync(p+'/'+f,'utf8')]));execSync('node project/scripts/build-vehicle-models.mjs',{stdio:'inherit'});const after=Object.fromEntries(fs.readdirSync(p).map(f=>[f,fs.readFileSync(p+'/'+f,'utf8')]));if(JSON.stringify(before)!==JSON.stringify(after)){console.error('asset generation is NOT deterministic');process.exit(1)}console.log('asset generation is deterministic')"
+      - name: 3D asset unit tests
+        run: npm test -- tests/3d-assets.test.ts
+        working-directory: frontend
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: 3d-assets
+          path: frontend/public/models/vehicles/manifests
+          retention-days: 7
 
   intelligence:
     name: Pytest (FastAPI, detectors, agent, worker)
@@ -51,15 +129,51 @@ jobs:
         working-directory: backend
         run: python -c "from app.main import app; print(len(app.openapi()['paths']), 'paths')"
 
+  security:
+    name: Security checks (secrets, dependencies)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: npm ci
+        working-directory: frontend
+      - name: Hardcoded-secret scan
+        run: node project/scripts/scan-secrets.mjs
+      - name: Dependency audit (npm)
+        run: npm audit --audit-level=high
+        working-directory: frontend
+      - name: Dependency audit (python)
+        continue-on-error: true
+        run: |
+          python -m pip install --quiet pip-audit
+          pip-audit -r backend/requirements-render.txt --strict || echo "pip-audit reported findings (non-blocking)"
+      - name: Production config guard (demo seeding must be impossible)
+        run: |
+          node -e "
+          const fs=require('fs');
+          const src=fs.readFileSync('frontend/lib/server/db.ts','utf8');
+          for (const needle of ['TD_SEED_DEMO = \"0\"','QR_SIGNING_SECRET','TD_SHARE_SECRET','Refusing to start in production']) {
+            if (!src.includes(needle)) { console.error('missing production guard: '+needle); process.exit(1); }
+          }
+          console.log('production guard checks OK');
+          "
+
   docker:
-    name: Docker image (Dockerfile.render)
+    name: Docker image (project/infra/docker/Dockerfile.render)
     runs-on: ubuntu-latest
     needs: [web, intelligence]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
       - name: Build combined image
-        run: docker build -f Dockerfile.render -t trustdrive:ci .
+        run: docker build -f project/infra/docker/Dockerfile.render -t trustdrive:ci .
         env:
           DOCKER_BUILDKIT: "1"
 
@@ -81,6 +195,13 @@ jobs:
           assert svc["type"] == "web"
           assert svc["healthCheckPath"] == "/api/v1/health/ready"
           assert svc["disk"]["mountPath"] == "/data"
+          # Every secret the production config check demands must be declared,
+          # otherwise the service refuses to boot in production.
+          keys = {e["key"] for e in svc["envVars"]}
+          required = {"JWT_SECRET","TD_SERVICE_TOKEN","DOWNLOAD_SIGNING_SECRET","QR_SIGNING_SECRET","TD_SHARE_SECRET"}
+          missing = required - keys
+          assert not missing, f"render.yaml is missing required secrets: {sorted(missing)}"
+          assert any(e.get("generateValue") for e in svc["envVars"] if e["key"] in required), "secrets must use generateValue"
           print("render.yaml OK:", svc["name"])
           PY
 
@@ -101,20 +222,34 @@ jobs:
       - run: npm ci
         working-directory: frontend
       - run: python -m pip install -r backend/requirements-render.txt
-      - run: npx playwright install --with-deps chromium
+      - name: Install Playwright browsers and OS dependencies
+        run: npx playwright install --with-deps chromium
+        working-directory: frontend
       - name: Seed the shared demo database
         run: npm run seed:reset
+        working-directory: frontend
       - name: Start intelligence service
         working-directory: backend
         run: |
           nohup python -m uvicorn app.main:app --app-dir . --host 127.0.0.1 --port 8000 > /tmp/intel.log 2>&1 &
       - name: Run E2E
         run: npm run test:e2e -- --project=chromium-1920
+        working-directory: frontend
         env:
           CI: "true"
+          # The Next.js API proxies AI routes to the intelligence service started
+          # above; without this the detect/OCR/review proxy routes return 502.
+          TD_INTELLIGENCE_URL: "http://127.0.0.1:8000"
+          TD_ENV: "test"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report
-          path: playwright-report
+          path: frontend/playwright-report
+          retention-days: 7
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-traces
+          path: frontend/test-results
           retention-days: 7

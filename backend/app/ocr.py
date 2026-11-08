@@ -76,16 +76,28 @@ def sha256_file(path: Path) -> str:
     return h.hexdigest()
 
 
+def _module_present(name: str) -> bool:
+    """Cheap availability probe that does NOT import the package.
+
+    `import paddleocr` / `import cv2` / `import fitz` load native libraries and
+    cost ~25 s on a cold interpreter. `available_backends()` is called by
+    `/health` on the very first request, so importing there made the service
+    look dead (and made `/api/v1/ai/stack`'s 4 s probe report disconnected).
+    `find_spec` only resolves the module on disk; the real import still happens
+    inside `run()`, whose try/except already reports failures honestly.
+    """
+    try:
+        return importlib.util.find_spec(name) is not None
+    except (ImportError, ValueError, AttributeError, ModuleNotFoundError):
+        return False
+
+
 class PaddleOcrBackend:
     """Real OCR, only active when paddleocr + paddlepaddle are installed."""
     name = "paddleocr"
 
     def available(self) -> bool:
-        try:
-            import paddleocr  # noqa: F401
-            return True
-        except Exception:
-            return False
+        return _module_present("paddleocr")
 
     def run(self, path: Path) -> OcrResult:
         # PDFs are handled by the real text layer (PyMuPDF) before OCR: running
@@ -155,7 +167,7 @@ class RapidOcrBackend:
     name = "rapidocr"
 
     def available(self) -> bool:
-        return importlib.util.find_spec("rapidocr_onnxruntime") is not None
+        return _module_present("rapidocr_onnxruntime")
 
     def run(self, path: Path) -> OcrResult:
         if path.suffix.lower() == ".pdf":
@@ -200,11 +212,7 @@ class PdfTextBackend:
     name = "pymupdf-text-layer"
 
     def available(self) -> bool:
-        try:
-            import fitz  # noqa: F401
-            return True
-        except Exception:
-            return False
+        return _module_present("fitz")
 
     def run(self, path: Path) -> OcrResult:
         if path.suffix.lower() != ".pdf":
@@ -243,11 +251,7 @@ class OpenCVPreprocessBackend:
     name = "opencv-preprocess"
 
     def available(self) -> bool:
-        try:
-            import cv2  # noqa: F401
-            return True
-        except Exception:
-            return False
+        return _module_present("cv2")
 
     def run(self, path: Path) -> OcrResult:
         if path.suffix.lower() == ".pdf":
@@ -311,15 +315,68 @@ def _suspicious_metadata(meta: dict) -> list[str]:
 
 
 BACKENDS: tuple[OcrBackend, ...] = (
-    PaddleOcrBackend(),
     RapidOcrBackend(),
+    PaddleOcrBackend(),
     PdfTextBackend(),
     OpenCVPreprocessBackend(),
 )
 
+# ---------------------------------------------------------------------------
+# Provider selection
+#
+# TD_OCR_PROVIDER selects the preferred engine. It never fabricates a result:
+# the response still names the engine that actually produced the text, and a
+# fallback adds an explicit warning so a caller can see that its preference was
+# not honoured.
+#
+# RapidOCR is the default ("auto") because on this hardware it returns in
+# seconds with accurate results, whereas PaddleOCR can take minutes (see the
+# OCR comparison report). PaddleOCR remains installed, available and selectable
+# via TD_OCR_PROVIDER=paddleocr; it is never silently substituted for rapidocr.
+#   auto (default) | paddleocr | rapidocr | text-layer | none
+# ---------------------------------------------------------------------------
+_PROVIDER_ALIASES = {
+    "auto": "auto",
+    "paddle": "paddleocr",
+    "paddleocr": "paddleocr",
+    "rapid": "rapidocr",
+    "rapidocr": "rapidocr",
+    "text": "pymupdf-text-layer",
+    "text-layer": "pymupdf-text-layer",
+    "pymupdf": "pymupdf-text-layer",
+    "none": "none",
+}
+
+
+def provider_preference() -> str:
+    raw = (os.getenv("TD_OCR_PROVIDER") or "auto").strip().lower()
+    # Accept an engine name directly, or one of its aliases.
+    if raw in {backend.name for backend in BACKENDS}:
+        return raw
+    return _PROVIDER_ALIASES.get(raw, "auto")
+
+
+def _ordered_backends() -> tuple[OcrBackend, ...]:
+    pref = provider_preference()
+    by_name = {backend.name: backend for backend in BACKENDS}
+    if pref == "none":
+        return (by_name["opencv-preprocess"],)
+    if pref in by_name:
+        rest = tuple(b for b in BACKENDS if b.name != pref)
+        return (by_name[pref], *rest)
+    return BACKENDS
+
 
 def available_backends() -> list[dict]:
-    return [{"engine": b.name, "available": b.available()} for b in BACKENDS]
+    preferred = provider_preference()
+    return [
+        {
+            "engine": b.name,
+            "available": b.available(),
+            "preferred": preferred == b.name,
+        }
+        for b in BACKENDS
+    ]
 
 
 def run_ocr(path: Path) -> OcrResult:
@@ -328,13 +385,21 @@ def run_ocr(path: Path) -> OcrResult:
     if not ok:
         return OcrResult(method="validation-failed", warnings=[reason or "invalid file"])
     emit("ocr.start", file=path.name, bytes=path.stat().st_size)
+    preferred = provider_preference()
     results: list[OcrResult] = []
-    for backend in BACKENDS:
+    for backend in _ordered_backends():
         if not backend.available():
             continue
         r = backend.run(path)
         results.append(r)
         if r.is_ocr and r.text.strip():
+            if preferred not in ("auto", "none") and r.engine != preferred:
+                installed = next((b.available() for b in BACKENDS if b.name == preferred), False)
+                r.warnings.append(
+                    f"Requested OCR provider {preferred} "
+                    f"{'produced no text' if installed else 'is not installed'}; "
+                    f"the {r.engine} result was used instead."
+                )
             emit("ocr.complete", engine=r.engine, method=r.method, chars=len(r.text))
             return r
     # No OCR engine produced text. Return the most informative non-OCR result
@@ -342,6 +407,12 @@ def run_ocr(path: Path) -> OcrResult:
     best = next((r for r in results if r.text.strip()), None) or (
         results[0] if results else OcrResult()
     )
+    if preferred not in ("auto", "none"):
+        installed = next((b.available() for b in BACKENDS if b.name == preferred), False)
+        best.warnings.append(
+            f"Requested OCR provider {preferred} "
+            f"{'produced no usable text' if installed else 'is not installed'}."
+        )
     best.warnings.append(
         "No OCR engine produced text. Field extraction is unavailable for this "
         "document; it has been queued for manual review. This is not a verification."

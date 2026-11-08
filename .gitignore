@@ -9,6 +9,7 @@ secrets/
 # Node
 node_modules/
 .next/
+.next_*/
 .next-old*
 .next_verify*
 .next_probe
@@ -51,12 +52,17 @@ Thumbs.db
 .freebuff/
 ezgif*.zip
 
-# QA run artifacts (keep qa/ source scripts, ignore outputs)
-qa/**/results/
-qa/**/reports/
-qa/**/screenshots/
-qa/**/*.zip
-qa/**/trace*
+# QA run artifacts (keep harness source, ignore outputs)
+project/qa/**/results/
+project/qa/**/reports/
+project/qa/**/screenshots/
+project/qa/**/*.zip
+project/qa/**/trace*
+project/qa/.test-out/
+
+# Reorganization staging (duplicates, stale builds, legacy copies)
+project/archive/
+project/legacy/
 
 # Tests
 test-results/
@@ -85,3 +91,12 @@ data/*.db-shm
 !package-lock.json
 !backend/requirements*.txt
 deploy/
+
+# QA runtime artefacts: local database backups and generated result files can
+# contain live session tokens or seeded user rows. Never commit them.
+project/qa/**/*.db
+project/qa/**/*.db-wal
+project/qa/**/*.db-shm
+project/qa/backups/
+project/qa/*results*.json
+project/qa/browser-sweep.json

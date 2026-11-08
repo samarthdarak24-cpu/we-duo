@@ -9,7 +9,7 @@ host details, and exits non-zero if OCR did not actually run.
 
 Usage:
   python backend/scripts/verify_paddleocr.py
-  python backend/scripts/verify_paddleocr.py --json > ai-services/shared/data/paddleocr_host_check.json
+  python backend/scripts/verify_paddleocr.py --json > services/ai/shared/data/paddleocr_host_check.json
 """
 from __future__ import annotations
 

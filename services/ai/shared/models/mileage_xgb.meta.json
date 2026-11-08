@@ -1,0 +1,18 @@
+{
+  "rows": 600,
+  "positives": 300,
+  "features": [
+    "year",
+    "km",
+    "delta",
+    "age_years",
+    "km_per_year"
+  ],
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1": 1.0,
+  "dataset_label": "synthetic-demo-600",
+  "version": "mileage-xgb-1.1.0",
+  "warning": "Metrics are on a hold-out split; validate on a larger, real corpus before production.",
+  "trained_at": "2026-11-08T06:52:24+00:00"
+}

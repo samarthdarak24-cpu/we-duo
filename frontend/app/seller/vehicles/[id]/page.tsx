@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { VehicleSelector } from "@/components/seller/VehicleSelector";
 import { DamageEditor } from "@/components/seller/DamageEditor";
+import { DamageAiAnalyzer } from "@/components/seller/DamageAiAnalyzer";
 import { ClaimsPanel } from "@/components/seller/ClaimsPanel";
 import { ProviderChecksPanel } from "@/components/seller/ProviderChecksPanel";
 import { EvidenceGraph } from "@/components/shared/EvidenceGraph";
@@ -15,6 +16,7 @@ import { Timeline } from "@/components/ui/Timeline";
 import { Icon } from "@/components/ui/Icon";
 import { portalUser } from "@/lib/server/page";
 import { BAND_COLOR } from "@/lib/server/engine";
+import { getListingByVehicle, getListingImages } from "@/lib/server/db";
 import {
   getChainStatus,
   getDocumentsView,
@@ -39,6 +41,12 @@ export default function SellerVehicleDetailPage({ params }: { params: { id: stri
   const docs = getDocumentsView(v.id);
   const mileage = getMileageView(v.id);
   const hotspots = hotspotsFor(v.id);
+  const listing = getListingByVehicle(v.id);
+  const photos = listing ? getListingImages(listing.id).map((p: { id: string; file_key: string }) => ({
+    id: p.id,
+    key: p.file_key,
+    url: `/api/v1/files/${p.file_key}`,
+  })) : [];
   const openFindings = report.findings.filter((f) => !["cleared", "explained", "resolved"].includes(f.status));
   const siblings = getSellerVehicles(user.id);
   const bandColor = BAND_COLOR[report.trust.band];
@@ -157,6 +165,12 @@ export default function SellerVehicleDetailPage({ params }: { params: { id: stri
           records={damageRecords}
         />
       </div>
+
+      {photos.length > 0 && (
+        <div>
+          <DamageAiAnalyzer vehicleId={v.id} photos={photos} />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <SectionCard title="Vehicle">

@@ -1,0 +1,125 @@
+# ---------------------------------------------------------------------------
+# TrustDrive — three-service Render blueprint (frontend / backend / AI worker).
+#
+# READ THIS FIRST
+# ---------------
+# This file is the *scale-out* blueprint. It is NOT what you deploy today.
+#
+# The deployable blueprint is the repository-root `render.yaml`: one web service
+# running Next.js + FastAPI + the job worker from a single image, with one
+# persistent disk at /data. That is required because the Next.js data layer uses
+# `node:sqlite` and the FastAPI service reads the SAME file — and Render cannot
+# mount one disk into three services.
+#
+# To use the three services below you must first move both runtimes to a shared
+# managed PostgreSQL:
+#   1. create a Render PostgreSQL instance (paid plan),
+#   2. set TD_DATABASE_URL for the Next.js layer and TD_DB_URL for FastAPI to the
+#      same internal connection URL,
+#   3. run the migrations in project/scripts/database/ and verify row counts,
+#   4. only then uncomment `databases:` below and deploy this file.
+#
+# Until step 4, deploying this file would give each service its own database and
+# silently break the single-database guarantee. Do not skip the migration.
+#
+# Usage (after migration):
+#   Render Dashboard → Blueprint → point at this file, or
+#   cp project/infra/render/services.yaml render.yaml   (replacing the combined one)
+# ---------------------------------------------------------------------------
+
+services:
+  # ---- Frontend: Next.js -------------------------------------------------
+  - type: web
+    name: trustdrive-web
+    runtime: node
+    plan: starter
+    region: singapore
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start -- -p $PORT
+    healthCheckPath: /api/v1/health/ready
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TD_ENV
+        value: production
+      - key: TD_SEED_DEMO
+        value: "0"
+      # Must point at the backend service's public URL.
+      - key: TD_INTELLIGENCE_URL
+        sync: false
+      - key: TD_DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: TD_SERVICE_TOKEN
+        generateValue: true
+      - key: DOWNLOAD_SIGNING_SECRET
+        generateValue: true
+      - key: QR_SIGNING_SECRET
+        generateValue: true
+      - key: TD_SHARE_SECRET
+        generateValue: true
+
+  # ---- Backend: FastAPI --------------------------------------------------
+  - type: web
+    name: trustdrive-api
+    runtime: python
+    plan: starter
+    region: singapore
+    rootDir: backend
+    buildCommand: pip install -r requirements-render.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: TD_ENV
+        value: production
+      - key: TD_LLM_PROVIDER
+        value: none
+      # Shared managed PostgreSQL (see the migration note above).
+      - key: TD_DB_URL
+        sync: false
+      # Model assets live in services/ai/shared/models at the repository root.
+      - key: TD_MODEL_DIR
+        value: ../services/ai/shared/models
+      # Same signing secret as the web service: one account, two runtimes.
+      - key: JWT_SECRET
+        sync: false
+      - key: TD_SERVICE_TOKEN
+        sync: false
+
+  # ---- AI worker: background OCR / investigations / model jobs ------------
+  - type: worker
+    name: trustdrive-ai-worker
+    runtime: python
+    plan: starter
+    region: singapore
+    rootDir: backend
+    buildCommand: pip install -r requirements-render.txt
+    startCommand: python -m app.worker
+    autoDeploy: true
+    envVars:
+      - key: TD_ENV
+        value: production
+      - key: TD_DB_URL
+        sync: false
+      - key: TD_MODEL_DIR
+        value: ../services/ai/shared/models
+      - key: TD_LLM_PROVIDER
+        value: none
+      - key: JWT_SECRET
+        sync: false
+      - key: TD_SERVICE_TOKEN
+        sync: false
+
+# Uncomment ONLY after both runtimes have been migrated to PostgreSQL.
+# A managed database is a paid Render resource.
+#
+# databases:
+#   - name: trustdrive-db
+#     databaseName: trustdrive
+#     user: trustdrive
+#     plan: basic-256mb
+#     region: singapore

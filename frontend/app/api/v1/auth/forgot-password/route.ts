@@ -14,6 +14,13 @@ export async function POST(req: Request) {
   const token = issueToken(user.id, "reset_password");
   const base = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
   const link = `${base}/reset-password/${token}`;
-  sendMail({ to: user.email, subject: "Reset your TrustDrive password", body: "This link expires in one hour.", link });
-  return ok({ sent: true, ...(isProd() ? {} : { resetLink: link }) });
+  // Generic response is deliberate: it must not reveal whether the address
+  // exists. `emailDelivery` reports what the provider actually did.
+  const delivery = await sendMail({
+    to: user.email,
+    subject: "Reset your TrustDrive password",
+    body: "This link expires in one hour.",
+    link,
+  });
+  return ok({ sent: true, emailDelivery: delivery, ...(isProd() ? {} : { resetLink: link }) });
 }

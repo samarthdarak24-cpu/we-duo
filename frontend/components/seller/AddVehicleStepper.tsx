@@ -389,16 +389,25 @@ export function AddVehicleStepper() {
   }
 
   const renderField = (f: GroupField) => {
+    // The required marker is decorative: it must not become part of the
+    // field's accessible name ("Make *" instead of "Make"), or assistive
+    // technology reads a stray asterisk and exact-match label locators
+    // (getByLabel("Make", { exact: true })) cannot find the control.
+    // `aria-required` conveys the same information properly.
+    const requiredMark = f.required ? (
+      <span aria-hidden="true"> *</span>
+    ) : null;
     if (f.type === "select") {
       return (
         <label className="block" key={f.name}>
           <span className="td-label">
             {f.label}
-            {f.required ? " *" : ""}
+            {requiredMark}
           </span>
           <select
             value={form[f.name] ?? ""}
             onChange={(e) => setField(f.name, e.target.value)}
+            aria-required={f.required ? true : undefined}
             className="td-input td-select"
           >
             <option value="">Select…</option>
@@ -416,7 +425,7 @@ export function AddVehicleStepper() {
       <label className="block" key={f.name}>
         <span className="td-label">
           {f.label}
-          {f.required ? " *" : ""}
+          {requiredMark}
         </span>
         <input
           type={f.type === "number" ? "number" : "text"}
@@ -426,6 +435,7 @@ export function AddVehicleStepper() {
           max={f.max}
           step={f.step}
           onChange={(e) => setField(f.name, e.target.value)}
+          aria-required={f.required ? true : undefined}
           className="td-input"
         />
         {f.help && <p className="td-help mt-1">{f.help}</p>}
@@ -540,6 +550,7 @@ export function AddVehicleStepper() {
                   accept="image/jpeg,image/png,image/webp"
                   multiple
                   aria-label="Vehicle photos"
+                  suppressHydrationWarning
                   className="mt-3 block w-full text-[12px] text-muted file:mr-3 file:cursor-pointer file:rounded-[9px] file:border-0 file:bg-surface file:px-3 file:py-2 file:text-[12px] file:font-semibold file:text-ink"
                 />
               </div>

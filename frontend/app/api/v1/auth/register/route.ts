@@ -41,14 +41,21 @@ export async function POST(req: Request) {
   const token = issueToken(id, "verify_email");
   const base = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
   const link = `${base}/verify-email/${token}`;
-  sendMail({ to: email, subject: "Verify your TrustDrive email", body: "Confirm your address to activate email alerts.", link });
+  const delivery = await sendMail({
+    to: email,
+    subject: "Verify your TrustDrive email",
+    body: "Confirm your address to activate email alerts.",
+    link,
+  });
 
   const meta = requestMeta(req);
   const { refresh, session } = startSession(id, meta);
   const res = created({
     user: { id, name: body.name.trim(), role, initials, emailVerified: false },
     sellerType: role === "seller" ? body.sellerType ?? "individual" : null,
-    verificationSent: true,
+    // Honest: true only when the provider accepted the message.
+    verificationSent: delivery.ok,
+    emailDelivery: delivery,
     ...(isProd() ? {} : { verificationLink: link }),
   });
   withSessionCookie(res, { id, role, name: body.name.trim() }, session.id);

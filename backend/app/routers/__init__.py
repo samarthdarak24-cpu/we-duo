@@ -5,8 +5,8 @@ They authenticate with the SAME scrypt + HS256 credentials as the Next.js app.
 The Next.js `/api/v1/*` routes remain the public, cookie-session surface for
 the portals; nothing here replaces or bypasses them.
 """
-from . import (audit, auth, inquiries, marketplace, notifications, reports, users,
-               v1, vehicles)
+from . import (audit, auth, inquiries, marketplace, notifications, registry, reports,
+               system, users, v1, vehicles)
 
 ROUTERS = [
     auth.router,
@@ -19,6 +19,10 @@ ROUTERS = [
     audit.router,
     # Versioned surface matching the final backend-first checklist.
     v1.router,
+    # System / AI capability status endpoints.
+    system.router,
+    # External registry consent + lookup (consent-gated, provider-honest).
+    registry.router,
 ]
 
 CATEGORIES = {

@@ -1,6 +1,6 @@
 import { getDocumentByFileKey, getListingByVehicle, getUserById, getVehicle } from "@/lib/server/db";
 import { fail, getAuth } from "@/lib/server/http";
-import { readUpload, sniffUpload } from "@/lib/server/files";
+import { getSignedFileUrl, readUpload, sniffUpload, storageProvider } from "@/lib/server/files";
 import { verifyDownloadToken } from "@/lib/server/signed";
 
 export const runtime = "nodejs";
@@ -50,7 +50,22 @@ export async function GET(req: Request, { params }: { params: { key: string[] } 
     }
   }
 
-  const data = readUpload(key);
+  // Authorization has passed. With S3 storage we redirect to a short-lived
+  // presigned GET so bytes do not stream through the app server; the URL is
+  // issued only after the ownership/consent checks above.
+  if (storageProvider() === "s3") {
+    const signedUrl = await getSignedFileUrl(key, 120);
+    if (!signedUrl) return fail(503, "STORAGE_UNAVAILABLE", "Object storage is not configured.");
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: signedUrl,
+        "Cache-Control": "private, no-store",
+      },
+    });
+  }
+
+  const data = await readUpload(key);
   if (!data) return fail(404, "NOT_FOUND", "File not found.");
   const actual = sniffUpload(data);
   if (!actual) return fail(415, "UNSUPPORTED_TYPE", "Unsupported file type.");

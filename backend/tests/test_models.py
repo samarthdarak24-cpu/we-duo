@@ -75,7 +75,7 @@ def test_damage_adapter_is_active_with_licensed_weights():
 def test_damage_adapter_detects_on_a_real_sample():
     pytest.importorskip("ultralytics")
     from app.config import REPO_ROOT
-    sample = REPO_ROOT / "ai-services" / "shared" / "data" / "yolo_sample.png"
+    sample = REPO_ROOT / "services" / "ai" / "shared" / "data" / "yolo_sample.png"
     if not sample.is_file() or not yolo.status()["available"]:
         pytest.skip("sample image or weights unavailable")
     out = yolo.detect(sample, conf=0.2)
@@ -118,7 +118,7 @@ def test_paddleocr_backend_reads_rendered_text(tmp_path: Path):
 def test_repo_root_points_to_the_repository_root():
     from app.config import REPO_ROOT
     assert (REPO_ROOT / "package.json").is_file()
-    assert (REPO_ROOT / "ai-services" / "shared" / "models").is_dir() or (REPO_ROOT / "models").is_dir()
+    assert (REPO_ROOT / "services" / "ai" / "shared" / "models").is_dir() or (REPO_ROOT / "models").is_dir()
 
 
 def test_xgboost_adapter_reports_real_status():

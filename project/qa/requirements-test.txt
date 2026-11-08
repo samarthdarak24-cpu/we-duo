@@ -1,0 +1,5 @@
+# Python dependencies for the local integration sinks (no mocks: real protocols).
+# Install once before `npm run test:integration`:
+#   python -m pip install -r project/qa/requirements-test.txt
+aiosmtpd>=1.4,<2.0        # SMTP sink  (project/qa/smtp-sink.py)
+moto[server]>=5.0,<6.0    # S3 REST sink (project/qa/s3 -> moto_server)

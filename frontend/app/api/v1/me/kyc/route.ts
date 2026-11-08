@@ -1,6 +1,7 @@
 import { getUserById, updateUser } from "@/lib/server/db";
-import { created, fail, getAuth, ok, requireRole } from "@/lib/server/http";
-import { MAX_DOC_BYTES, saveUpload } from "@/lib/server/files";
+import { created, fail, ok, requireRole } from "@/lib/server/http";
+import { MAX_DOC_BYTES, sniffUpload } from "@/lib/server/files";
+import { guardedSaveUpload } from "@/lib/server/upload-guard";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,10 +24,30 @@ export async function POST(req: Request) {
   if (!(file instanceof File)) return fail(400, "VALIDATION_FAILED", "Attach a KYC document.");
   if (file.size > MAX_DOC_BYTES) return fail(413, "FILE_TOO_LARGE", "KYC documents must be under 10 MB.");
   const bytes = Buffer.from(await file.arrayBuffer());
+  const sniffed = sniffUpload(bytes);
+  if (!sniffed) return fail(415, "UNSUPPORTED_FILE_TYPE", "Upload a valid PDF, PNG, JPEG or WebP file.");
   try {
-    const stored = saveUpload(`kyc/${guard.user.sub}`, bytes, MAX_DOC_BYTES);
-    updateUser(guard.user.sub, { kyc_status: "pending", kyc_doc_key: stored.key });
-    return created({ status: "pending", uploaded: true, fileUrl: `/api/v1/files/${stored.key}` });
+    // KYC files are private; they pass the same malware gate as documents.
+    const guarded = await guardedSaveUpload({
+      bytes,
+      fileName: file.name,
+      mime: sniffed.mime,
+      folder: `kyc/${guard.user.sub}`,
+      maxBytes: MAX_DOC_BYTES,
+      actorId: guard.user.sub,
+      actorRole: guard.user.role,
+      req,
+    });
+    if (!guarded.ok) {
+      return fail(guarded.status, guarded.code, guarded.message, { scan: guarded.scan });
+    }
+    updateUser(guard.user.sub, { kyc_status: "pending", kyc_doc_key: guarded.stored.key });
+    return created({
+      status: "pending",
+      uploaded: true,
+      fileUrl: `/api/v1/files/${guarded.stored.key}`,
+      scan: guarded.scan,
+    });
   } catch (err) {
     const code = (err as Error).message;
     if (code === "FILE_TOO_LARGE") return fail(413, "FILE_TOO_LARGE", "KYC documents must be under 10 MB.");

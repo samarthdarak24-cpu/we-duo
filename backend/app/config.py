@@ -11,7 +11,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DB_FILE = REPO_ROOT / ".data" / "trustdrive.db"
 DEFAULT_UPLOAD_DIR = REPO_ROOT / ".data" / "uploads"
 DEFAULT_CHECKPOINT_DB = REPO_ROOT / ".data" / "langgraph-checkpoints.db"
-DEFAULT_MODEL_DIR = REPO_ROOT / "ai-services" / "shared" / "models"
+DEFAULT_MODEL_DIR = REPO_ROOT / "services" / "ai" / "shared" / "models"
 
 
 def _abs(value: str, default: Path) -> Path:
@@ -100,7 +100,7 @@ class Settings:
     job_max_attempts: int = int(os.getenv("TD_JOB_MAX_ATTEMPTS", "3"))
     job_timeout_seconds: int = int(os.getenv("TD_JOB_TIMEOUT_SECONDS", "120"))
     poll_interval_seconds: float = float(os.getenv("TD_WORKER_POLL_SECONDS", "2"))
-    model_dir: Path = _abs(os.getenv("TD_MODEL_DIR", "ai-services/shared/models"), DEFAULT_MODEL_DIR)
+    model_dir: Path = _abs(os.getenv("TD_MODEL_DIR", "services/ai/shared/models"), DEFAULT_MODEL_DIR)
     # Durable LangGraph checkpoints. `sqlite` is used when
     # langgraph-checkpoint-sqlite is installed; otherwise the investigator
     # reports the in-memory fallback honestly. `memory` forces the old behaviour.

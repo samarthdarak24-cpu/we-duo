@@ -1,3 +1,4 @@
-from .embeddings import search, status
+"""Retrieval/embeddings, re-exported from services/ai/langchain."""
+from services.ai.langchain import embeddings  # noqa: F401
 
-__all__ = ["search", "status"]
+__all__ = ["embeddings"]

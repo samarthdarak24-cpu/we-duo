@@ -155,14 +155,11 @@ export function clearLoginFailures(email: string, ip: string) {
   clearLoginAttempts(`${email.toLowerCase()}|${ip}`);
 }
 
-// ---- Mocked mailer --------------------------------------------------------
-export interface Mail { to: string; subject: string; body: string; link?: string }
-
-export function sendMail(mail: Mail) {
-  // Demo transport: log, and surface the link to the caller in non-production.
-  console.log(`[mail] -> ${mail.to} :: ${mail.subject}${mail.link ? ` :: ${mail.link}` : ""}`);
-  return mail;
-}
+// ---- Mailer ---------------------------------------------------------------
+// Real SMTP delivery lives in `mailer.ts`; this re-export keeps the account
+// routes stable while every send now returns an honest, persisted outcome.
+export type { OutboundMail as Mail, DeliveryResult } from "./mailer";
+export { sendMail, sendSms, getMailerStatus, getSmsStatus } from "./mailer";
 
 export function isProd() {
   return process.env.NODE_ENV === "production";

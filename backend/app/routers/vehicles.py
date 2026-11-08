@@ -5,9 +5,13 @@ import json
 import re
 
 from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-from .. import db, detectors, explain, repository
+from .. import categories, db, detectors, explain, repository
+from ..config import settings
+from ..intelligence.damage import yolo
+from ..intelligence import ocr as ocr_module
 from ..security import assert_owner, current_user, require_role
 
 router = APIRouter(prefix="/api/backend/vehicles", tags=["vehicles"])
@@ -122,6 +126,17 @@ class PhotoCreate(BaseModel):
     mime: str | None = None
 
 
+class DamageReview(BaseModel):
+    status: str  # verified | rejected
+    component_id: str | None = None
+    severity: str | None = None
+    repair_status: str | None = None
+
+
+class OcrCorrection(BaseModel):
+    fields: dict
+
+
 # ---- helpers --------------------------------------------------------------
 def _vehicle(vehicle_id: str) -> dict:
     return repository.get_row("vehicles", vehicle_id)
@@ -135,6 +150,39 @@ def _owned(vehicle_id: str, user: dict) -> dict:
 
 def _trustdrive_id() -> str:
     return "TD-" + db.new_id("v").split("-", 1)[1].upper()
+
+
+# Categories whose damage CV detector (car_damage.pt, car-only) is applicable.
+_CAR_TAXONOMY_IDS = {
+    "passenger_car", "electric_car", "hybrid_car", "hatchback", "suv", "muv",
+}
+_CAR_LEGACY_LABELS = {
+    "car", "sedan", "suv", "muv", "hatchback", "hybrid", "electric_car",
+    "hybrid_car", "4-wheeler", "four wheeler", "passenger_car",
+}
+
+
+def _is_car_category(vehicle: dict) -> bool:
+    """Whether the car-only damage CV detector applies to this vehicle.
+
+    Authoritative signal is the category spec's damage detector (only the "car"
+    detector reports ``status: available``); legacy ``category`` labels are a
+    fallback so older rows are handled honestly.
+    """
+    cid = vehicle.get("vehicle_category_id") or vehicle.get("category")
+    if cid:
+        try:
+            det = categories.damage_detector_for(str(cid))
+            if det.get("status") == "available" and det.get("engine") in ("ultralytics", "onnxruntime"):
+                return True
+        except Exception:
+            pass
+    label = str(vehicle.get("category") or "").strip().lower()
+    if label in _CAR_LEGACY_LABELS:
+        return True
+    if cid and str(cid).lower() in _CAR_LEGACY_LABELS:
+        return True
+    return False
 
 
 # ---- vehicles -------------------------------------------------------------
@@ -455,6 +503,154 @@ def add_photo(vehicle_id: str, req: PhotoCreate,
         "mime": req.mime, "uploaded_by": user["id"],
     })
     return {"photo": rec}
+
+
+# ---- damage CV detection + human review ------------------------------------
+@router.post("/{vehicle_id}/photos/{photo_id}/detect")
+def detect_damage_on_photo(vehicle_id: str, photo_id: str,
+                           user: dict = Depends(require_role("seller", "admin"))) -> dict:
+    """Run the car-only damage CV detector on one photo.
+
+    Authoritative only for car categories; non-car categories return 409 with
+    ``available: false``. When the YOLO weights are absent the endpoint reports
+    the adapter's own unavailable reason rather than fabricating detections.
+    """
+    _owned(vehicle_id, user)
+    photo = repository.get_row("vehicle_images", photo_id)
+    if str(photo.get("vehicle_id")) != vehicle_id or photo.get("deleted_at"):
+        raise HTTPException(status_code=404, detail="Photo not found for this vehicle.")
+    vehicle = _vehicle(vehicle_id)
+
+    if not _is_car_category(vehicle):
+        # Two-wheelers / three-wheelers / commercial have no licensed damage model.
+        return {"available": False,
+                "reason": "Damage CV detector is only available for car categories."}
+
+    key = photo.get("file_key")
+    path = settings.upload_dir / str(key) if key else None
+    if not path or not path.is_file():
+        raise HTTPException(status_code=409,
+                            detail="Source photo file is not available for detection.")
+
+    ystatus = yolo.status()
+    if not ystatus.get("available"):
+        return {"available": False, "reason": ystatus.get("reason"),
+                "engine": ystatus.get("engine")}
+
+    result = yolo.detect(path)
+    detections = result.get("detections", [])
+    candidate_ids: list[str] = []
+    for det in detections:
+        label = str(det.get("label") or "damage")
+        conf = float(det.get("confidence") or 0.0)
+        record = repository.create_row("damage_records", {
+            "vehicle_id": vehicle_id,
+            "status": "detected_candidate",
+            "provenance": "detected_visible_damage",
+            "damage_type": label,
+            "description": f"Auto-detected: {label} (confidence {conf})",
+            "severity": "unassessed",
+            "photo_keys": json.dumps([key]),
+            "detection_confidence": conf,
+            "detection_box": json.dumps(det.get("box")),
+            "created_by": user["id"],
+        })
+        candidate_ids.append(str(record["id"]))
+
+    return {
+        "available": True,
+        "detections": detections,
+        "candidateDamageIds": candidate_ids,
+        "modelVersion": result.get("version") or ystatus.get("version"),
+        "limitations": result.get("limitations"),
+    }
+
+
+@router.patch("/{vehicle_id}/damage/{damage_id}/review")
+def review_damage(vehicle_id: str, damage_id: str, req: DamageReview,
+                  user: dict = Depends(require_role("seller", "admin"))) -> dict:
+    """Human confirmation/rejection of a detected damage candidate.
+
+    Status must be ``verified`` or ``rejected``; the row is updated accordingly.
+    """
+    if req.status not in ("verified", "rejected"):
+        raise HTTPException(status_code=422,
+                            detail="status must be 'verified' or 'rejected'")
+    _owned(vehicle_id, user)
+    damage = repository.get_row("damage_records", damage_id)
+    if str(damage.get("vehicle_id")) != vehicle_id:
+        raise HTTPException(status_code=404, detail="Damage record not found for this vehicle.")
+    data = {"status": req.status}
+    if req.component_id is not None:
+        data["component_id"] = req.component_id
+    if req.severity is not None:
+        data["severity"] = req.severity
+    if req.repair_status is not None:
+        data["repair_status"] = req.repair_status
+    updated = repository.update_row("damage_records", damage_id, data)
+    repository.audit(str(user["id"]), "damage.reviewed", "damage_record", damage_id,
+                     {"status": req.status})
+    return {"damage": updated, "status": req.status}
+
+
+# ---- document OCR ----------------------------------------------------------
+@router.post("/{vehicle_id}/documents/{doc_id}/ocr")
+def run_document_ocr(vehicle_id: str, doc_id: str,
+                     user: dict = Depends(require_role("seller", "admin"))) -> dict:
+    """Run OCR on a registered document and persist the extracted fields."""
+    _owned(vehicle_id, user)
+    doc = repository.get_row("documents", doc_id)
+    if str(doc.get("vehicle_id")) != vehicle_id or doc.get("deleted_at"):
+        raise HTTPException(status_code=404, detail="Document not found for this vehicle.")
+    key = doc.get("file_key")
+    path = settings.upload_dir / str(key) if key else None
+    if not path or not path.is_file():
+        raise HTTPException(status_code=409,
+                            detail="Source document file is not available for OCR.")
+
+    ocr_status = ocr_module.status()
+    if not ocr_status.get("available"):
+        return JSONResponse(status_code=409,
+                            content={"available": False, "reason": ocr_status.get("reason")})
+
+    result = ocr_module.ocr_image(path)
+    if not result.get("available"):
+        return JSONResponse(status_code=409,
+                            content={"available": False, "reason": result.get("reason")})
+
+    fields = ocr_module.extract_fields(result.get("text", ""))
+    lines = result.get("lines", [])
+    line_conf = (sum(l.get("confidence", 0.0) for l in lines) / len(lines)
+                 if lines else None)
+    confidence = (round(line_conf, 4) if line_conf is not None
+                  else fields.get("confidence"))
+    repository.update_row("documents", doc_id, {
+        "ocr_text": result.get("text", ""),
+        "ocr_extracted": json.dumps(fields),
+        "ocr_confidence": confidence,
+        "ocr_status": "processed",
+    })
+    # Name the engine that actually produced the text. A PDF text layer must
+    # never be presented as OCR, and a fallback is never the primary engine.
+    return {"text": result.get("text", ""), "fields": fields, "confidence": confidence,
+            "engine": result.get("engine"), "method": result.get("method"),
+            "version": result.get("version"), "is_ocr": bool(result.get("is_ocr")),
+            "warnings": result.get("warnings", [])}
+
+
+@router.patch("/{vehicle_id}/documents/{doc_id}/ocr")
+def correct_document_ocr(vehicle_id: str, doc_id: str, req: OcrCorrection,
+                         user: dict = Depends(require_role("seller", "admin"))) -> dict:
+    """Store manually-corrected OCR fields and mark the document reviewed."""
+    _owned(vehicle_id, user)
+    doc = repository.get_row("documents", doc_id)
+    if str(doc.get("vehicle_id")) != vehicle_id or doc.get("deleted_at"):
+        raise HTTPException(status_code=404, detail="Document not found for this vehicle.")
+    updated = repository.update_row("documents", doc_id, {
+        "ocr_extracted": json.dumps(req.fields),
+        "ocr_status": "reviewed",
+    })
+    return {"document": updated, "ocr_status": "reviewed"}
 
 
 # ---- verification / trust / AI -------------------------------------------

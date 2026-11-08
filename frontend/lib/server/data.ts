@@ -123,8 +123,9 @@ import {
   documentsForCategory,
   fieldsForCategory,
   getCategory,
+  hasBatteryPack,
   isElectric,
-  resolveCategoryId,
+  matchCategoryId,
   labelsForCategory,
   mileageRulesForCategory,
   modelAssetForCategory,
@@ -984,11 +985,10 @@ export function getMarketplace(filters: MarketplaceFilters = {}, viewerId?: stri
   if (filters.make) items = items.filter((i) => i.make.toLowerCase() === filters.make!.toLowerCase());
   if (filters.category) {
     const wanted = filters.category.toLowerCase();
-    const classes: Record<string, string> = { two_wheeler: "two_wheeler", four_wheeler: "four_wheeler" };
     items = items.filter((i) => {
       if (i.categoryId.toLowerCase() === wanted) return true;
       const cat = getCategory(i.categoryId);
-      return !!cat && (classes[wanted] === cat.class || cat.label.toLowerCase() === wanted);
+      return !!cat && (cat.class === wanted || cat.label.toLowerCase() === wanted);
     });
   }
   if (filters.priceMin != null) items = items.filter((i) => i.price >= filters.priceMin!);
@@ -1499,7 +1499,7 @@ export function getVerificationChecks(vehicleId: string) {
       : { key: "puc", label: "PUC validity", status: "not_applicable", note: "No combustion engine — a PUC certificate does not apply to this vehicle.", source: "Category rules" },
     // Only electric profiles expose a battery check; the legacy car check list
     // keeps its original length so existing verification evidence is unchanged.
-    ...(cat.categoryId.includes("electric")
+    ...(hasBatteryPack(cat.categoryId)
       ? [{ key: "battery_evidence", label: "Battery evidence", status: batteryDocs.some((t) => ds(t) === "verified") ? "verified" : "unavailable", note: batteryDocs.some((t) => ds(t) === "verified") ? "At least one battery document is verified; State of Health is never inferred from photographs or distance." : "No battery health, warranty or inspection report on file — battery condition is unverified.", source: "Battery documents" }]
       : []),
     {
@@ -1971,10 +1971,14 @@ export function createVehicleDraft(ownerId: string, input: VehicleInput) {
   const reg = normalizeReg(String(input.regNo ?? ""));
   const vin = normalizeVin(String(input.vin ?? ""));
   if (!input.make || !input.model || !reg) return { ok: false as const, code: "VALIDATION_FAILED", message: "Make, model and registration are required." };
-  const categoryId = input.categoryId
-    ? resolveCategoryId(input.categoryId)
+  const explicitCategoryId = input.categoryId ? matchCategoryId(input.categoryId) : undefined;
+  if (input.categoryId && !explicitCategoryId) {
+    return { ok: false as const, code: "VALIDATION_FAILED", message: `Unknown vehicle category '${input.categoryId}'. Select a category from the catalogue.` };
+  }
+  const categoryId = explicitCategoryId
+    ? explicitCategoryId
     : categoryForVehicle({ category: input.category, fuel: input.fuel }).id;
-  if (input.categoryId) {
+  if (explicitCategoryId) {
     // Category-aware path: a scooter frame number is NOT a 17-character VIN,
     // and an electric vehicle is never asked for an engine number.
     const check = validateCategoryIdentity(categoryId, {

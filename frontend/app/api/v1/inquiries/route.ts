@@ -1,6 +1,7 @@
 import { createInquiryForBuyer, getInquiriesForBuyer, getInquiriesForSeller } from "@/lib/server/data";
-import { getListingByVehicle } from "@/lib/server/db";
+import { getInquiry, getListingByVehicle, getUserById } from "@/lib/server/db";
 import { created, fail, ok, requireRole } from "@/lib/server/http";
+import { deliverToUserChannels } from "@/lib/server/notify-delivery";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,5 +31,16 @@ export async function POST(req: Request) {
     type: body?.type,
   });
   if (!result.ok) return fail(result.code === "NOT_FOUND" ? 404 : 400, result.code, result.message);
-  return created(result);
+  // External delivery is attempted only for channels the seller enabled. The
+  // response reports what the provider actually did; in-app notification already
+  // exists regardless.
+  const inquiry = getInquiry(result.id);
+  const seller = inquiry ? getUserById(inquiry.seller_id) : null;
+  const deliveries = inquiry && seller
+    ? await deliverToUserChannels(seller.id, {
+        subject: `New TrustDrive inquiry from ${inquiry.buyer_name}`,
+        body: inquiry.message.slice(0, 160),
+      })
+    : [];
+  return created({ ...result, deliveries });
 }

@@ -32,6 +32,32 @@ const nextConfig = {
   distDir: process.env.NEXT_DIST_DIR || '.next',
   // Docker/Render images build a self-contained server (`node server.js`).
   output: process.env.NEXT_OUTPUT === 'standalone' ? 'standalone' : undefined,
+  // Baseline security headers for every response (Phase 14 hardening).
+  //
+  // No Content-Security-Policy is set here on purpose: the 3D viewer and the
+  // design system's inline styles would need a carefully scoped nonce policy,
+  // and a wrong CSP breaks the product harder than it protects it. These
+  // headers are the safe subset that never conflicts with the app.
+  async headers() {
+    const security = [
+      { key: 'X-Content-Type-Options', value: 'nosniff' },
+      { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+      { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+      { key: 'X-DNS-Prefetch-Control', value: 'off' },
+      { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()' },
+    ];
+    // HSTS only makes sense over TLS; it is meaningless (and misleading) on a
+    // plain-HTTP development origin, so it is added in production only.
+    if (process.env.NODE_ENV === 'production') {
+      security.push({
+        key: 'Strict-Transport-Security',
+        value: 'max-age=63072000; includeSubDomains',
+      });
+    }
+    return [
+      { source: '/:path*', headers: security },
+    ];
+  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },

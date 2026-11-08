@@ -246,7 +246,41 @@ const CATALOGUE: VehicleSpec[] = [
 ];
 
 const DOCS_DIR = path.resolve(__dirname, "../qa/fixtures/generated");
-const PYTHON = path.resolve(__dirname, "../../backend/.venv/Scripts/python.exe");
+
+/**
+ * Resolve a WORKING Python interpreter for the PDF fixture generator.
+ *
+ * The old code hard-coded `backend/.venv/Scripts/python.exe`. A virtualenv is
+ * a machine-local artifact: it can be missing, or — worse — present but
+ * pointing at an interpreter that was deleted (a stale `pyvenv.cfg` /
+ * `home` entry). That failure looks like a test failure even though the app
+ * is fine.
+ *
+ * Order: an explicit `TD_PYTHON`, then the project venv (only if it actually
+ * runs), then `python`/`python3` from PATH.
+ */
+function resolvePython(): string {
+  const candidates: string[] = [];
+  if (process.env.TD_PYTHON) candidates.push(process.env.TD_PYTHON);
+  candidates.push(
+    path.resolve(__dirname, "../../backend/.venv/Scripts/python.exe"),
+    path.resolve(__dirname, "../../backend/.venv/bin/python"),
+    "python",
+    "python3"
+  );
+  for (const candidate of candidates) {
+    try {
+      execFileSync(candidate, ["--version"], { stdio: "ignore" });
+      return candidate;
+    } catch {
+      /* try the next candidate */
+    }
+  }
+  throw new Error(
+    "No working Python interpreter found for the PDF fixture generator. " +
+      "Install Python 3, or set TD_PYTHON to a working interpreter."
+  );
+}
 
 /** Generate real PDFs whose contents agree with each vehicle record. */
 function generateDocuments(catalogue: VehicleSpec[]) {
@@ -270,7 +304,7 @@ function generateDocuments(catalogue: VehicleSpec[]) {
   }
   fs.writeFileSync(specFile, JSON.stringify(specs, null, 2));
   execFileSync(
-    PYTHON,
+    resolvePython(),
     [path.resolve(__dirname, "../qa/fixtures/make_docs.py"), "--spec", specFile, "--out", DOCS_DIR],
     { stdio: "ignore" }
   );

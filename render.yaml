@@ -4,17 +4,25 @@
 # One web service + one persistent disk. This is deliberate: the Next.js data
 # layer uses `node:sqlite` and the FastAPI service reads the same file, and two
 # Render services cannot mount the same disk. A split frontend/backend blueprint
-# requires moving the Next data layer to Postgres first (docs/DEPLOYMENT.md,
-# "Scale-out path"). Do not split this file without that migration.
+# requires moving the Next data layer to Postgres first
+# (project/docs/deployment/DEPLOYMENT.md, "Scale-out path"). Do not split this
+# file without that migration.
+#
+# The Docker build context is the repository root, so the dockerfile may live
+# under project/infra/docker/ and still COPY frontend/, backend/ and services/.
 #
 # First deploy: set ADMIN_EMAIL and ADMIN_PASSWORD in the Render dashboard.
-# TD_SEED_DEMO=0 means the published demo accounts are never created.
+# TD_SEED_DEMO=0 means the published demo accounts are never created. The app
+# also force-disables demo seeding at startup when TD_ENV=production, so it is
+# impossible to boot a production instance with demo accounts present.
+# Attach a persistent disk mounted at /data (see the disk: block below) so the
+# database and uploads survive restarts. /tmp is rejected at startup.
 # ---------------------------------------------------------------------------
 services:
   - type: web
     name: trustdrive
     runtime: docker
-    dockerfilePath: ./Dockerfile.render
+    dockerfilePath: ./project/infra/docker/Dockerfile.render
     plan: free
     region: singapore
     healthCheckPath: /api/v1/health/ready
@@ -27,25 +35,32 @@ services:
       - key: PORT
         value: "10000"
       - key: TD_DATA_DIR
-        value: /tmp/trustdrive
+        value: /data/trustdrive
       - key: TD_DB_FILE
-        value: /tmp/trustdrive/trustdrive.db
+        value: /data/trustdrive/trustdrive.db
       - key: TD_DB_URL
-        value: sqlite+pysqlite:////tmp/trustdrive/trustdrive.db
+        value: sqlite+pysqlite:////data/trustdrive/trustdrive.db
       - key: TD_UPLOAD_DIR
-        value: /tmp/trustdrive/uploads
+        value: /data/trustdrive/uploads
       - key: TD_INTELLIGENCE_URL
         value: http://127.0.0.1:8000
       - key: TD_SEED_DEMO
-        value: "1"
+        value: "0"
       - key: TD_LLM_PROVIDER
         value: none
       # Generated once by Render and kept across deploys.
+      # Every secret listed here is REQUIRED by the production config check in
+      # frontend/lib/server/db.ts (validateProductionConfig). A missing or short
+      # value makes the app refuse to start rather than run with a weak secret.
       - key: JWT_SECRET
         generateValue: true
       - key: TD_SERVICE_TOKEN
         generateValue: true
       - key: DOWNLOAD_SIGNING_SECRET
+        generateValue: true
+      - key: QR_SIGNING_SECRET
+        generateValue: true
+      - key: TD_SHARE_SECRET
         generateValue: true
       # Required on first boot (bootstrap admin). Set in the dashboard.
       - key: ADMIN_EMAIL
@@ -59,3 +74,23 @@ services:
         sync: false
       - key: TD_LLM_MODEL
         sync: false
+      # Optional PostgreSQL target for the Next.js data layer.
+      #
+      # The web service still reads and writes the SQLite file above; setting
+      # TD_DATABASE_URL alone does NOT move the app to Postgres. The cutover is
+      # an explicit operator step:
+      #   1. create a managed PostgreSQL instance (requires a paid Render plan),
+      #   2. set TD_DATABASE_URL to its internal connection URL,
+      #   3. run the project's Postgres migration scripts under
+      #      project/scripts/database/ and check the row-count report,
+      #   4. only then point the app at the migrated database.
+      # The blueprint intentionally declares no `databases:` block because a
+      # managed database is not available on the free plan this service uses.
+      - key: TD_DATABASE_URL
+        sync: false
+    # Persistent disk so the SQLite DB + uploads survive restarts. Without this
+    # the /data path is ephemeral and every audit row is lost on redeploy.
+    disk:
+      name: trustdrive-data
+      mountPath: /data
+      sizeGB: 10
