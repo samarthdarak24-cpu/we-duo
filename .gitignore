@@ -100,3 +100,8 @@ project/qa/**/*.db-shm
 project/qa/backups/
 project/qa/*results*.json
 project/qa/browser-sweep.json
+
+# Agent / IDE tooling state (local only, never part of the project)
+.agents/
+.workbuddy/
+*.genie
