@@ -5,7 +5,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 BASE = "http://127.0.0.1:3000"
 OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
@@ -109,7 +109,7 @@ def main():
         print(f"  {flag} {st:>4} {method:6} {path:70} [{note}] {snippet[:150]}")
         out.append({"role": role, "method": method, "path": path, "note": note,
                     "status": st, "body": raw[:600]})
-    (ROOT / "qa" / "live_actions_results.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
+    (ROOT / "project" / "qa" / "live_actions_results.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
     bad = [o for o in out if o["status"] >= 500 or o["status"] == 0]
     print(f"\nTOTAL={len(out)} 2xx={sum(1 for o in out if 200<=o['status']<300)} "
           f"4xx={sum(1 for o in out if 400<=o['status']<500)} 5xx/0={len(bad)}")

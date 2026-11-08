@@ -13,7 +13,7 @@ import shutil
 import sqlite3
 import time
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DB = os.path.join(ROOT, '.data', 'trustdrive.db')
 
 print('DB:', DB, 'size', os.path.getsize(DB))

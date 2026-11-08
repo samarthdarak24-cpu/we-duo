@@ -121,8 +121,8 @@ class TestAuth:
 
     def test_no_hardcoded_secret_remains_in_signing_code(self):
         from pathlib import Path
-        root = Path(__file__).resolve().parents[1]
-        for rel in ["lib/server/auth.ts", "services/intelligence/app/security.py"]:
+        root = Path(__file__).resolve().parents[2]
+        for rel in ["frontend/lib/server/auth.ts", "backend/app/security.py"]:
             assert PUBLIC_FALLBACK_SECRET not in (root / rel).read_text(encoding="utf-8")
 
 
@@ -611,8 +611,8 @@ class TestThreeD:
     def test_glb_contains_multiple_real_meshes(self):
         """Parse the GLB JSON chunk directly: never accept a primitive placeholder."""
         from pathlib import Path
-        root = Path(__file__).resolve().parents[1]
-        raw = (root / "public" / "models" / "vehicles" / "trustdrive-sedan.glb").read_bytes()
+        root = Path(__file__).resolve().parents[2]
+        raw = (root / "frontend" / "public" / "models" / "vehicles" / "trustdrive-sedan.glb").read_bytes()
         assert raw[:4] == b"glTF"
         # GLB: 12-byte header, then chunk0 = 4-byte length + 4-byte type + JSON.
         json_len = int.from_bytes(raw[12:16], "little")

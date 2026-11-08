@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 FRONT = ROOT / "frontend"
 
 # Collect real route patterns from disk.

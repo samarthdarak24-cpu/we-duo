@@ -14,7 +14,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 FRONT = ROOT / "frontend"
 BASE = "http://127.0.0.1:3000"
 PYBASE = "http://127.0.0.1:8000"
@@ -111,7 +111,7 @@ def main():
           f"401={sum(1 for r in results if r[2] == 401)} "
           f"0={sum(1 for r in results if r[2] == 0)}")
 
-    out = ROOT / "qa" / "live_probe_results.json"
+    out = ROOT / "project" / "qa" / "live_probe_results.json"
     out.write_text(json.dumps({"logins": {k: bool(v) for k, v in sessions.items()},
                                "results": results}, indent=2), encoding="utf-8")
     print(f"\nSaved {out}")

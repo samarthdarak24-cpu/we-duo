@@ -19,7 +19,13 @@ const port = process.env.E2E_PORT || "3100";
 
 const child = spawn(process.execPath, [nextBin, "dev", "--port", port], {
   stdio: "inherit",
-  env: { ...process.env, NEXT_DIST_DIR: ".next_e2e" },
+  env: {
+    ...process.env,
+    NEXT_DIST_DIR: ".next_e2e",
+    // Serial E2E suites register/log in many times in one minute; the real
+    // limiter (10/min) would reject them. It is covered by ratelimit.test.ts.
+    TD_RATE_LIMIT_AUTH: "1000",
+  },
 });
 
 child.on("exit", (code, signal) => process.exit(signal ? 1 : (code ?? 1)));

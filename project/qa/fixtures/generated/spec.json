@@ -1,0 +1,156 @@
+[
+  {
+    "name": "rc-MH12QA8451",
+    "reg": "MH12QA8451",
+    "identifier": "MA3FJE61S14701684",
+    "identifier_label": "VIN (17 characters)",
+    "model": "Baleno",
+    "make": "Maruti",
+    "year": "2021",
+    "km": 24500,
+    "kind": "rc"
+  },
+  {
+    "name": "insurance-MH12QA8451",
+    "reg": "MH12QA8451",
+    "identifier": "MA3FJE61S14701684",
+    "identifier_label": "VIN (17 characters)",
+    "model": "Baleno",
+    "make": "Maruti",
+    "year": "2021",
+    "km": 24500,
+    "kind": "insurance"
+  },
+  {
+    "name": "rc-MH12QA8452",
+    "reg": "MH12QA8452",
+    "identifier": "ME4JC259E8T4701682",
+    "identifier_label": "Chassis / frame number",
+    "model": "CB350",
+    "make": "Honda",
+    "year": "2021",
+    "km": 12000,
+    "kind": "rc"
+  },
+  {
+    "name": "insurance-MH12QA8452",
+    "reg": "MH12QA8452",
+    "identifier": "ME4JC259E8T4701682",
+    "identifier_label": "Chassis / frame number",
+    "model": "CB350",
+    "make": "Honda",
+    "year": "2021",
+    "km": 12000,
+    "kind": "insurance"
+  },
+  {
+    "name": "rc-MH12QA8453",
+    "reg": "MH12QA8453",
+    "identifier": "ME4JF401H9T4701683",
+    "identifier_label": "Chassis / frame number",
+    "model": "Activa 6G",
+    "make": "Honda",
+    "year": "2021",
+    "km": 8500,
+    "kind": "rc"
+  },
+  {
+    "name": "insurance-MH12QA8453",
+    "reg": "MH12QA8453",
+    "identifier": "ME4JF401H9T4701683",
+    "identifier_label": "Chassis / frame number",
+    "model": "Activa 6G",
+    "make": "Honda",
+    "year": "2021",
+    "km": 8500,
+    "kind": "insurance"
+  },
+  {
+    "name": "rc-MH12QA8454",
+    "reg": "MH12QA8454",
+    "identifier": "MD2DSB123K1A4701684",
+    "identifier_label": "Chassis / frame number",
+    "model": "S1 Pro",
+    "make": "Ola Electric",
+    "year": "2022",
+    "km": 6400,
+    "kind": "rc"
+  },
+  {
+    "name": "insurance-MH12QA8454",
+    "reg": "MH12QA8454",
+    "identifier": "MD2DSB123K1A4701684",
+    "identifier_label": "Chassis / frame number",
+    "model": "S1 Pro",
+    "make": "Ola Electric",
+    "year": "2022",
+    "km": 6400,
+    "kind": "insurance"
+  },
+  {
+    "name": "rc-MH12QA8455",
+    "reg": "MH12QA8455",
+    "identifier": "MD2DSA001K2B4701685",
+    "identifier_label": "Chassis / frame number",
+    "model": "RV400",
+    "make": "Revolt",
+    "year": "2021",
+    "km": 9800,
+    "kind": "rc"
+  },
+  {
+    "name": "insurance-MH12QA8455",
+    "reg": "MH12QA8455",
+    "identifier": "MD2DSA001K2B4701685",
+    "identifier_label": "Chassis / frame number",
+    "model": "RV400",
+    "make": "Revolt",
+    "year": "2021",
+    "km": 9800,
+    "kind": "insurance"
+  },
+  {
+    "name": "rc-MH12QA8456",
+    "reg": "MH12QA8456",
+    "identifier": "MA3FJE61S24701684",
+    "identifier_label": "VIN (17 characters)",
+    "model": "i20",
+    "make": "Hyundai",
+    "year": "2020",
+    "km": 31000,
+    "kind": "rc"
+  },
+  {
+    "name": "insurance-MH12QA8456",
+    "reg": "MH12QA8456",
+    "identifier": "MA3FJE61S24701684",
+    "identifier_label": "VIN (17 characters)",
+    "model": "i20",
+    "make": "Hyundai",
+    "year": "2020",
+    "km": 31000,
+    "kind": "insurance"
+  },
+  {
+    "name": "rc-MH12QA8457",
+    "reg": "MH12QA8457",
+    "identifier": "MAT625289NP470168",
+    "identifier_label": "VIN (17 characters)",
+    "model": "Nexon EV",
+    "make": "Tata",
+    "year": "2022",
+    "km": 19500,
+    "kind": "rc"
+  },
+  {
+    "name": "insurance-MH12QA8457",
+    "reg": "MH12QA8457",
+    "identifier": "MAT625289NP470168",
+    "identifier_label": "VIN (17 characters)",
+    "model": "Nexon EV",
+    "make": "Tata",
+    "year": "2022",
+    "km": 19500,
+    "kind": "insurance"
+  }
+]

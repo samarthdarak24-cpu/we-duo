@@ -11,7 +11,8 @@ from pathlib import Path
 
 import httpx
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
+FRONT = ROOT / "frontend"
 NEXT = "http://127.0.0.1:3000"
 INTEL = "http://127.0.0.1:8000"
 
@@ -62,8 +63,8 @@ def main() -> None:
 
     # --- Next.js: all GET API routes for each role, detect 5xx ---
     next_routes = sorted(
-        "/" + str(p.relative_to(ROOT / "app" / "api")).replace("\\", "/")
-        for p in (ROOT / "app" / "api").rglob("route.ts")
+        "/" + str(p.relative_to(FRONT / "app" / "api")).replace("\\", "/")
+        for p in (FRONT / "app" / "api").rglob("route.ts")
     )
     # substitute real ids harvested from the DB
     import sqlite3
@@ -166,7 +167,7 @@ def main() -> None:
                 report["checks"].append({"kind": "forged", "label": label, "runtime": "fastapi",
                                          "url": url, "status": r.status_code, "body": r.text[:200]})
 
-    out = ROOT / "qa" / "results" / "probe_live.json"
+    out = ROOT / "project" / "qa" / "results" / "probe_live.json"
     out.write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(f"checks={len(report['checks'])} 5xx_errors={len(report['errors'])} -> {out}")
     for e in report["errors"][:40]:

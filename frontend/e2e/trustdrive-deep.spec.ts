@@ -15,9 +15,36 @@ const BUYER = { email: "rohan@trustdrive.dev", password: "demo1234" };
 const STAMP = String(Date.now()).slice(-4);
 const REG = `MH14TD${STAMP}`;
 const VIN = `WBA5R1C50KAK9${STAMP}`;
-const RC_PDF = path.resolve("..", "qa", "fixtures", "generated-rc.pdf");
-const RC_PNG = path.resolve("..", "qa", "fixtures", "generated-rc.png");
-const SCREENS = path.resolve("..", "qa", "screenshots");
+const RC_PDF = path.resolve("..", "project", "qa", "fixtures", "generated-rc.pdf");
+const RC_PNG = path.resolve("..", "project", "qa", "fixtures", "generated-rc.png");
+const SCREENS = path.resolve("..", "project", "docs", "screenshots", "live");
+
+/**
+ * Resolve a Python interpreter that actually has PyMuPDF. `python` on PATH is
+ * not necessarily the one holding the backend dependencies, so prefer the
+ * project venv (only if it runs) and fall back to PATH.
+ */
+function resolvePython(): string {
+  const candidates = [
+    process.env.TD_PYTHON,
+    path.resolve(__dirname, "../../backend/.venv/Scripts/python.exe"),
+    path.resolve(__dirname, "../../backend/.venv/bin/python"),
+    "python3",
+    "python",
+  ].filter(Boolean) as string[];
+  for (const candidate of candidates) {
+    try {
+      execFileSync(candidate, ["-c", "import pymupdf"], { stdio: "ignore" });
+      return candidate;
+    } catch {
+      /* try the next candidate */
+    }
+  }
+  throw new Error(
+    "No Python interpreter with PyMuPDF found for the RC fixture generator. " +
+      "Install it in backend/.venv (pip install PyMuPDF) or set TD_PYTHON."
+  );
+}
 
 let vehicleId = "";
 let listingId = "";
@@ -49,7 +76,7 @@ doc.save(out_pdf)
 p.get_pixmap(dpi=170).save(out_png)
 print("fixture-ok", reg, vin)
 `;
-  execFileSync("python", ["-c", script, REG, VIN, RC_PDF, RC_PNG], { stdio: "pipe" });
+  execFileSync(resolvePython(), ["-c", script, REG, VIN, RC_PDF, RC_PNG], { stdio: "pipe" });
 }
 
 async function login(page: Page, role: "seller" | "buyer") {
@@ -104,21 +131,22 @@ test.describe("TrustDrive deep integration", () => {
     await page.goto("/seller/add-vehicle");
     await expect(page.getByRole("heading", { name: "Add Vehicle", exact: true })).toBeVisible();
 
+    // The category drives the rest of the form (fields, validation, documents),
+    // so it is selected before any identity value is entered.
+    await page.getByLabel("Vehicle category").selectOption("passenger_car");
     await page.getByLabel("Registration number").fill(REG);
-    await page.getByLabel(/VIN/).fill(VIN);
-    await page.getByLabel("Make", { exact: true }).fill("BMW");
-    await page.getByLabel("Model", { exact: true }).fill("3 Series");
+    await page.getByLabel(/VIN \(17 characters\)/).fill(VIN);
+    await page.getByLabel("Manufacturer").fill("BMW");
+    await page.getByLabel(/^Model\b/).fill("3 Series");
     await page.getByLabel("Variant").fill("330i");
-    await page.getByLabel("Year").fill("2015");
-    await page.getByLabel("Fuel").selectOption("Diesel");
+    await page.getByLabel("Manufacturing year").fill("2015");
     await page.getByLabel("Transmission").selectOption("Automatic");
-    await page.getByLabel("Category").selectOption("Sedan");
     await page.getByLabel("Colour").fill("Grey");
-    await page.getByLabel("Ownership count").fill("1");
+    await page.getByLabel("Number of owners").fill("1");
     await page.getByLabel("Location").fill("Mumbai");
-    await page.getByLabel(/Current mileage/).fill("45210");
-    await page.getByLabel(/Asking price/).fill("1850000");
-    await page.getByLabel("Condition").fill("Good");
+    await page.getByLabel(/Odometer reading \(km\)/).fill("45210");
+    await page.getByLabel("Asking price (INR)").fill("1850000");
+    await page.getByLabel("Exterior condition").selectOption("Good");
     await page.getByLabel("Description").fill(`${stampText} — verified demo vehicle for integration testing.`);
 
     await page.getByRole("button", { name: /Save draft & continue/ }).click();

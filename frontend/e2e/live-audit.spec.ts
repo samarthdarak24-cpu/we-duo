@@ -16,9 +16,9 @@ import { execFileSync } from "node:child_process";
  *   E2E_BASE_URL=http://127.0.0.1:3000 npx playwright test e2e/live-audit.spec.ts
  */
 
-const SHOTS = path.resolve(__dirname, "../../SCREENSHOTS/live");
-const FIXTURES = path.resolve(__dirname, "../qa/fixtures");
-const STATE_FILE = path.resolve(__dirname, "../qa/live-state.json");
+const SHOTS = path.resolve(__dirname, "../../project/docs/screenshots/live");
+const FIXTURES = path.resolve(__dirname, "../../project/qa/fixtures");
+const STATE_FILE = path.resolve(__dirname, "../../project/qa/live-state.json");
 
 const RUN = Date.now().toString().slice(-8); // 8 digits
 const PASSWORD = "QaLive2026pass";
@@ -245,7 +245,7 @@ const CATALOGUE: VehicleSpec[] = [
   },
 ];
 
-const DOCS_DIR = path.resolve(__dirname, "../qa/fixtures/generated");
+const DOCS_DIR = path.resolve(__dirname, "../../project/qa/fixtures/generated");
 
 /**
  * Resolve a WORKING Python interpreter for the PDF fixture generator.
@@ -305,7 +305,7 @@ function generateDocuments(catalogue: VehicleSpec[]) {
   fs.writeFileSync(specFile, JSON.stringify(specs, null, 2));
   execFileSync(
     resolvePython(),
-    [path.resolve(__dirname, "../qa/fixtures/make_docs.py"), "--spec", specFile, "--out", DOCS_DIR],
+    [path.resolve(__dirname, "../../project/qa/fixtures/make_docs.py"), "--spec", specFile, "--out", DOCS_DIR],
     { stdio: "ignore" }
   );
   return {

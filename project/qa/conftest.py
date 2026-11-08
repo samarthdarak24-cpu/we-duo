@@ -15,11 +15,11 @@ from pathlib import Path
 import httpx
 import pytest
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 NEXT_URL = os.getenv("QA_NEXT_URL", "http://127.0.0.1:3300")
 INTEL_URL = os.getenv("QA_INTEL_URL", "http://127.0.0.1:8000")
 DB_FILE = ROOT / ".data" / "trustdrive.db"
-RESULTS_FILE = ROOT / "qa" / "results" / "live_api.json"
+RESULTS_FILE = ROOT / "project" / "qa" / "results" / "live_api.json"
 
 ACCOUNTS = {
     "seller_a": ("samarth@trustdrive.dev", "u-seller"),

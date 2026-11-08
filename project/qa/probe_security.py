@@ -11,7 +11,7 @@ from pathlib import Path
 
 import httpx
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 NEXT = "http://127.0.0.1:3000"
 INTEL = "http://127.0.0.1:8000"
 
@@ -225,7 +225,7 @@ def main() -> None:
         call(runtime, method, url, who, json_body=body, expect=[400, 401, 403, 404, 422],
              note="invalid payload rejected")
 
-    out = ROOT / "qa" / "results" / "probe_security.json"
+    out = ROOT / "project" / "qa" / "results" / "probe_security.json"
     out.write_text(json.dumps(results, indent=2), encoding="utf-8")
     fails = [r for r in results if r["verdict"] == "FAIL"]
     print(f"\nTOTAL={len(results)} FAIL={len(fails)} -> {out}")
