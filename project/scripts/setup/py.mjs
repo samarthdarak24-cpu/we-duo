@@ -12,7 +12,7 @@
 //   node project/scripts/setup/py.mjs -m pytest -q
 // ---------------------------------------------------------------------------
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -41,6 +41,20 @@ if (!python) {
     "[py] Backend deps: python -m pip install -r backend/requirements.txt"
   );
   process.exit(127);
+}
+
+// One-time self-heal for Windows policies that block SQLAlchemy's compiled
+// extensions. The marker lives inside the venv, so recreating the venv
+// re-runs the check; a healthy environment pays no cost after the first run.
+const marker = path.join(VENV, ".td-deps-ok");
+if (!existsSync(marker)) {
+  const fixer = path.join(ROOT, "project", "scripts", "setup", "ensure_backend_deps.py");
+  const check = spawnSync(python, [fixer], { encoding: "utf8" });
+  if (check.status === 0) {
+    try { writeFileSync(marker, "ok\n"); } catch { /* non-fatal */ }
+  } else {
+    process.stderr.write((check.stdout || "") + (check.stderr || ""));
+  }
 }
 
 const result = spawnSync(python, process.argv.slice(2), { stdio: "inherit" });

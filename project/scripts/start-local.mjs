@@ -18,6 +18,7 @@ import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import http from "node:http";
+import net from "node:net";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const FRONTEND = path.join(ROOT, "frontend");
@@ -125,6 +126,16 @@ function probe(url, timeoutMs = 2500) {
   });
 }
 
+/** True when this process can bind the port itself (no orphan server squatting). */
+function portFree(port) {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+    server.once("error", (err) => resolve({ free: false, reason: err.code || err.message }));
+    server.once("listening", () => server.close(() => resolve({ free: true })));
+    server.listen(port);
+  });
+}
+
 async function waitFor(url, label, maxMs) {
   const started = Date.now();
   while (Date.now() - started < maxMs) {
@@ -140,6 +151,34 @@ async function waitFor(url, label, maxMs) {
 async function main() {
   console.log(`[start] repo root: ${ROOT}`);
   console.log(`[start] intelligence URL: ${INTELLIGENCE_URL}`);
+
+  // Fail fast with an actionable message instead of letting `next start` crash
+  // after the readiness probe has already reported success against an orphan.
+  if (!DEV && !existsSync(path.join(FRONTEND, ".next", "BUILD_ID"))) {
+    console.error("[start] No production build: frontend/.next/BUILD_ID is missing.");
+    console.error("[start] Run `npm run build` first (or use `npm run dev:all`).");
+    process.exit(1);
+  }
+  const port = await portFree(PORT);
+  if (!port.free) {
+    console.error(`[start] Port ${PORT} is already in use (${port.reason}).`);
+    console.error("[start] Stop the other server (or set PORT=3001) and retry.");
+    process.exit(1);
+  }
+
+  // Windows Application Control can block SQLAlchemy's compiled extensions,
+  // which makes `import app.main` fail before uvicorn ever binds a port. The
+  // fixer is a no-op on healthy systems and falls back to pure Python when a
+  // policy blocks a DLL.
+  const deps = spawnSync(PYTHON, [path.join(ROOT, "project", "scripts", "setup", "ensure_backend_deps.py")],
+    { encoding: "utf8" });
+  if (deps.status !== 0) {
+    console.error("[start] backend dependency check failed:");
+    console.error((deps.stdout || "") + (deps.stderr || ""));
+    console.error("[start] reinstall: python -m pip install -r backend/requirements.txt");
+    process.exit(1);
+  }
+  if (deps.stdout && deps.stdout.trim()) process.stdout.write(deps.stdout);
 
   const alreadyUp = await probe(`${INTELLIGENCE_URL}/health`);
   if (alreadyUp) {

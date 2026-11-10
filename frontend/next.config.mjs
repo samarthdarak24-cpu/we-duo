@@ -29,7 +29,15 @@ for (const key of ['TD_DATA_DIR', 'TD_DB_FILE', 'TD_UPLOAD_DIR', 'TD_MODEL_DIR']
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Isolated verification builds (`NEXT_DIST_DIR=.next_verify npm run build`).
-  distDir: process.env.NEXT_DIST_DIR || '.next',
+  //
+  // `next dev` gets its own output directory by default. Sharing `.next` between
+  // `next dev` and `next start` overwrites `BUILD_ID`, after which the production
+  // server refuses to boot ("Could not find a production build"). Next sets
+  // NODE_ENV=development for `dev` and production for `build`/`start`, so the two
+  // runtimes can never collide unless NEXT_DIST_DIR is set explicitly.
+  distDir:
+    process.env.NEXT_DIST_DIR ||
+    (process.env.NODE_ENV === 'development' ? '.next_dev' : '.next'),
   // Docker/Render images build a self-contained server (`node server.js`).
   output: process.env.NEXT_OUTPUT === 'standalone' ? 'standalone' : undefined,
   // Baseline security headers for every response (Phase 14 hardening).

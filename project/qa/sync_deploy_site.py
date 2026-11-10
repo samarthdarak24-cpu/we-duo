@@ -45,6 +45,15 @@ def main():
         shutil.copy2(SRC / name, DST / name)
         print("config:", name)
 
+    # The published copy is gitignored, so the canonical startup files live in
+    # project/infra/deployment/ and are copied in on every sync. They must be
+    # present before publishing: boot.mjs is what makes port 3000 answer within
+    # the hosting platform's 30-second readiness window.
+    template_dir = ROOT / "project" / "infra" / "deployment"
+    for name in ("start.sh", "boot.mjs"):
+        shutil.copy2(template_dir / name, DST / name)
+        print("startup:", name)
+
     # The published sandbox must keep its own startup script.
     pkg_path = DST / "package.json"
     pkg = json.loads(pkg_path.read_text(encoding="utf-8"))

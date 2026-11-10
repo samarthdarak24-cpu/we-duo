@@ -1,3 +1,7 @@
 # Model weights stay in Git LFS (single rule covers the current location).
 *.pt filter=lfs diff=lfs merge=lfs -text
 *.onnx filter=lfs diff=lfs merge=lfs -text
+
+# Shell entry points must keep LF even when checked out on Windows: a CRLF
+# shebang makes `/bin/sh` fail on Linux/Render with "bad interpreter".
+*.sh text eol=lf

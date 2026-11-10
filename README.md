@@ -20,13 +20,27 @@ Requirements: **Node 22.5+** (`node:sqlite` is built-in), Python 3.12+, npm.
 
 ```bash
 npm ci --prefix frontend          # install frontend dependencies
-npm run seed:reset                # 13 demo vehicles + 3 required negative examples
+npm run build                     # once (or after changing frontend source)
 npm run start:all                 # starts FastAPI (127.0.0.1:8000) then Next.js (:3000)
 ```
+
+On Windows you can simply double-click **`START-TRUSTDRIVE.bat`** in the project
+root — it builds on first run and keeps both runtimes alive in one window.
+
+Then open **http://127.0.0.1:3000** (demo login `samarth@trustdrive.dev` /
+`demo1234`). The servers must stay running: if the terminal/window is closed the
+site goes away. `npm run start:all` refuses to start when port 3000 is already
+occupied or when `frontend/.next/BUILD_ID` is missing, with an actionable message.
+
+`npm run dev` uses its own `.next_dev` output directory, so a dev server can
+never overwrite the production build's `BUILD_ID` and make `next start` fail.
 
 `npm run start:all` launches **both runtimes** and shuts them down together. Starting
 only `npm start` leaves the Python-backed features (OCR, damage review, AI
 investigations, system status) reporting an honest `502`/`409` instead of a result.
+On Windows, if an Application Control policy blocks a SQLAlchemy compiled
+extension, the launcher automatically switches to SQLAlchemy's pure-Python
+implementations (`project/scripts/setup/ensure_backend_deps.py`).
 
 Manual alternative:
 
@@ -189,6 +203,17 @@ database and uploads. On free the app would lose every record on each deploy.
 split (`trustdrive-web`, `trustdrive-api`, `trustdrive-ai-worker`). It requires
 migrating both runtimes to a managed PostgreSQL first — see the header of that
 file and `project/docs/deployment/DEPLOYMENT.md`.
+
+### Single-port published sandbox
+
+`project/infra/deployment/start.sh` + `boot.mjs` are the canonical templates for
+the single-port WorkBuddy publish (copied into `deploy/site` by
+`project/qa/sync_deploy_site.py`). The host declares a service ready only if the
+port answers within ~30 s, while `next build` takes longer. `boot.mjs` therefore
+binds the port instantly, serves an honest "starting" page (health endpoints
+return `503 status: starting`), builds in the background, then proxies every
+request to `next start` on the internal port once healthy. Set `TD_SKIP_BUILD=1`
+only when a valid `.next/BUILD_ID` already exists in the uploaded copy.
 
 ---
 
