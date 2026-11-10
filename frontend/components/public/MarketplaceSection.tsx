@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Icon } from "@/components/ui/Icon";
+import { resolveVehiclePhoto } from "@/lib/vehicle-images";
 
 export interface MarketplaceVehicle {
   id: string;
@@ -31,28 +32,9 @@ export interface MarketplaceVehicle {
   photoUrl?: string;
 }
 
-// High-resolution verified online images (Cars & Bikes)
-export const onlineVehicleImages: Record<string, string> = {
-  // Cars
-  "v-bmw": "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1200&q=80",
-  "v-seller": "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1200&q=80",
-  "v-audi": "https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&w=1200&q=80",
-  "v-merc": "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1200&q=80",
-  "v-camry": "https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?auto=format&fit=crop&w=1200&q=80",
-  "v-tata": "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=80",
-  "v-hyundai": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1200&q=80",
-  "v-toyota": "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1200&q=80",
-  "v-honda": "https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=1200&q=80",
-
-  // Bikes & Superbikes
-  "v-ducati": "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=1200&q=80",
-  "v-royalenfield": "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&w=1200&q=80",
-  "v-kawasaki": "https://images.unsplash.com/photo-1599819811279-d5ad9cccf838?auto=format&fit=crop&w=1200&q=80",
-  "v-bmw-bike": "https://images.unsplash.com/photo-1558981806-ec527fa84c39?auto=format&fit=crop&w=1200&q=80",
-
-  defaultCar: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1200&q=80",
-  defaultBike: "https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?auto=format&fit=crop&w=1200&q=80",
-};
+// The single source of truth for representative vehicle photography lives in
+// lib/vehicle-images.ts; re-exported here for any existing importers.
+export { onlineVehicleImages } from "@/lib/vehicle-images";
 
 export function isBikeVehicle(v: MarketplaceVehicle): boolean {
   const cat = (v.category || "").toLowerCase();
@@ -301,9 +283,12 @@ export function MarketplaceSection({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredVehicles.map((vehicle) => {
               const isBike = isBikeVehicle(vehicle);
-              const imageSrc =
-                onlineVehicleImages[vehicle.id] ||
-                (isBike ? onlineVehicleImages.defaultBike : onlineVehicleImages.defaultCar);
+              const imageSrc = resolveVehiclePhoto({
+                id: vehicle.id,
+                make: vehicle.make,
+                model: vehicle.model,
+                category: vehicle.category,
+              });
 
               return (
                 <div

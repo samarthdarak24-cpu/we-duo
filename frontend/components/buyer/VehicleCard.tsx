@@ -77,6 +77,7 @@ export function VehicleCard({ v, showSave = true }: { v: VehicleCardView; showSa
       <div className="relative">
         <a href={`/vehicle/${v.id}`} aria-label={`View ${v.make} ${v.model}`} className="block">
           <VehiclePhoto
+            id={v.id}
             make={v.make}
             model={v.model}
             year={v.year}

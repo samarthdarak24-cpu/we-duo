@@ -44,7 +44,7 @@ export function VehicleRowCompact({ v }: { v: RecommendedVehicle }) {
   return (
     <div className="group relative flex items-center gap-3 rounded-[12px] p-2 transition hover:bg-surface-tint">
       <a href={`/vehicle/${v.id}`} className="flex min-w-0 flex-1 items-center gap-3" aria-label={`View ${v.make} ${v.model}`}>
-        <VehiclePhoto make={v.make} model={v.model} year={v.year} size={60} rounded={11} />
+        <VehiclePhoto id={v.id} make={v.make} model={v.model} year={v.year} size={60} rounded={11} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <span className="truncate text-[13.5px] font-semibold text-ink">

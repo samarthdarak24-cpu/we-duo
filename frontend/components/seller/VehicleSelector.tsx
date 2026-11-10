@@ -38,7 +38,7 @@ export function VehicleSelector({
                   : "border-transparent bg-surface-tint text-muted hover:border-border hover:text-ink")
               }
             >
-              <VehiclePhoto make={v.make} model={v.model} year={v.year} size={26} rounded={6} />
+              <VehiclePhoto id={v.id} make={v.make} model={v.model} year={v.year} size={26} rounded={6} />
               <span className="text-[11.5px] font-semibold">
                 {v.make} {v.model}
               </span>

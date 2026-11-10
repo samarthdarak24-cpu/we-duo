@@ -53,6 +53,27 @@ npm run dev                       # Next.js  → http://localhost:3000
 The web app runs fine without the Python service: every integration degrades
 with an explicit status rather than a fake result.
 
+### Vehicle photography
+
+A seller-uploaded photo always wins. When a demo/seeded vehicle has no upload,
+`frontend/lib/vehicle-images.ts` resolves a **model-accurate** representative
+photograph: each make/model in the seed maps to that model's Wikipedia /
+Wikimedia Commons lead image, or to the manufacturer's own product photo
+(Ather 450X, Revolt RV400). A Honda City never shows a BMW and a Ducati never
+shows a scooter. Only synthetic QA rows with no real model name fall back to a
+class-accurate generic photo.
+
+Those images are badged **"Demo photo"** and are never presented as inspection
+evidence. If a remote image is unreachable the component falls back to bundled
+local photography, then to an explicit labelled placeholder — never a blank
+card.
+
+`project/qa/vehicle_model_photos.json` records the resolved URLs. Run
+`npm run verify:photos` after editing the catalogue; it checks every URL and
+fails on dead links. Stable Wikimedia/CDN URLs are used instead of Google Images
+thumbnail links (`encrypted-tbn0.gstatic.com`), which expire, are low-resolution
+and block hotlinking — the original cause of the blank cards.
+
 ---
 
 ## Repository layout

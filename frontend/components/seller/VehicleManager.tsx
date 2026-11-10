@@ -143,7 +143,7 @@ export function VehicleManager({ vehicles }: { vehicles: SellerVehicleRow[] }) {
                   <tr key={v.id} className="border-b border-border/70 align-middle transition-colors last:border-0 hover:bg-surface-tint/60">
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
-                        <VehiclePhoto make={v.make} model={v.model} year={v.year} size={44} rounded={9} />
+                        <VehiclePhoto id={v.id} make={v.make} model={v.model} year={v.year} size={44} rounded={9} />
                         <div className="min-w-0">
                           <div className="truncate text-[13.5px] font-semibold text-ink">
                             {v.make} {v.model} {v.variant}

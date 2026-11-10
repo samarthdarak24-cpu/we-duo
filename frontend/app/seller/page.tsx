@@ -156,7 +156,7 @@ export default function SellerOverview() {
                     <tr key={row.id} className="border-b border-border/60 transition hover:bg-surface-tint">
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-3">
-                          <VehiclePhoto make={row.make} model={row.model} year={row.year} size={42} rounded={9} />
+                          <VehiclePhoto id={row.id} make={row.make} model={row.model} year={row.year} size={42} rounded={9} />
                           <div className="min-w-0">
                             <a href={`/seller/vehicles/${row.id}`} className="block truncate text-[13px] font-semibold text-ink hover:text-primary">
                               {row.make} {row.model}

@@ -190,7 +190,7 @@ export function ListingManager({ rows, initialId }: { rows: SellerListingRow[]; 
                 : "border-transparent bg-surface-tint hover:border-border"
             )}
           >
-            <VehiclePhoto make={r.vehicle.make} model={r.vehicle.model} year={r.vehicle.year} size={26} rounded={6} />
+            <VehiclePhoto id={r.vehicle.id} make={r.vehicle.make} model={r.vehicle.model} year={r.vehicle.year} size={26} rounded={6} />
             <span className="text-[11.5px] font-semibold text-ink">
               {r.vehicle.make} {r.vehicle.model}
             </span>

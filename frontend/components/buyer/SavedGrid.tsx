@@ -82,7 +82,7 @@ export function SavedGrid({ items }: { items: SavedItem[] }) {
             <article key={v.id} className="card card-hover overflow-hidden">
               <div className="relative">
                 <a href={`/vehicle/${v.id}`} aria-label={`View ${v.make} ${v.model}`} className="block">
-                  <VehiclePhoto make={v.make} model={v.model} year={v.year} aspect="16 / 10" rounded={0} />
+                  <VehiclePhoto id={v.id} make={v.make} model={v.model} year={v.year} aspect="16 / 10" rounded={0} />
                 </a>
                 <span className="pill absolute left-3 top-3" style={{ color: band.color, background: band.bg }}>
                   {v.trustScore}/100

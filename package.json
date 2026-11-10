@@ -26,6 +26,7 @@
     "models:build": "node project/scripts/build-vehicle-models.mjs",
     "secrets:scan": "node project/scripts/scan-secrets.mjs",
     "compose:config": "docker compose -f project/infra/docker/docker-compose.yml config",
-    "render:validate": "node project/scripts/setup/py.mjs project/scripts/setup/validate_render.py"
+    "render:validate": "node project/scripts/setup/py.mjs project/scripts/setup/validate_render.py",
+    "verify:photos": "node project/scripts/setup/py.mjs project/qa/verify_vehicle_photos.py"
   }
 }
