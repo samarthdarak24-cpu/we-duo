@@ -243,8 +243,8 @@ export function askVehicleAssistant(input: { vehicleId?: string; question: strin
     }
     return base(
       "damage",
-      `${ctx.damage.length} damage record${ctx.damage.length === 1 ? "" : "s"} exist for ${title(vehicle)}: ${list(ctx.damage.map((d) => `${d.zone_id}: ${d.description} (${d.severity}, ${d.repair_status})`))}.`,
-      ctx.damage.map((d) => ({ kind: "damage", id: d.id, label: d.zone_id, detail: `${d.description} · ${d.severity} · ${d.repair_status}` })),
+      `${ctx.damage.length} damage record${ctx.damage.length === 1 ? "" : "s"} exist for ${title(vehicle)}: ${list(ctx.damage.map((d) => `${d.zone_id || d.component_id || "detected_damage"}: ${d.description || ""} (${d.severity || "unassessed"}, ${d.repair_status || "unassessed"})`))}.`,
+      ctx.damage.map((d) => ({ kind: "damage", id: d.id, label: d.zone_id || d.component_id || "detected_damage", detail: `${d.description || ""} · ${d.severity || "unassessed"} · ${d.repair_status || "unassessed"}` })),
       reportAction,
       ["Was the damage repaired?", "Which document proves the repair?", "Show the photo evidence"]
     );

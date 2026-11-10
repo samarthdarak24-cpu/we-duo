@@ -1,6 +1,6 @@
 import { createUser, getUserByEmail, updateUser } from "@/lib/server/db";
 import { hashPassword, type Role } from "@/lib/server/auth";
-import { created, fail, withRefreshCookie, withSessionCookie } from "@/lib/server/http";
+import { appBaseUrl, created, fail, withRefreshCookie, withSessionCookie } from "@/lib/server/http";
 import { isValidEmail, passwordProblem } from "@/lib/server/validate";
 import { isProd, issueToken, requestMeta, sendMail, startSession } from "@/lib/server/accounts";
 
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
   }
 
   const token = issueToken(id, "verify_email");
-  const base = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const base = appBaseUrl(req);
   const link = `${base}/verify-email/${token}`;
   const delivery = await sendMail({
     to: email,

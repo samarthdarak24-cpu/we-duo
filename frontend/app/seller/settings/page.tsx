@@ -49,6 +49,14 @@ export default function SellerSettingsPage() {
           }}
         />
       </div>
+      <div className="pt-2">
+        <SectionCard
+          title="Platform &amp; integration readiness"
+          description="Live status of the intelligence service, fraud model, registry connectors, storage, and notifications."
+        >
+          <IntegrationStatus />
+        </SectionCard>
+      </div>
       <AccountDangerZone />
     </PortalShell>
   );

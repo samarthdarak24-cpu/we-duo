@@ -58,10 +58,16 @@ function fallback<T>(pathname: string, method: string, body: unknown,
   };
 }
 
-/** Raw user bearer token from the incoming session cookie (null if absent). */
+/** Raw user bearer token from the incoming session cookie or Bearer header (null if absent). */
 export function userBearer(req: Request): string | null {
-  const token = readCookie(req, "td_token");
-  return token || null;
+  const cookieToken = readCookie(req, "td_token");
+  if (cookieToken) return cookieToken;
+  const authHeader = req.headers.get("authorization") ?? "";
+  if (authHeader.toLowerCase().startsWith("bearer ")) {
+    const bearer = authHeader.slice(7).trim();
+    if (bearer) return bearer;
+  }
+  return null;
 }
 
 /**

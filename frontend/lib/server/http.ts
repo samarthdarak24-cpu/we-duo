@@ -92,3 +92,24 @@ export function clearSessionCookie(response: NextResponse) {
   response.cookies.set("td_refresh", "", { httpOnly: true, path: "/", maxAge: 0 });
   return response;
 }
+
+/** Resolve the externally reachable base URL for links, emails, and QR codes. */
+export function appBaseUrl(req?: Request): string {
+  const configured =
+    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+    process.env.RENDER_EXTERNAL_URL?.trim();
+  if (configured) return configured.replace(/\/+$/, "");
+  if (req) {
+    const fwdHost = req.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+    const host = fwdHost || req.headers.get("host")?.split(",")[0]?.trim();
+    if (host) {
+      const proto = req.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() || "https";
+      return `${proto}://${host}`.replace(/\/+$/, "");
+    }
+    try {
+      const origin = new URL(req.url).origin;
+      if (origin && !origin.includes("0.0.0.0")) return origin.replace(/\/+$/, "");
+    } catch { /* ignore invalid request URL */ }
+  }
+  return "http://localhost:3000";
+}

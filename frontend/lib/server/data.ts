@@ -1411,16 +1411,31 @@ const DOC_META_KEYS = new Set([
 export function getDocumentsView(vehicleId: string) {
   const docs = getDocuments(vehicleId);
   return docs.map((d) => {
+    const extRow = d as unknown as {
+      ocr_extracted?: string | null;
+      ocr_status?: string | null;
+      ocr_confidence?: number | null;
+    };
     const parsed = safeJson<Record<string, unknown>>(d.extracted, {});
     const nestedFields =
       parsed.fields && typeof parsed.fields === "object" && !Array.isArray(parsed.fields)
         ? (parsed.fields as Record<string, unknown>)
         : null;
+    const parsedOcr =
+      typeof extRow.ocr_extracted === "string" && extRow.ocr_extracted.trim()
+        ? safeJson<Record<string, unknown>>(extRow.ocr_extracted, {})
+        : null;
     // Legacy/seed rows store a flat field map; new rows nest `fields` beside the
     // engine metadata so one extractor row can be written per real field.
-    const extractedFields =
+    const rawExtractedFields =
       nestedFields ??
       Object.fromEntries(Object.entries(parsed).filter(([key]) => !DOC_META_KEYS.has(key)));
+    const extractedFields =
+      Object.keys(rawExtractedFields).length > 0
+        ? rawExtractedFields
+        : parsedOcr && typeof parsedOcr === "object" && !Array.isArray(parsedOcr)
+          ? Object.fromEntries(Object.entries(parsedOcr).filter(([key]) => !DOC_META_KEYS.has(key)))
+          : {};
     const flags = Array.isArray(parsed.flags) ? parsed.flags.map(String) : [];
     return {
       ...d,
@@ -1431,7 +1446,18 @@ export function getDocumentsView(vehicleId: string) {
         engine: typeof parsed.engine === "string" ? parsed.engine : null,
         method: typeof parsed.method === "string" ? parsed.method : null,
         isOcr: parsed.is_ocr === true,
-        confidence: typeof parsed.confidence === "number" ? parsed.confidence : null,
+        confidence:
+          typeof parsed.confidence === "number"
+            ? parsed.confidence
+            : typeof extRow.ocr_confidence === "number"
+              ? extRow.ocr_confidence
+              : null,
+        ocrStatus:
+          typeof extRow.ocr_status === "string"
+            ? extRow.ocr_status
+            : typeof parsed.ocr_status === "string"
+              ? parsed.ocr_status
+              : null,
         flags,
         reviewId: typeof parsed.review_id === "string" ? parsed.review_id : null,
         workflow: Array.isArray(parsed.workflow) ? parsed.workflow : [],
@@ -1570,7 +1596,9 @@ export function getDamageView(vehicleId: string) {
     zone:
       hotspots.find((h) => h.id === d.component_id)?.label ??
       hotspots.find((h) => h.id === d.zone_id)?.label ??
-      d.zone_id,
+      d.zone_id ??
+      d.component_id ??
+      "detected_damage",
     componentValidForCategory: !!d.component_id && hotspots.some((h) => h.id === d.component_id),
   }));
 }
@@ -1721,7 +1749,11 @@ export function getReportData(reportId: string) {
   const docs = getDocuments(v.id);
   const seller = getUserById(v.owner_id);
   const qr = getQrTokensForVehicle(v.id).find((t) => !t.revoked_at);
-  const base = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const base = (
+    process.env.NEXT_PUBLIC_APP_URL?.trim() ||
+    process.env.RENDER_EXTERNAL_URL?.trim() ||
+    "http://localhost:3000"
+  ).replace(/\/$/, "");
   const snapshotHash = sha256(
     canonical({
       reportId: r.report_id,

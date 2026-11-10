@@ -48,9 +48,21 @@ type LoadState<T> = { status: "idle" | "loading" | "ok" | "error"; data: T | nul
 async function getJson<T>(url: string): Promise<{ status: number; data: T | null; error: string | null }> {
   try {
     const res = await fetch(url, { cache: "no-store" });
-    const data = (await res.json().catch(() => null)) as T | { error?: string } | null;
+    const data = (await res.json().catch(() => null)) as T | { error?: unknown; detail?: unknown } | null;
     if (!res.ok) {
-      return { status: res.status, data: null, error: (data as { error?: string } | null)?.error ?? `HTTP ${res.status}` };
+      const rawErr =
+        (data as { error?: unknown; detail?: unknown } | null)?.error ??
+        (data as { detail?: unknown } | null)?.detail;
+      const msg =
+        typeof rawErr === "string"
+          ? rawErr
+          : rawErr &&
+              typeof rawErr === "object" &&
+              "message" in rawErr &&
+              typeof (rawErr as { message: unknown }).message === "string"
+            ? (rawErr as { message: string }).message
+            : `HTTP ${res.status}`;
+      return { status: res.status, data: null, error: msg };
     }
     return { status: res.status, data: data as T, error: null };
   } catch {

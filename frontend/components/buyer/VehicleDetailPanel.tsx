@@ -505,13 +505,13 @@ export function VehicleDetailPanel({ data }: { data: VehicleDetailData }) {
                         className="h-2 w-2 rounded-full"
                         style={{ background: severityColor[d.severity] ?? "var(--muted)" }}
                       />
-                      {d.zone_id.replace(/_/g, " ")} · {d.severity}
+                      {(d.zone_id || "detected_damage").replace(/_/g, " ")} · {d.severity || "unassessed"}
                     </span>
                     <StatusBadge status={d.status} />
                   </div>
-                  <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted">{d.description}</p>
+                  <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted">{d.description || ""}</p>
                   <p className="mt-1 text-[11px] text-muted">
-                    Repair: {d.repair_status.replace(/_/g, " ")}
+                    Repair: {(d.repair_status || "unassessed").replace(/_/g, " ")}
                     {d.inspection_date ? ` · Inspected ${new Date(d.inspection_date).toLocaleDateString("en-IN")}` : ""}
                   </p>
                 </div>

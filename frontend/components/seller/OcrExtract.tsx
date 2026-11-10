@@ -34,6 +34,7 @@ export function OcrExtract({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [unavailable, setUnavailable] = useState<string | null>(null);
+  const [savedNotice, setSavedNotice] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [text, setText] = useState<string | null>(null);
   const [confidence, setConfidence] = useState<number | null>(null);
@@ -43,6 +44,7 @@ export function OcrExtract({
     setBusy(true);
     setError(null);
     setUnavailable(null);
+    setSavedNotice(null);
     setOpen(true);
     setFields({});
     setText(null);
@@ -55,17 +57,28 @@ export function OcrExtract({
         return;
       }
       if (!res.ok || !data) {
-        setError((data as { error?: string } | null)?.error ?? `OCR failed (HTTP ${res.status}).`);
+        const rawErr =
+          (data as { error?: unknown; detail?: unknown } | null)?.error ??
+          (data as { detail?: unknown } | null)?.detail;
+        const msg =
+          typeof rawErr === "string"
+            ? rawErr
+            : rawErr && typeof rawErr === "object" && "message" in rawErr
+              ? String((rawErr as { message: unknown }).message)
+              : `OCR failed (HTTP ${res.status}).`;
+        setError(msg);
         return;
       }
       setText(data.text ?? null);
       setConfidence(typeof data.confidence === "number" ? data.confidence : null);
       setFields(
         Object.fromEntries(
-          Object.entries(data.fields ?? {}).map(([k, v]) => [
-            k,
-            v === null || v === undefined ? "" : typeof v === "string" ? v : JSON.stringify(v),
-          ])
+          Object.entries(data.fields ?? {})
+            .filter(([k]) => k !== "confidence")
+            .map(([k, v]) => [
+              k,
+              v === null || v === undefined ? "" : typeof v === "string" ? v : JSON.stringify(v),
+            ])
         )
       );
     } catch {
@@ -82,6 +95,7 @@ export function OcrExtract({
   async function save() {
     setBusy(true);
     setError(null);
+    setSavedNotice(null);
     try {
       const res = await fetch(`/api/v1/vehicles/${vehicleId}/documents/${docId}/ocr`, {
         method: "PATCH",
@@ -90,9 +104,17 @@ export function OcrExtract({
       });
       const data = (await res.json().catch(() => null)) as OcrCorrectionResponse | { error?: string } | null;
       if (!res.ok || !data || !("ocr_status" in (data ?? {}))) {
-        setError((data as { error?: string } | null)?.error ?? "Could not save corrections.");
+        const rawErr = (data as { error?: unknown; detail?: unknown } | null)?.error ?? (data as { detail?: unknown } | null)?.detail;
+        const msg =
+          typeof rawErr === "string"
+            ? rawErr
+            : rawErr && typeof rawErr === "object" && "message" in rawErr
+              ? String((rawErr as { message: unknown }).message)
+              : "Could not save corrections.";
+        setError(msg);
         return;
       }
+      setSavedNotice("Corrections saved and synced to the document record.");
       onSaved?.();
     } catch {
       setError("Could not reach the correction service.");
@@ -131,13 +153,24 @@ export function OcrExtract({
         </div>
       )}
 
-      {open && !unavailable && !error && Object.keys(fields).length > 0 && (
+      {savedNotice && (
+        <div className="mt-2">
+          <InlineAlert tone="success" title="OCR reviewed" detail={savedNotice} />
+        </div>
+      )}
+
+      {open && !unavailable && !error && (text !== null || Object.keys(fields).length > 0) && (
         <div className="mt-2 space-y-2">
           {text && (
-            <details className="rounded-card border border-border bg-surface-tint p-2.5">
+            <details open={Object.keys(fields).length === 0} className="rounded-card border border-border bg-surface-tint p-2.5">
               <summary className="cursor-pointer text-[11px] font-semibold text-primary">Raw OCR text</summary>
               <pre className="mt-1.5 max-h-40 overflow-auto whitespace-pre-wrap text-[10.5px] text-muted">{text}</pre>
             </details>
+          )}
+          {Object.keys(fields).length === 0 && (
+            <p className="text-[11px] text-muted">
+              Text was extracted, though no structured VIN, registration plate, or odometer fields matched automatic patterns.
+            </p>
           )}
           {Object.entries(fields).map(([key, value]) => (
             <label key={key} className="block">
@@ -149,13 +182,15 @@ export function OcrExtract({
               />
             </label>
           ))}
-          <div className="flex items-center justify-between gap-2 pt-1">
-            <p className="text-[11px] text-muted">Corrections are stored as a reviewed OCR record.</p>
-            <button onClick={save} disabled={busy} className="td-btn td-btn-primary td-btn-sm">
-              <Icon name={busy ? "Loader2" : "Save"} size={12} className={busy ? "animate-spin" : ""} />
-              {busy ? "Saving…" : "Save corrections"}
-            </button>
-          </div>
+          {Object.keys(fields).length > 0 && (
+            <div className="flex items-center justify-between gap-2 pt-1">
+              <p className="text-[11px] text-muted">Corrections are stored as a reviewed OCR record.</p>
+              <button onClick={save} disabled={busy} className="td-btn td-btn-primary td-btn-sm">
+                <Icon name={busy ? "Loader2" : "Save"} size={12} className={busy ? "animate-spin" : ""} />
+                {busy ? "Saving…" : "Save corrections"}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

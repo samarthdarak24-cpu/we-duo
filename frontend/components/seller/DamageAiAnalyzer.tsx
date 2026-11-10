@@ -1,10 +1,22 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { InlineAlert } from "@/components/shared/InlineAlert";
 import { Icon } from "@/components/ui/Icon";
-import { apiCall } from "@/lib/client/api";
+
+function extractApiError(data: unknown, fallback: string): string {
+  if (!data || typeof data !== "object") return fallback;
+  const obj = data as { error?: unknown; detail?: unknown };
+  if (typeof obj.error === "string" && obj.error) return obj.error;
+  if (obj.error && typeof obj.error === "object" && "message" in obj.error) {
+    const msg = (obj.error as { message?: unknown }).message;
+    if (typeof msg === "string" && msg) return msg;
+  }
+  if (typeof obj.detail === "string" && obj.detail) return obj.detail;
+  return fallback;
+}
 
 interface PhotoItem {
   id: string;
@@ -34,65 +46,100 @@ export function DamageAiAnalyzer({
   vehicleId: string;
   photos: PhotoItem[];
 }) {
+  const router = useRouter();
   const [analyzing, setAnalyzing] = useState<string | null>(null);
+  const [reviewBusy, setReviewBusy] = useState<string | null>(null);
+  const [reviewed, setReviewed] = useState<Record<string, "verified" | "rejected">>({});
   const [result, setResult] = useState<AiResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
-  async function analyze(photoId: string, fileKey: string) {
+  async function analyze(photoId: string, _fileKey: string) {
     setAnalyzing(photoId);
     setError(null);
     setInfo(null);
     setResult(null);
 
-    const r = await apiCall<AiResult>(
-      `/api/v1/vehicles/${vehicleId}/photos/${photoId}/detect`,
-      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) },
-      "AI analysis request failed.",
-    );
-    setAnalyzing(null);
+    try {
+      const res = await fetch(`/api/v1/vehicles/${vehicleId}/photos/${photoId}/detect`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data = (await res.json().catch(() => null)) as Partial<AiResult> | null;
 
-    if (!r.ok) {
-      setError(r.message);
-      return;
-    }
-    setResult(r.data!);
+      if (res.status === 409 || (data && data.available === false)) {
+        const reason = data?.reason ?? "No licensed damage weights configured.";
+        setResult({
+          available: false,
+          detections: [],
+          candidateDamageIds: [],
+          modelVersion: null,
+          reason,
+        });
+        setInfo(`AI analysis unavailable: ${reason}`);
+        return;
+      }
 
-    if (!r.data!.available) {
-      setInfo(`AI analysis unavailable: ${r.data!.reason ?? "No licensed damage weights configured."}`);
-    } else if (r.data!.detections.length === 0) {
-      setInfo("AI analysis complete. No damage detections above the confidence threshold.");
-    } else {
-      setInfo(`AI analysis found ${r.data!.detections.length} candidate(s). Review each — nothing is confirmed until you verify it.`);
+      if (!res.ok || !data) {
+        setError(extractApiError(data, `AI analysis request failed (HTTP ${res.status}).`));
+        return;
+      }
+
+      const normalized: AiResult = {
+        available: data.available !== false,
+        detections: Array.isArray(data.detections) ? data.detections : [],
+        candidateDamageIds: Array.isArray(data.candidateDamageIds) ? data.candidateDamageIds : [],
+        modelVersion: data.modelVersion ?? null,
+        reason: data.reason,
+      };
+      setResult(normalized);
+
+      if (!normalized.available) {
+        setInfo(`AI analysis unavailable: ${normalized.reason ?? "No licensed damage weights configured."}`);
+      } else if (normalized.detections.length === 0) {
+        setInfo("AI analysis complete. No damage detections above the confidence threshold.");
+      } else {
+        setInfo(`AI analysis found ${normalized.detections.length} candidate(s). Review each — nothing is confirmed until you verify it.`);
+      }
+    } catch {
+      setError("Network error while running AI analysis.");
+    } finally {
+      setAnalyzing(null);
     }
   }
 
-  async function confirm(damageId: string) {
-    const r = await apiCall<{ status: string }>(
-      `/api/v1/vehicles/${vehicleId}/damage/${damageId}/review`,
-      { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "verified" }) },
-      "Could not confirm damage.",
-    );
-    if (!r.ok) {
-      setError(r.message);
-      return;
+  async function submitReview(damageId: string, nextStatus: "verified" | "rejected") {
+    setReviewBusy(damageId);
+    setError(null);
+    try {
+      const res = await fetch(`/api/v1/vehicles/${vehicleId}/damage/${damageId}/review`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        setError(
+          extractApiError(
+            data,
+            nextStatus === "verified" ? "Could not confirm damage." : "Could not reject damage."
+          )
+        );
+        return;
+      }
+      setReviewed((prev) => ({ ...prev, [damageId]: nextStatus }));
+      setInfo(
+        nextStatus === "verified"
+          ? "Damage confirmed by review. It will appear in the Vehicle History Passport for buyers."
+          : "Damage candidate rejected."
+      );
+      router.refresh();
+    } catch {
+      setError("Network error while saving damage review.");
+    } finally {
+      setReviewBusy(null);
     }
-    setInfo("Damage confirmed by review. It will appear in the Vehicle History Passport for buyers.");
-    window.setTimeout(() => window.location.reload(), 1000);
-  }
-
-  async function reject(damageId: string) {
-    const r = await apiCall<{ status: string }>(
-      `/api/v1/vehicles/${vehicleId}/damage/${damageId}/review`,
-      { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status: "rejected" }) },
-      "Could not reject damage.",
-    );
-    if (!r.ok) {
-      setError(r.message);
-      return;
-    }
-    setInfo("Damage candidate rejected.");
-    window.setTimeout(() => window.location.reload(), 1000);
   }
 
   const intro = !result || !result.available;
@@ -106,14 +153,17 @@ export function DamageAiAnalyzer({
       title="AI damage analysis (YOLO)"
       description="Uploaded photos are analysed by the configured damage model. Every detection is a candidate — you must review and confirm it before it becomes a verified record."
       action={
-        <button
-          onClick={() => {}}
-          className="td-btn td-btn-secondary td-btn-sm"
-          disabled={analyzing !== null}
-        >
-          <Icon name={analyzing ? "Loader2" : "ScanSearch"} size={13} className={analyzing ? "animate-spin" : ""} />
-          {analyzing ? "Analysing…" : "Analyse photo with AI"}
-        </button>
+        hasPhotos ? (
+          <button
+            type="button"
+            onClick={() => analyze(photos[0].id, photos[0].key)}
+            className="td-btn td-btn-secondary td-btn-sm"
+            disabled={analyzing !== null}
+          >
+            <Icon name={analyzing ? "Loader2" : "ScanSearch"} size={13} className={analyzing ? "animate-spin" : ""} />
+            {analyzing ? "Analysing…" : "Analyse first photo"}
+          </button>
+        ) : undefined
       }
     >
       {intro && (
@@ -173,20 +223,30 @@ export function DamageAiAnalyzer({
                     </div>
                     <div className="flex items-center gap-2">
                       {result!.candidateDamageIds[i] && (
-                        <>
-                          <button
-                            onClick={() => confirm(result!.candidateDamageIds![i])}
-                            className="td-btn td-btn-success td-btn-sm"
-                          >
-                            <Icon name="Check" size={12} /> Confirm
-                          </button>
-                          <button
-                            onClick={() => reject(result!.candidateDamageIds![i])}
-                            className="td-btn td-btn-secondary td-btn-sm"
-                          >
-                            <Icon name="X" size={12} /> Reject
-                          </button>
-                        </>
+                        reviewed[result!.candidateDamageIds![i]] ? (
+                          <span className="td-chip">
+                            {reviewed[result!.candidateDamageIds![i]] === "verified" ? "Confirmed" : "Rejected"}
+                          </span>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              disabled={reviewBusy === result!.candidateDamageIds![i]}
+                              onClick={() => submitReview(result!.candidateDamageIds![i], "verified")}
+                              className="td-btn td-btn-success td-btn-sm"
+                            >
+                              <Icon name="Check" size={12} /> Confirm
+                            </button>
+                            <button
+                              type="button"
+                              disabled={reviewBusy === result!.candidateDamageIds![i]}
+                              onClick={() => submitReview(result!.candidateDamageIds![i], "rejected")}
+                              className="td-btn td-btn-secondary td-btn-sm"
+                            >
+                              <Icon name="X" size={12} /> Reject
+                            </button>
+                          </>
+                        )
                       )}
                     </div>
                   </li>

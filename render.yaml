@@ -47,6 +47,12 @@ services:
         value: sqlite+pysqlite:////data/trustdrive/trustdrive.db
       - key: TD_UPLOAD_DIR
         value: /data/trustdrive/uploads
+      - key: TD_QUARANTINE_DIR
+        value: /data/trustdrive/quarantine
+      - key: TD_CHECKPOINT_DB
+        value: /data/trustdrive/langgraph-checkpoints.db
+      - key: TD_MODEL_DIR
+        value: /app/services/ai/shared/models
       - key: TD_INTELLIGENCE_URL
         value: http://127.0.0.1:8000
       - key: TD_SEED_DEMO
@@ -71,6 +77,10 @@ services:
       - key: ADMIN_EMAIL
         sync: false
       - key: ADMIN_PASSWORD
+        sync: false
+      # Recommended: external public URL (e.g. https://trustdrive.onrender.com).
+      # Falls back automatically to Render's RENDER_EXTERNAL_URL when unset.
+      - key: NEXT_PUBLIC_APP_URL
         sync: false
       # Optional external LLM (leave empty for the deterministic answer).
       - key: TD_LLM_BASE_URL

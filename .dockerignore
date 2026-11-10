@@ -38,7 +38,12 @@ coverage
 # Repo metadata / docs (not needed at runtime)
 .git
 .github
-project
+project/*
+!project/infra
+project/infra/*
+!project/infra/deployment
+project/infra/deployment/*
+!project/infra/deployment/start-render.sh
 *.md
 !README.md
 

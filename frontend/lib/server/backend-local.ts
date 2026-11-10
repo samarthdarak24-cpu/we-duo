@@ -16,7 +16,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { verifyToken } from "./auth";
-import { one, run } from "./db";
+import { all, one, run } from "./db";
+import { recordDocumentExtractions } from "./evidence";
 import { getMailerStatus, getSmsStatus } from "./mailer";
 import { storageProvider } from "./files";
 
@@ -55,8 +56,8 @@ function notFound(what: string): LocalFallback {
 function modelMeta(): Row {
   const candidates = [
     process.env.TD_MODEL_DIR && join(process.env.TD_MODEL_DIR, "mileage_xgb.meta.json"),
-    join(process.cwd(), "..", "ai-services", "shared", "models", "mileage_xgb.meta.json"),
-    join(process.cwd(), "ai-services", "shared", "models", "mileage_xgb.meta.json"),
+    join(process.cwd(), "..", "services", "ai", "shared", "models", "mileage_xgb.meta.json"),
+    join(process.cwd(), "services", "ai", "shared", "models", "mileage_xgb.meta.json"),
   ].filter(Boolean) as string[];
   for (const file of candidates) {
     try {
@@ -158,14 +159,45 @@ function reviewDamage(vehicleId: string, damageId: string, body: unknown,
 function correctOcr(vehicleId: string, docId: string, body: unknown,
                     actor: { id: string; role: string }): LocalFallback {
   const input = (body ?? {}) as Row;
-  if (!input.fields || typeof input.fields !== "object") {
+  if (!input.fields || typeof input.fields !== "object" || Array.isArray(input.fields)) {
     return { status: 422, body: { error: "fields object is required", engine: LOCAL_ENGINE } };
   }
   if (!owns(vehicleId, actor)) return notFound("Vehicle");
   const doc = one<Row>("SELECT * FROM documents WHERE id = ?", docId);
   if (!doc || doc.deleted_at || String(doc.vehicle_id) !== vehicleId) return notFound("Document");
-  run("UPDATE documents SET ocr_extracted = ?, ocr_status = 'reviewed' WHERE id = ?",
-    JSON.stringify(input.fields), docId);
+  const cleanFields = Object.fromEntries(
+    Object.entries(input.fields as Record<string, unknown>).filter(([k]) => k !== "confidence")
+  );
+  let prevExtracted: Record<string, unknown> = {};
+  if (typeof doc.extracted === "string" && doc.extracted.trim()) {
+    try {
+      const parsed = JSON.parse(doc.extracted);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        prevExtracted = parsed as Record<string, unknown>;
+      }
+    } catch { /* ignore unparseable legacy JSON */ }
+  }
+  const nextExtracted = {
+    ...prevExtracted,
+    source: typeof prevExtracted.source === "string" ? prevExtracted.source : "manual-ocr-review",
+    review_source: "manual-ocr-review",
+    ocr_status: "reviewed",
+    reviewed_by: actor.id,
+    reviewed_at: new Date().toISOString(),
+    fields: cleanFields,
+  };
+  const cols = new Set(all<{ name: string }>("PRAGMA table_info(documents)").map((c) => c.name));
+  if (cols.has("ocr_extracted") && cols.has("ocr_status")) {
+    run(
+      "UPDATE documents SET ocr_extracted = ?, ocr_status = 'reviewed', extracted = ? WHERE id = ?",
+      JSON.stringify(cleanFields),
+      JSON.stringify(nextExtracted),
+      docId
+    );
+  } else {
+    run("UPDATE documents SET extracted = ? WHERE id = ?", JSON.stringify(nextExtracted), docId);
+  }
+  recordDocumentExtractions(docId);
   const updated = one<Row>("SELECT * FROM documents WHERE id = ?", docId);
   return { status: 200, body: { document: updated, ocr_status: "reviewed", engine: LOCAL_ENGINE } };
 }
@@ -206,8 +238,21 @@ export function localBackendFallback(
   if (verb === "POST" && (m = pathname.match(/^\/api\/v1\/vehicles\/([^/]+)\/photos\/([^/]+)\/detect$/))) {
     const [, vehicleId, photoId] = m.map(decodeURIComponent);
     if (!owns(vehicleId, actor)) return notFound("Vehicle");
-    const photo = one<Row>("SELECT * FROM vehicle_images WHERE id = ? AND vehicle_id = ?", photoId, vehicleId);
-    if (!photo) return notFound("Photo");
+    const photo =
+      one<Row>(
+        "SELECT * FROM vehicle_images WHERE id = ? AND vehicle_id = ? AND deleted_at IS NULL",
+        photoId,
+        vehicleId
+      ) ??
+      one<Row>(
+        `SELECT li.*, l.vehicle_id AS vehicle_id
+         FROM listing_images li
+         JOIN listings l ON l.id = li.listing_id
+         WHERE li.id = ? AND l.vehicle_id = ?`,
+        photoId,
+        vehicleId
+      );
+    if (!photo || photo.deleted_at) return notFound("Photo");
     return unavailable("Damage detection needs the Python vision adapter. It is not configured in this deployment; no candidate was invented.");
   }
   return null;

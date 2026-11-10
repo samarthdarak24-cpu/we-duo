@@ -37,8 +37,14 @@ interface S3Config {
 function resolveUploadRoot(): string {
   const raw = process.env.TD_UPLOAD_DIR || ".data/uploads";
   let r = path.resolve(raw);
-  if (!fs.existsSync(r) && fs.existsSync(path.resolve("..", raw))) {
-    r = path.resolve("..", raw);
+  if (!path.isAbsolute(raw) && !fs.existsSync(r)) {
+    const parent = path.resolve("..", raw);
+    if (
+      fs.existsSync(parent) ||
+      (path.basename(process.cwd()) === "frontend" && fs.existsSync(path.resolve("..", "backend")))
+    ) {
+      r = parent;
+    }
   }
   return r;
 }
@@ -340,7 +346,17 @@ export function ensureUploadFromPublic(key: string, publicPath: string): boolean
  */
 export function quarantineBuffer(label: string, data: Buffer): string | null {
   try {
-    const root = path.resolve(process.env.TD_QUARANTINE_DIR || ".data/quarantine");
+    const rawQ = process.env.TD_QUARANTINE_DIR || ".data/quarantine";
+    let root = path.resolve(rawQ);
+    if (!path.isAbsolute(rawQ) && !fs.existsSync(root)) {
+      const parent = path.resolve("..", rawQ);
+      if (
+        fs.existsSync(parent) ||
+        (path.basename(process.cwd()) === "frontend" && fs.existsSync(path.resolve("..", "backend")))
+      ) {
+        root = parent;
+      }
+    }
     const safeLabel = label.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 120);
     const file = path.join(root, `${Date.now()}-${randomUUID().slice(0, 8)}-${safeLabel}`);
     fs.mkdirSync(root, { recursive: true });

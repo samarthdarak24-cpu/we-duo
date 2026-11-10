@@ -15,9 +15,19 @@ import { dirname, join } from "node:path";
 
 const DATA_DIR = (() => {
   const raw = process.env.TD_DATA_DIR || ".data";
+  if (/^(?:[A-Za-z]:[\\/]|[\\/])/.test(raw)) {
+    return raw;
+  }
   const abs = join(process.cwd(), raw);
-  if (!existsSync(abs) && existsSync(join(process.cwd(), "..", raw))) {
-    return join(process.cwd(), "..", raw);
+  if (existsSync(abs)) {
+    return abs;
+  }
+  const parent = join(process.cwd(), "..", raw);
+  if (
+    existsSync(parent) ||
+    (/[\\/]frontend$/.test(process.cwd()) && existsSync(join(process.cwd(), "..", "backend")))
+  ) {
+    return parent;
   }
   return abs;
 })();

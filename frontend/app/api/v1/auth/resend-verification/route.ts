@@ -1,6 +1,5 @@
 import { getUserByEmail, getUserById } from "@/lib/server/db";
-import { fail, ok } from "@/lib/server/http";
-import { getAuth } from "@/lib/server/http";
+import { appBaseUrl, fail, getAuth, ok } from "@/lib/server/http";
 import { isProd, issueToken, sendMail } from "@/lib/server/accounts";
 
 export const runtime = "nodejs";
@@ -14,7 +13,7 @@ export async function POST(req: Request) {
   // Always return ok for unknown addresses so the endpoint cannot enumerate users.
   if (!user || user.email_verified) return ok({ sent: false });
   const token = issueToken(user.id, "verify_email");
-  const base = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const base = appBaseUrl(req);
   const link = `${base}/verify-email/${token}`;
   const delivery = await sendMail({
     to: user.email,

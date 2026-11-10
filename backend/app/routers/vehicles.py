@@ -515,9 +515,32 @@ def detect_damage_on_photo(vehicle_id: str, photo_id: str,
     ``available: false``. When the YOLO weights are absent the endpoint reports
     the adapter's own unavailable reason rather than fabricating detections.
     """
+    from sqlalchemy import text as _sa_text
+    from .. import db as _db
+
     _owned(vehicle_id, user)
-    photo = repository.get_row("vehicle_images", photo_id)
-    if str(photo.get("vehicle_id")) != vehicle_id or photo.get("deleted_at"):
+    photo: dict | None = None
+    vrows = _db.read("vehicle_images", "id = :id AND vehicle_id = :vid", {"id": photo_id, "vid": vehicle_id}, limit=1)
+    if vrows and not vrows[0].get("deleted_at"):
+        photo = vrows[0]
+    elif _db.has_table("listing_images") and _db.has_table("listings"):
+        has_l_del = "deleted_at" in _db.columns("listings")
+        sel_del = ", l.deleted_at AS listing_deleted_at" if has_l_del else ""
+        with _db.engine().connect() as conn:
+            lrows = conn.execute(
+                _sa_text(
+                    f"SELECT li.*, l.vehicle_id AS vehicle_id{sel_del} "
+                    "FROM listing_images li "
+                    "JOIN listings l ON l.id = li.listing_id "
+                    "WHERE li.id = :id AND l.vehicle_id = :vid LIMIT 1"
+                ),
+                {"id": photo_id, "vid": vehicle_id},
+            ).mappings().all()
+        if lrows:
+            candidate = dict(lrows[0])
+            if not candidate.get("deleted_at") and not candidate.get("listing_deleted_at"):
+                photo = candidate
+    if not photo:
         raise HTTPException(status_code=404, detail="Photo not found for this vehicle.")
     vehicle = _vehicle(vehicle_id)
 
@@ -527,8 +550,12 @@ def detect_damage_on_photo(vehicle_id: str, photo_id: str,
                 "reason": "Damage CV detector is only available for car categories."}
 
     key = photo.get("file_key")
-    path = settings.upload_dir / str(key) if key else None
-    if not path or not path.is_file():
+    norm_key = str(key or "").lstrip("/")
+    if norm_key.startswith("api/v1/files/"):
+        norm_key = norm_key[len("api/v1/files/"):]
+    upload_root = settings.upload_dir.resolve()
+    path = (settings.upload_dir / norm_key).resolve() if norm_key else None
+    if not path or not path.is_relative_to(upload_root) or not path.is_file():
         raise HTTPException(status_code=409,
                             detail="Source photo file is not available for detection.")
 
@@ -539,17 +566,21 @@ def detect_damage_on_photo(vehicle_id: str, photo_id: str,
 
     result = yolo.detect(path)
     detections = result.get("detections", [])
+    today = _db.now_iso()[:10]
     candidate_ids: list[str] = []
     for det in detections:
         label = str(det.get("label") or "damage")
         conf = float(det.get("confidence") or 0.0)
         record = repository.create_row("damage_records", {
             "vehicle_id": vehicle_id,
+            "zone_id": label,
             "status": "detected_candidate",
             "provenance": "detected_visible_damage",
             "damage_type": label,
             "description": f"Auto-detected: {label} (confidence {conf})",
             "severity": "unassessed",
+            "repair_status": "Not repaired",
+            "inspection_date": today,
             "photo_keys": json.dumps([key]),
             "detection_confidence": conf,
             "detection_box": json.dumps(det.get("box")),
@@ -594,6 +625,81 @@ def review_damage(vehicle_id: str, damage_id: str, req: DamageReview,
 
 
 # ---- document OCR ----------------------------------------------------------
+def _sync_document_extractions(doc_id: str, vehicle_id: str, fields: dict,
+                               confidence: float | None, method: str) -> None:
+    from sqlalchemy import text as _sa_text
+    from .. import db as _db
+
+    if not _db.has_table("document_extractions"):
+        return
+    cols = set(_db.columns("document_extractions"))
+    now = _db.now_iso()
+    if {"field", "value"}.issubset(cols):
+        with _db.engine().begin() as conn:
+            conn.execute(
+                _sa_text("DELETE FROM document_extractions WHERE document_id = :doc_id"),
+                {"doc_id": doc_id},
+            )
+            count = 0
+            for field_name, val in fields.items():
+                if field_name == "confidence" or val is None or isinstance(val, (dict, list)):
+                    continue
+                if count >= 50:
+                    break
+                conn.execute(
+                    _sa_text(
+                        "INSERT INTO document_extractions "
+                        "(id, document_id, vehicle_id, field, value, confidence, page, method, created_at) "
+                        "VALUES (:id, :doc_id, :vid, :field, :value, :conf, :page, :method, :created_at)"
+                    ),
+                    {
+                        "id": _db.new_id("dx"),
+                        "doc_id": doc_id,
+                        "vid": vehicle_id,
+                        "field": str(field_name),
+                        "value": str(val)[:500],
+                        "conf": float(confidence) if isinstance(confidence, (int, float)) else None,
+                        "page": None,
+                        "method": method or "ocr",
+                        "created_at": now,
+                    },
+                )
+                count += 1
+    elif "payload" in cols:
+        clean = {k: v for k, v in fields.items() if k != "confidence"}
+        with _db.engine().begin() as conn:
+            conn.execute(
+                _sa_text("DELETE FROM document_extractions WHERE document_id = :doc_id"),
+                {"doc_id": doc_id},
+            )
+            conn.execute(
+                _sa_text(
+                    "INSERT INTO document_extractions (id, vehicle_id, document_id, payload, created_at) "
+                    "VALUES (:id, :vid, :doc_id, :payload, :created_at)"
+                ),
+                {
+                    "id": _db.new_id("dx"),
+                    "vid": vehicle_id,
+                    "doc_id": doc_id,
+                    "payload": json.dumps({"fields": clean, "confidence": confidence, "method": method}),
+                    "created_at": now,
+                },
+            )
+
+
+def _parse_doc_extracted(raw: object) -> dict:
+    if isinstance(raw, dict):
+        return dict(raw)
+    if isinstance(raw, str) and raw.strip():
+        try:
+            parsed = json.loads(raw)
+            if isinstance(parsed, dict):
+                return parsed
+        except Exception:
+            pass
+    return {}
+
+
 @router.post("/{vehicle_id}/documents/{doc_id}/ocr")
 def run_document_ocr(vehicle_id: str, doc_id: str,
                      user: dict = Depends(require_role("seller", "admin"))) -> dict:
@@ -603,8 +709,12 @@ def run_document_ocr(vehicle_id: str, doc_id: str,
     if str(doc.get("vehicle_id")) != vehicle_id or doc.get("deleted_at"):
         raise HTTPException(status_code=404, detail="Document not found for this vehicle.")
     key = doc.get("file_key")
-    path = settings.upload_dir / str(key) if key else None
-    if not path or not path.is_file():
+    norm_key = str(key or "").lstrip("/")
+    if norm_key.startswith("api/v1/files/"):
+        norm_key = norm_key[len("api/v1/files/"):]
+    upload_root = settings.upload_dir.resolve()
+    path = (settings.upload_dir / norm_key).resolve() if norm_key else None
+    if not path or not path.is_relative_to(upload_root) or not path.is_file():
         raise HTTPException(status_code=409,
                             detail="Source document file is not available for OCR.")
 
@@ -624,15 +734,37 @@ def run_document_ocr(vehicle_id: str, doc_id: str,
                  if lines else None)
     confidence = (round(line_conf, 4) if line_conf is not None
                   else fields.get("confidence"))
+    clean_fields = {k: v for k, v in fields.items() if k != "confidence"}
+    prev_extracted = _parse_doc_extracted(doc.get("extracted"))
+    extracted_payload = {
+        **prev_extracted,
+        "source": "python-intelligence",
+        "engine": result.get("engine"),
+        "method": result.get("method"),
+        "version": result.get("version"),
+        "is_ocr": bool(result.get("is_ocr")),
+        "confidence": confidence,
+        "warnings": result.get("warnings", []),
+        "ocr_status": "processed",
+        "fields": clean_fields,
+    }
     repository.update_row("documents", doc_id, {
         "ocr_text": result.get("text", ""),
-        "ocr_extracted": json.dumps(fields),
+        "ocr_extracted": json.dumps(clean_fields),
         "ocr_confidence": confidence,
         "ocr_status": "processed",
+        "extracted": json.dumps(extracted_payload),
     })
+    _sync_document_extractions(
+        doc_id,
+        vehicle_id,
+        clean_fields,
+        confidence if isinstance(confidence, (int, float)) else None,
+        str(result.get("method") or result.get("engine") or "ocr"),
+    )
     # Name the engine that actually produced the text. A PDF text layer must
     # never be presented as OCR, and a fallback is never the primary engine.
-    return {"text": result.get("text", ""), "fields": fields, "confidence": confidence,
+    return {"text": result.get("text", ""), "fields": clean_fields, "confidence": confidence,
             "engine": result.get("engine"), "method": result.get("method"),
             "version": result.get("version"), "is_ocr": bool(result.get("is_ocr")),
             "warnings": result.get("warnings", [])}
@@ -642,14 +774,35 @@ def run_document_ocr(vehicle_id: str, doc_id: str,
 def correct_document_ocr(vehicle_id: str, doc_id: str, req: OcrCorrection,
                          user: dict = Depends(require_role("seller", "admin"))) -> dict:
     """Store manually-corrected OCR fields and mark the document reviewed."""
+    from .. import db as _db
+
     _owned(vehicle_id, user)
     doc = repository.get_row("documents", doc_id)
     if str(doc.get("vehicle_id")) != vehicle_id or doc.get("deleted_at"):
         raise HTTPException(status_code=404, detail="Document not found for this vehicle.")
-    updated = repository.update_row("documents", doc_id, {
-        "ocr_extracted": json.dumps(req.fields),
+    clean_fields = {k: v for k, v in req.fields.items() if k != "confidence"}
+    prev_extracted = _parse_doc_extracted(doc.get("extracted"))
+    extracted_payload = {
+        **prev_extracted,
+        "source": prev_extracted.get("source") or "manual-ocr-review",
+        "review_source": "manual-ocr-review",
         "ocr_status": "reviewed",
+        "reviewed_by": str(user["id"]),
+        "reviewed_at": _db.now_iso(),
+        "fields": clean_fields,
+    }
+    updated = repository.update_row("documents", doc_id, {
+        "ocr_extracted": json.dumps(clean_fields),
+        "ocr_status": "reviewed",
+        "extracted": json.dumps(extracted_payload),
     })
+    _sync_document_extractions(
+        doc_id,
+        vehicle_id,
+        clean_fields,
+        prev_extracted.get("confidence") if isinstance(prev_extracted.get("confidence"), (int, float)) else None,
+        str(prev_extracted.get("method") or "manual-ocr-review"),
+    )
     return {"document": updated, "ocr_status": "reviewed"}
 
 

@@ -1058,9 +1058,14 @@ export function reportPdf(data: ReportPdfData): Buffer {
   } else {
     damage.forEach((d) => {
       doc.ensure(38);
-      doc.text(`${d.zone_id.replace(/_/g, " ")} - ${d.severity} - ${d.repair_status}`, 8.8, MARGIN, { bold: true });
+      doc.text(
+        `${(d.zone_id || "detected_damage").replace(/_/g, " ")} - ${d.severity || "unassessed"} - ${d.repair_status || "Not repaired"}`,
+        8.8,
+        MARGIN,
+        { bold: true }
+      );
       doc.text(`${d.inspection_date || "Date not stated"}  |  status ${d.status}`, 7, MARGIN, { color: MUTED });
-      doc.text(d.description, 8.4, MARGIN, { lineGap: 2.5 });
+      doc.text(d.description || "Damage disclosure record.", 8.4, MARGIN, { lineGap: 2.5 });
       doc.gap(3);
     });
     doc.text(

@@ -1494,8 +1494,14 @@ export function getDb(): DatabaseSync {
   // stays `.data/trustdrive.db` for local development.
   const rawDb = process.env.TD_DB_FILE || ".data/trustdrive.db";
   let dbFile = path.resolve(rawDb);
-  if (!fs.existsSync(dbFile) && fs.existsSync(path.resolve("..", rawDb))) {
-    dbFile = path.resolve("..", rawDb);
+  if (!path.isAbsolute(rawDb) && !fs.existsSync(dbFile)) {
+    const parentDb = path.resolve("..", rawDb);
+    if (
+      fs.existsSync(parentDb) ||
+      (path.basename(process.cwd()) === "frontend" && fs.existsSync(path.resolve("..", "backend")))
+    ) {
+      dbFile = parentDb;
+    }
   }
   fs.mkdirSync(path.dirname(dbFile), { recursive: true });
   const conn = new DatabaseSync(dbFile);

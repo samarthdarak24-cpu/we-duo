@@ -214,7 +214,7 @@ export function buildEvidenceGraph(
       id,
       type: "damage_record",
       entityId: damage.id,
-      label: `${damage.zone_id} · ${damage.severity}`,
+      label: `${damage.zone_id || damage.component_id || "detected_damage"} · ${damage.severity || "unassessed"}`,
       source: damage.repair_invoice_doc_id ? "repair_invoice" : "inspection",
       reliability: damage.status === "verified" ? "high" : "medium",
       disclosed: true,

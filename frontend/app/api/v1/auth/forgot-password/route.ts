@@ -1,5 +1,5 @@
 import { getUserByEmail } from "@/lib/server/db";
-import { fail, ok } from "@/lib/server/http";
+import { appBaseUrl, fail, ok } from "@/lib/server/http";
 import { isProd, issueToken, sendMail } from "@/lib/server/accounts";
 
 export const runtime = "nodejs";
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   const user = getUserByEmail(body.email);
   if (!user) return ok({ sent: true });
   const token = issueToken(user.id, "reset_password");
-  const base = (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  const base = appBaseUrl(req);
   const link = `${base}/reset-password/${token}`;
   // Generic response is deliberate: it must not reveal whether the address
   // exists. `emailDelivery` reports what the provider actually did.
