@@ -20,8 +20,15 @@ export async function GET() {
 
 /**
  * HEAD /api/v1/health/ready
- * Render also sends HEAD requests for health checks.
+ * Render also sends HEAD requests for health checks. Verify DB readiness so
+ * misconfigured secrets or non-writable storage fail health checks immediately.
  */
 export async function HEAD() {
-  return new NextResponse(null, { status: 200 });
+  try {
+    getDb();
+    return new NextResponse(null, { status: 200 });
+  } catch (err) {
+    console.error("[health/ready HEAD] DB initialization error:", err);
+    return new NextResponse(null, { status: 503 });
+  }
 }

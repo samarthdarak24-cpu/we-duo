@@ -9,6 +9,7 @@ import { InsightRow } from "@/components/ui/InsightRow";
 import { PriceRangeBar } from "@/components/ui/PriceRangeBar";
 import { StatCard } from "@/components/ui/StatCard";
 import { StatusBadge } from "@/components/ui/StatusBadge";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { Icon } from "@/components/ui/Icon";
 import { portalUser } from "@/lib/server/page";
 import { getBuyerOverview } from "@/lib/server/data";
@@ -70,6 +71,7 @@ export default function BuyerOverview() {
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_340px] 2xl:grid-cols-[minmax(0,1fr)_380px]">
         <div className="min-w-0 space-y-5">
           {/* Featured verification */}
+          {v ? (
           <section className="card overflow-hidden">
             <div className="relative">
               <VehiclePhoto
@@ -142,6 +144,18 @@ export default function BuyerOverview() {
               ))}
             </div>
           </section>
+          ) : (
+            <EmptyState
+              icon="Car"
+              title="No published vehicles yet"
+              detail="Verified listings from sellers will appear here as soon as they are published. You can still look up any VIN or QR code directly."
+              action={
+                <a href="/buyer/verification" className="td-btn td-btn-primary mt-2">
+                  <Icon name="Search" size={15} /> Verify a vehicle
+                </a>
+              }
+            />
+          )}
 
           <SectionCard
             title="Recommended for you"
@@ -219,40 +233,44 @@ export default function BuyerOverview() {
 
         {/* Right rail */}
         <aside className="space-y-5">
-          <SectionCard
-            title="Trust summary"
-            action={
-              <a href="/buyer/risk" className="td-link">
-                Methodology
-              </a>
-            }
-            bodyClassName="p-5"
-          >
-            <div className="flex flex-col items-center">
-              <TrustRing score={v.trustScore} size={140} />
-              <p className="mt-3 text-center text-[11.5px] leading-relaxed text-muted">
-                {formatKm(v.km)} · {v.coverage}% evidence coverage
-                <br />
-                Versioned rules engine · last recalculated on record change
-              </p>
-            </div>
-            <div className="mt-4 space-y-0.5 border-t border-border pt-3">
-              {data.insights.slice(0, 5).map((i) => (
-                <InsightRow key={i.label} insight={i} />
-              ))}
-            </div>
-          </SectionCard>
+          {v && (
+            <>
+              <SectionCard
+                title="Trust summary"
+                action={
+                  <a href="/buyer/risk" className="td-link">
+                    Methodology
+                  </a>
+                }
+                bodyClassName="p-5"
+              >
+                <div className="flex flex-col items-center">
+                  <TrustRing score={v.trustScore} size={140} />
+                  <p className="mt-3 text-center text-[11.5px] leading-relaxed text-muted">
+                    {formatKm(v.km)} · {v.coverage}% evidence coverage
+                    <br />
+                    Versioned rules engine · last recalculated on record change
+                  </p>
+                </div>
+                <div className="mt-4 space-y-0.5 border-t border-border pt-3">
+                  {data.insights.slice(0, 5).map((i) => (
+                    <InsightRow key={i.label} insight={i} />
+                  ))}
+                </div>
+              </SectionCard>
 
-          <SectionCard title="Market price estimate" bodyClassName="p-5">
-            <PriceRangeBar
-              low={v.priceLow}
-              high={v.priceHigh}
-              marker={v.marketPrice}
-              estimate={v.marketPrice}
-              chip={{ text: "Estimate", color: "var(--primary)", bg: "var(--info-bg)" }}
-              disclaimer="Comparable verified listings in your region. Confidence: moderate. This is an estimate, not an offer."
-            />
-          </SectionCard>
+              <SectionCard title="Market price estimate" bodyClassName="p-5">
+                <PriceRangeBar
+                  low={v.priceLow}
+                  high={v.priceHigh}
+                  marker={v.marketPrice}
+                  estimate={v.marketPrice}
+                  chip={{ text: "Estimate", color: "var(--primary)", bg: "var(--info-bg)" }}
+                  disclaimer="Comparable verified listings in your region. Confidence: moderate. This is an estimate, not an offer."
+                />
+              </SectionCard>
+            </>
+          )}
 
           <SectionCard
             title="Active inquiries"

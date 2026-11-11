@@ -500,10 +500,20 @@ export function getBuyerOverview(userId = "u-buyer") {
   const saved = getSavedRows(userId);
   const savedListingIds = new Set(saved.map((s) => s.listing_id));
   const recommended = getRecommendedVehicles(userId).slice(0, 4);
-  const primary = recommended[0]?.id ?? "v-bmw";
-  const rv = getVehicle(primary)!;
-  const pricing = getPricing(primary)!;
-  const trust = computeVehicleTrust(primary);
+  const fallbackMarket = recommended.length ? [] : getMarketplace({ pageSize: 1 }, userId).items;
+  const primary = recommended[0]?.id ?? fallbackMarket[0]?.id ?? null;
+  const rv = primary ? getVehicle(primary) : undefined;
+  const pricing = rv
+    ? (getPricing(rv.id) ?? {
+        ...estimatePrice({
+          base: rv.base_value || 1000000,
+          ageYears: Math.max(0, new Date().getFullYear() - rv.year),
+          km: rv.km_claimed,
+          conditionScore: rv.condition_score,
+        }),
+      })
+    : null;
+  const trust = rv ? computeVehicleTrust(rv.id) : null;
   const savedVehicles = saved
     .map((s) => getListing(s.listing_id))
     .filter((l): l is NonNullable<typeof l> => !!l)
@@ -522,24 +532,27 @@ export function getBuyerOverview(userId = "u-buyer") {
     ],
     recommended,
     savedCount: saved.length,
-    reportVehicle: {
-      make: rv.make,
-      model: rv.model,
-      variant: rv.variant,
-      regNo: rv.reg_no,
-      year: rv.year,
-      km: rv.km_claimed,
-      fuel: rv.fuel,
-      transmission: rv.transmission,
-      trustScore: trust.trustScore,
-      bandLabel: trust.bandLabel,
-      coverage: trust.evidenceCoverage,
-      marketPrice: pricing.estimate,
-      priceLow: pricing.low,
-      priceHigh: pricing.high,
-    },
-    reportVehicleId: rv.id,
-    insights: getInsights(rv.id),
+    reportVehicle:
+      rv && pricing && trust
+        ? {
+            make: rv.make,
+            model: rv.model,
+            variant: rv.variant,
+            regNo: rv.reg_no,
+            year: rv.year,
+            km: rv.km_claimed,
+            fuel: rv.fuel,
+            transmission: rv.transmission,
+            trustScore: trust.trustScore,
+            bandLabel: trust.bandLabel,
+            coverage: trust.evidenceCoverage,
+            marketPrice: pricing.estimate,
+            priceLow: pricing.low,
+            priceHigh: pricing.high,
+          }
+        : null,
+    reportVehicleId: rv?.id ?? null,
+    insights: rv ? getInsights(rv.id) : [],
     suspicious: suspicious.map((s) => ({
       id: s.vehicle.id,
       label: `${s.vehicle.make} ${s.vehicle.model}`,
@@ -1043,7 +1056,7 @@ export function getExploreVehicles(userId = "u-buyer", tab = "All") {
 export function getRecommendedVehicles(userId = "u-buyer") {
   const saved = new Set(getSavedRows(userId).map((s) => s.listing_id));
   const priority = ["v-bmw", "v-audi", "v-merc", "v-hyundai"];
-  return priority
+  const seeded = priority
     .map((id) => getVehicle(id))
     .filter((v): v is VehicleRow => !!v)
     .map((v) => {
@@ -1061,6 +1074,24 @@ export function getRecommendedVehicles(userId = "u-buyer") {
         saved: !!(listing && saved.has(listing.id)),
       };
     });
+  if (seeded.length >= 4) return seeded;
+  const seen = new Set(seeded.map((s) => s.id));
+  const live = getExploreVehicles(userId, "Popular")
+    .filter((v) => !seen.has(v.id))
+    .slice(0, 4 - seeded.length)
+    .map((v) => ({
+      id: v.id,
+      listingId: v.listingId ?? null,
+      make: v.make,
+      model: v.model,
+      year: v.year,
+      km: v.km,
+      price: v.price,
+      fuel: v.fuel,
+      trustScore: v.trustScore,
+      saved: v.saved,
+    }));
+  return [...seeded, ...live];
 }
 
 export function getSavedVehicles(userId = "u-buyer") {
