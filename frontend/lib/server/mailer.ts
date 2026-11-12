@@ -70,7 +70,7 @@ function smtpConfig() {
     port: Number.isFinite(port) ? port : 587,
     secure: process.env.TD_SMTP_SECURE === "1" || process.env.TD_SMTP_SECURE === "true",
     user: process.env.TD_SMTP_USER?.trim() || undefined,
-    password: process.env.TD_SMTP_PASSWORD || undefined,
+    password: process.env.TD_SMTP_PASSWORD || process.env.TD_SMTP_PASS || undefined,
     from: process.env.TD_SMTP_FROM?.trim() || "TrustDrive <no-reply@trustdrive.local>",
     timeoutMs: Number(process.env.TD_SMTP_TIMEOUT_MS || 15000) || 15000,
     maxAttempts: Math.max(1, Number(process.env.TD_SMTP_MAX_ATTEMPTS || 3) || 3),

@@ -138,6 +138,16 @@ def describe() -> dict:
     active = available()
     provider = ("local-transformers" if _local_ready()
                 else settings.llm_provider if _http_ready() else "none")
+    note = (
+        "No LLM provider is configured. No conclusion is generated and the "
+        "evidence-only answer is returned instead. Verification is never "
+        "delegated to an LLM."
+        if not active else
+        f"Active LLM provider: {provider} (model {settings.llm_model}). It may "
+        "rewrite the narrative only; it never sets findings or the trust score, "
+        "and a rejected or ungrounded answer falls back to the deterministic "
+        "evidence-only answer."
+    )
     return {
         "active": active,
         "provider": provider,
@@ -145,7 +155,7 @@ def describe() -> dict:
         "local_ready": _local_ready(),
         "loaded": "model" in _LOCAL,
         "version": LLM_VERSION,
-        "note": "Offline: no conclusion is generated. Verification is never delegated to an LLM.",
+        "note": note,
     }
 
 
@@ -326,15 +336,37 @@ def generate_explanation(question: str, facts: dict) -> LLMResult:
         )
 
 
+_SCORE_SCALE_RE = re.compile(r"\b(\d{1,3})\s*(?:/|out\s+of)\s*100\b", re.IGNORECASE)
+
+
+def _trust_score(facts: dict) -> int | None:
+    trust = facts.get("trust")
+    score = trust.get("score") if isinstance(trust, dict) else facts.get("score")
+    try:
+        return int(score) if score is not None else None
+    except (TypeError, ValueError):
+        return None
+
+
 def validate_grounding(text: str, facts: dict) -> tuple[bool, list[str]]:
     """Reject numeric claims / IDs that do not appear anywhere in the evidence."""
     allowed = re.findall(r"\d[\d,]{2,}", str(facts))
-    allowed_ids = set(re.findall(r"[a-zA-Z0-9_-]{6,}", str(facts)))
+    allowed_ids = set(re.findall(r"\b(?:v|doc|ev|f|d|u|r)-[A-Za-z0-9_-]{1,}\b", str(facts)))
     unsupported: list[str] = []
-    for token in re.findall(r"\b\d[\d,]{2,}\b", text):
+
+    # "92/100" is the trust-score scale, not an invented number. Validate the
+    # numerator against the persisted score, then drop the span before the
+    # generic number check so the literal 100 is not flagged.
+    score = _trust_score(facts)
+    for match in _SCORE_SCALE_RE.finditer(text):
+        if score is None or int(match.group(1)) != score:
+            unsupported.append(match.group(0))
+    text_without_scores = _SCORE_SCALE_RE.sub(" ", text)
+
+    for token in re.findall(r"\b\d[\d,]{2,}\b", text_without_scores):
         if token not in allowed and token.replace(",", "") not in [a.replace(",", "") for a in allowed]:
             unsupported.append(token)
-    for token in re.findall(r"\b(?:v-|doc-|ev-|f-)[A-Za-z0-9_-]{4,}", text):
+    for token in re.findall(r"\b(?:v|doc|ev|f|d|u|r)-[A-Za-z0-9_-]{1,}\b", text):
         if token not in allowed_ids:
             unsupported.append(token)
     return len(unsupported) == 0, unsupported

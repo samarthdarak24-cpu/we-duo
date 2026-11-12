@@ -74,8 +74,37 @@ services:
         value: "1024"
       - key: TD_OCR_MIN_FREE_MB
         value: "160"
+      # Grounded LLM. Any OpenAI-compatible endpoint works; the provider only
+      # activates when TD_LLM_API_KEY is present, so leaving the key empty
+      # keeps the deterministic evidence-only answer (never a fabricated one).
+      # The live Free service uses Groq's free tier: no local RAM, ~0.3 s/call.
       - key: TD_LLM_PROVIDER
-        value: none
+        value: groq
+      - key: TD_LLM_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: TD_LLM_MODEL
+        value: qwen/qwen3.8-27b
+      - key: TD_LLM_API_KEY
+        sync: false
+      # Transactional email. The live service uses Resend's free tier
+      # (100 emails/day, no card). TD_SMTP_PASS is read by the Python service,
+      # TD_SMTP_PASSWORD by Next.js; set both from the same provider secret.
+      # Port 587 = STARTTLS, port 465 = implicit TLS; the transport follows
+      # TD_SMTP_SECURE / the port.
+      - key: TD_SMTP_HOST
+        sync: false
+      - key: TD_SMTP_PORT
+        value: "587"
+      - key: TD_SMTP_SECURE
+        value: "0"
+      - key: TD_SMTP_USER
+        sync: false
+      - key: TD_SMTP_PASS
+        sync: false
+      - key: TD_SMTP_PASSWORD
+        sync: false
+      - key: TD_SMTP_FROM
+        sync: false
       # Generated once by Render and kept across deploys.
       # Every secret listed here is REQUIRED by the production config check in
       # frontend/lib/server/db.ts (validateProductionConfig). A missing or short
@@ -98,13 +127,6 @@ services:
       # Recommended: external public URL (e.g. https://trustdrive.onrender.com).
       # Falls back automatically to Render's RENDER_EXTERNAL_URL when unset.
       - key: NEXT_PUBLIC_APP_URL
-        sync: false
-      # Optional external LLM (leave empty for the deterministic answer).
-      - key: TD_LLM_BASE_URL
-        sync: false
-      - key: TD_LLM_API_KEY
-        sync: false
-      - key: TD_LLM_MODEL
         sync: false
       # Optional PostgreSQL target for the Next.js data layer.
       #

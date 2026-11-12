@@ -2,9 +2,10 @@
 
 Real interface, honest status. ``LogNotificationProvider`` always works (it just
 logs) and is the default in local/dev. ``SMTPEmailProvider`` is gated by
-``TD_SMTP_HOST`` / ``TD_SMTP_USER`` / ``TD_SMTP_PASS`` and reports
-``disabled`` when those are absent -- it never pretends to have sent a real
-email. ``get_notification_status`` reports which provider is active.
+``TD_SMTP_HOST`` / ``TD_SMTP_USER`` and ``TD_SMTP_PASS`` (or the Next.js name
+``TD_SMTP_PASSWORD``) and reports ``disabled`` when those are absent -- it never
+pretends to have sent a real email. ``get_notification_status`` reports which
+provider is active.
 """
 from __future__ import annotations
 
@@ -59,8 +60,17 @@ class SMTPEmailProvider(NotificationProvider):
         self.host = os.getenv("TD_SMTP_HOST")
         self.port = int(os.getenv("TD_SMTP_PORT", "587"))
         self.user = os.getenv("TD_SMTP_USER")
-        self.password = os.getenv("TD_SMTP_PASS")
+        # Next.js reads TD_SMTP_PASSWORD, the Python service reads TD_SMTP_PASS.
+        # Accept both so one provider secret works for both runtimes.
+        self.password = os.getenv("TD_SMTP_PASS") or os.getenv("TD_SMTP_PASSWORD")
         self.from_addr = os.getenv("TD_SMTP_FROM", self.user or "no-reply@trustdrive.local")
+        # Port 465 is implicit TLS (SMTP_SSL); port 587 is STARTTLS. Real
+        # providers such as Resend and SES expose both, so the transport has to
+        # follow the configured port instead of always assuming STARTTLS.
+        self.implicit_tls = (
+            os.getenv("TD_SMTP_SECURE", "").strip().lower() in ("1", "true", "yes")
+            or self.port == 465
+        )
 
     def available(self) -> bool:
         # All three must be present; we never silently fall back to a fake send.
@@ -85,10 +95,15 @@ class SMTPEmailProvider(NotificationProvider):
             msg["From"] = self.from_addr
             msg["To"] = recipient
             msg.set_content(body)
-            with smtplib.SMTP(self.host, self.port, timeout=10) as server:
-                server.starttls()
-                server.login(self.user, self.password)
-                server.send_message(msg)
+            if self.implicit_tls:
+                with smtplib.SMTP_SSL(self.host, self.port, timeout=10) as server:
+                    server.login(self.user, self.password)
+                    server.send_message(msg)
+            else:
+                with smtplib.SMTP(self.host, self.port, timeout=10) as server:
+                    server.starttls()
+                    server.login(self.user, self.password)
+                    server.send_message(msg)
             emit("notification.sent", provider=self.name, recipient=recipient,
                  subject=subject, channel="email")
             return NotificationResult({

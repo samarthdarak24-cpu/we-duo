@@ -82,6 +82,25 @@ def test_grounding_validation_rejects_unsupported_numbers():
     assert unsupported
 
 
+def test_grounding_accepts_trust_score_scale():
+    facts = {"trust": {"score": 92}, "sources": ["f-bmw"]}
+    grounded, unsupported = llm.validate_grounding(
+        "Trust score 92/100 with one open finding; Sources: f-bmw.", facts
+    )
+    assert grounded is True
+    assert unsupported == []
+
+
+def test_grounding_rejects_wrong_trust_score_and_unknown_id():
+    facts = {"trust": {"score": 92}, "sources": ["f-bmw"]}
+    grounded, unsupported = llm.validate_grounding(
+        "Trust score 95/100; Sources: f-xyz.", facts
+    )
+    assert grounded is False
+    assert "95/100" in unsupported
+    assert "f-xyz" in unsupported
+
+
 def test_llm_describe_is_false_by_default():
     d = llm.describe()
     assert d["active"] is False

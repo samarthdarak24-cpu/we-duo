@@ -163,6 +163,71 @@ TD_LLM_MODEL=
 If using an OpenAI-compatible provider, set all three in the Render dashboard.
 Never put the API key in `render.yaml` or Git.
 
+### Free-tier AI and email providers (verified live)
+
+The 512 MB Free instance cannot host a local LLM (a 1.5B CPU model measured
+200-670 s per investigation) and has no outbound email by default. Both layers
+can be switched on for $0 with a free, no-card account and **no code change** —
+the LLM adapter and the SMTP adapter already accept any OpenAI-compatible
+endpoint and any SMTP server.
+
+**Groq (LLM).** Free tier: 30 requests/minute, 1,000 requests/day,
+200,000 tokens/day, no credit card required. Verified live on the Free service:
+
+```env
+TD_LLM_PROVIDER=groq
+TD_LLM_BASE_URL=https://api.groq.com/openai/v1
+TD_LLM_API_KEY=<Groq API key>
+TD_LLM_MODEL=qwen/qwen3.8-27b
+```
+
+`qwen/qwen3.8-27b` is the model the live deployment uses: it answers in ~0.3 s
+with no reasoning-token overhead. The `openai/gpt-oss-*` models also work but
+spend most of their output budget on reasoning tokens.
+
+The LLM may only rewrite the narrative. The Python service validates every
+answer for forbidden safety/authenticity claims, contradictions with the
+evidence, missing citations and unsupported numbers, and falls back to the
+deterministic evidence-only answer when validation fails. A score written as
+`92/100` is accepted (the denominator is the scale); a score that does not
+match the persisted trust score is rejected.
+
+**Resend (email).** Free tier: 3,000 emails/month, 100/day, no credit card
+required. The Resend SMTP endpoint accepts these values:
+
+```env
+TD_SMTP_HOST=smtp.resend.com
+TD_SMTP_PORT=587        # 587 = STARTTLS, 465 = implicit TLS
+TD_SMTP_SECURE=0        # 1 when using port 465
+TD_SMTP_USER=resend
+TD_SMTP_PASS=<Resend API key>          # read by the Python service
+TD_SMTP_PASSWORD=<Resend API key>      # read by Next.js
+TD_SMTP_FROM=TrustDrive <onboarding@resend.dev>
+```
+
+The Python notification provider reads `TD_SMTP_PASS` **or**
+`TD_SMTP_PASSWORD`, and it follows the port: 465 uses implicit TLS
+(`smtplib.SMTP_SSL`), 587 uses STARTTLS. Without SMTP configured the app never
+pretends to send — the API reports `configured: false` and the sign-up screen
+shows the verification link only in demo mode.
+
+With `onboarding@resend.dev` Resend only delivers to the account's own
+address. To email real users, verify a domain in the Resend dashboard and set
+`TD_SMTP_FROM` to that domain.
+
+**Verify it.** `GET /api/v1/health/integrations` (admin session) reports the
+live state:
+
+```json
+{"email": {"channel": "email", "configured": true, "provider": "smtp"},
+ "intelligence": {"configured": true, "endpoint": "http://127.0.0.1:8000"}}
+```
+
+`GET /api/v1/ai/stack` reports the LLM provider, model and adapter version.
+
+**Rotate the keys.** Keys pasted into chat, tickets or CI logs are burned.
+Rotate both providers and update the Render dashboard afterwards.
+
 ## First deployment checklist
 
 1. Open the Render service logs.
