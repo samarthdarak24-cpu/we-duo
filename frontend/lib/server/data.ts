@@ -843,6 +843,7 @@ export function getVehicleReport(vehicleId: string, viewerId?: string) {
     history: getHistory(vehicleId),
     mileage: getMileage(vehicleId),
     damage: getDamage(vehicleId),
+    batteryRecords: hasBatteryPack(categoryIdForVehicle(vehicleId)) ? getBatteryRecords(vehicleId) : [],
     findings: getFindings(vehicleId).map(findingView),
     listing,
     theft: getTheft(vehicleId),
@@ -1563,10 +1564,10 @@ export function getVerificationChecks(vehicleId: string) {
     {
       key: "consistency",
       label: "Document consistency",
-      status: has("DOCUMENT_MISMATCH") || has("MANIPULATION") ? "needs_correction" : machineRead ? "verified" : "unavailable",
+      status: has("DOCUMENT_MISMATCH") || has("MANIPULATION") || has("DATE_INCONSISTENCY") ? "needs_correction" : machineRead ? "verified" : "unavailable",
       note:
-        has("DOCUMENT_MISMATCH") || has("MANIPULATION")
-          ? "Cross-document fields conflict"
+        has("DOCUMENT_MISMATCH") || has("MANIPULATION") || has("DATE_INCONSISTENCY")
+          ? "Cross-document fields or dates conflict"
           : machineRead
             ? "Cross-document fields compared"
             : "No machine-read document to compare yet",
@@ -1575,9 +1576,21 @@ export function getVerificationChecks(vehicleId: string) {
     {
       key: "duplicates",
       label: "Duplicate documents",
-      status: duplicate ? "suspicious" : docs.length === 0 ? "unavailable" : "verified",
-      note: duplicate ? "A file hash appears on another vehicle" : docs.length === 0 ? "No documents on file" : "No duplicate file hash found",
-      source: "SHA-256",
+      status: duplicate || has("DUPLICATE_DOCUMENT") || has("DUPLICATE_DOCUMENT_REFERENCE") || has("CROSS_VEHICLE_REFERENCE")
+        ? "suspicious"
+        : docs.length === 0
+          ? "unavailable"
+          : "verified",
+      note: has("CROSS_VEHICLE_REFERENCE")
+        ? "A document reference number is already attached to another vehicle"
+        : has("DUPLICATE_DOCUMENT_REFERENCE")
+          ? "Duplicate invoice/document reference on this vehicle"
+          : duplicate || has("DUPLICATE_DOCUMENT")
+            ? "Duplicate file SHA-256 hash found"
+            : docs.length === 0
+              ? "No documents on file"
+              : "No duplicate file hash or reference found",
+      source: "SHA-256 & reference check",
     },
     {
       key: "mileage",
@@ -2415,19 +2428,24 @@ export function addMileageForVehicle(actorId: string, vehicleId: string, input: 
       vehicle_id: vehicleId,
       rule_key: "MILEAGE_INCONSISTENCY",
       code: "ODOMETER_ROLLBACK",
-      severity: "critical",
-      title: "Odometer rollback detected",
-      explanation: `The submitted reading of ${km.toLocaleString("en-IN")} km is ${direction} than the ${
+      severity: "high",
+      title: "Mileage chronology inconsistency (needs review)",
+      explanation: `The submitted reading of ${km.toLocaleString("en-IN")} km (${whenIso.slice(0, 10)}) is ${direction} than the ${
         rollbackBefore ? "earlier" : "later"
-      } reading of ${against.km.toLocaleString("en-IN")} km, so the odometer timeline is inconsistent.`,
+      } reading of ${against.km.toLocaleString("en-IN")} km (${against.date.slice(0, 10)}), so the odometer timeline requires review (not confirmed fraud).`,
       recommendation: "Provide a service invoice or cluster-replacement receipt that explains the change.",
       evidence: JSON.stringify({
+        fromReadingId: rollbackBefore ? against.id : id,
+        toReadingId: rollbackBefore ? id : against.id,
+        fromDocumentId: rollbackBefore ? against.document_id : (input.documentId ?? null),
+        toDocumentId: rollbackBefore ? (input.documentId ?? null) : against.document_id,
         fromKm: rollbackBefore ? against.km : km,
         toKm: rollbackBefore ? km : against.km,
-        date: whenIso,
-        comparedReadingDate: against.date,
+        fromDate: rollbackBefore ? against.date.slice(0, 10) : whenIso.slice(0, 10),
+        toDate: rollbackBefore ? whenIso.slice(0, 10) : against.date.slice(0, 10),
+        reviewState: "NEEDS_REVIEW",
       }),
-      responsible_doc: null,
+      responsible_doc: input.documentId ?? null,
       points: 40,
       status: "open",
       created_at: now,

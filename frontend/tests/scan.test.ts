@@ -31,4 +31,13 @@ describe("local malware scan", () => {
     expect(r.engine).toBe("local-signature-v1");
     expect(r.detail).toMatch(/not a full antivirus/i);
   });
+
+  it("does not trigger PDF heuristics on compressed binary image bytes containing /JS or /Launch", () => {
+    const pngBytes = Buffer.concat([
+      Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+      Buffer.from("/JS/Launch/JavaScript"),
+    ]);
+    const r = localSignatureScan(pngBytes, { fileName: "scan.png", mime: "image/png" });
+    expect(r.status).toBe("clean");
+  });
 });

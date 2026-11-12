@@ -49,12 +49,35 @@ _PDF_ENGINE = {"version": "pymupdf-text-layer-1.0.0", "method": "pdf-text-layer"
 
 # --- patterns ---------------------------------------------------------------
 _VIN_RE = re.compile(r"\b([A-HJ-NPR-Z0-9]{17})\b")
-_REG_RE = re.compile(r"\b([A-Z]{2}[-\s]?\d{1,2}[-\s]?[A-Z]{1,3}[-\s]?\d{1,4})\b", re.I)
+_REG_LABEL_RE = re.compile(
+    r"\b(?:registration(?:\s*(?:no\.?|number))?|reg\.?\s*(?:no\.?|number)?)\s*[:#\uff1a]?\s*"
+    r"([A-Z]{2}[-\s]?\d{1,2}[-\s]?[A-Z]{1,3}[-\s]?\d{1,4})\b",
+    re.I,
+)
+_REG_RE = re.compile(r"(?<![A-Z0-9-])([A-Z]{2}[-\s]?\d{1,2}[-\s]?[A-Z]{1,3}[-\s]?\d{1,4})\b")
+_CHASSIS_RE = re.compile(
+    r"\b(?:chassis|frame|chassis\s*no\.?|frame\s*no\.?|chassis\s*number|frame\s*number)\s*[:#\uff1a]?\s*([A-Z0-9]{8,22})\b",
+    re.I,
+)
+_ENGINE_RE = re.compile(r"\b(?:engine\s*(?:no\.?|number|serial)?)\s*[:#\uff1a]?\s*([A-Z0-9][A-Z0-9-]{4,24})\b", re.I)
+_INVOICE_RE = re.compile(
+    r"\b(?:invoice\s*(?:no\.?|number|#)|report\s*(?:no\.?|number|#)|bill\s*(?:no\.?|number|#))\s*[:#\uff1a]?\s*([A-Z0-9][A-Z0-9/-]{3,30})\b",
+    re.I,
+)
+_MODEL_YEAR_RE = re.compile(
+    r"\b(?:model\s*year|mfg\.?\s*year|manufacturing\s*year)\s*[:#\uff1a]?\s*((?:19|20)\d{2})\b",
+    re.I,
+)
 _DATE_RE = re.compile(r"\b(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}[/-]\d{1,2}[/-]\d{1,2})\b")
-_INSURER_RE = re.compile(r"(?:insurer|insurance\s+company|underwriter)\s*[:\-]?\s*([A-Z][A-Za-z &.]+?)(?:\n|$)", re.I)
-_POLICY_RE = re.compile(r"(?:policy\s*(?:no|number|#)?)\s*[:\-]?\s*([A-Z0-9][A-Z0-9\-/]{4,})", re.I)
-_OWNER_RE = re.compile(r"(?:owner|registered\s+to|name)\s*[:\-]?\s*([A-Z][A-Za-z .]+?)(?:\n|$)", re.I)
-_MILEAGE_RE = re.compile(r"(\d{1,3}(?:[,.]\d{3})*|\d{2,7})\s*(?:km|kilometres?|kilometers?)", re.I)
+_INSURER_RE = re.compile(r"(?:insurer|insurance\s+company|underwriter)\s*[:\-\uff1a]?\s*([A-Z][A-Za-z &.]+?)(?:\n|$)", re.I)
+_POLICY_RE = re.compile(r"(?:policy\s*(?:no|number|#)?)\s*[:\-\uff1a]?\s*([A-Z0-9][A-Z0-9\-/]{4,})", re.I)
+_OWNER_RE = re.compile(r"(?:owner(?:\s*name)?|registered\s+to)\s*[:\-\uff1a]?\s*([A-Za-z][A-Za-z .]+?)(?:\n|$)", re.I)
+_MILEAGE_LABEL_RE = re.compile(
+    r"\b(?:odometer|odo|0d0|od0|0do|km\s*reading|mileage|total\s*distance)\s*[:#\uff1a]?\s*([\d][0-9,.]{1,8})(?:\s*(?:km|kms|kilometres?|kilometers?))?(?!\d)",
+    re.I,
+)
+_MILEAGE_RE = re.compile(r"(\d{1,3}(?:[,.]\d{3})+|\d{2,7})\s*(?:km|kms|kilometres?|kilometers?)\b", re.I)
+_SOH_RE = re.compile(r"\b(?:state\s*of\s*health|soh)\s*[:#\uff1a]?\s*(\d{1,3}(?:\.\d{1,2})?)\s*%?", re.I)
 
 
 def _has(module: str) -> bool:
@@ -191,6 +214,16 @@ def ocr_image(path: str | Path) -> dict:
                       f"{engine} failed: {type(exc).__name__}: {exc}", spec["method"])
 
 
+def _parse_km(raw: str | None) -> int | None:
+    if not raw:
+        return None
+    s = raw.strip()
+    if re.fullmatch(r"\d{1,3}(?:[,.]\d{3})+", s):
+        return int(s.replace(",", "").replace(".", ""))
+    cleaned = s.replace(",", "")
+    return int(cleaned) if cleaned.isdigit() else None
+
+
 def extract_fields(text: str) -> dict:
     """Honest regex extraction over arbitrary OCR text.
 
@@ -200,24 +233,33 @@ def extract_fields(text: str) -> dict:
     """
     t = text or ""
 
-    registration_no = _REG_RE.search(t)
+    registration_no = _REG_LABEL_RE.search(t) or _REG_RE.search(t)
     vin = _VIN_RE.search(t)
+    chassis = _CHASSIS_RE.search(t)
+    engine = _ENGINE_RE.search(t)
+    invoice = _INVOICE_RE.search(t)
+    model_year = _MODEL_YEAR_RE.search(t)
     dates = _DATE_RE.findall(t)
     insurer = _INSURER_RE.search(t)
     policy = _POLICY_RE.search(t)
     owner = _OWNER_RE.search(t)
-    mileage = _MILEAGE_RE.search(t)
+    mileage = _MILEAGE_LABEL_RE.search(t) or _MILEAGE_RE.search(t)
+    soh = _SOH_RE.search(t)
 
     def _clean(s: str) -> str:
         return re.sub(r"\s+", " ", s).strip()
 
     fields: dict[str, Any] = {
-        "registrationNo": _clean(registration_no.group(1)) if registration_no else None,
-        "vinOrChassis": _clean(vin.group(1)) if vin else None,
+        "registrationNo": re.sub(r"[\s-]", "", registration_no.group(1)).upper() if registration_no else None,
+        "vinOrChassis": _clean(vin.group(1)).upper() if vin else (_clean(chassis.group(1)).upper() if chassis else None),
+        "engineNo": _clean(engine.group(1)).upper() if engine else None,
+        "invoiceNo": _clean(invoice.group(1)).upper() if invoice else None,
+        "modelYear": int(model_year.group(1)) if model_year else None,
         "ownerName": _clean(owner.group(1)) if owner else None,
         "validFrom": dates[0] if len(dates) >= 1 else None,
         "validTo": dates[-1] if len(dates) >= 2 else None,
-        "mileageKm": int(mileage.group(1).replace(",", "").replace(".", "")) if mileage else None,
+        "mileageKm": _parse_km(mileage.group(1)) if mileage else None,
+        "batterySoh": float(soh.group(1)) if soh else None,
         "insurer": _clean(insurer.group(1)) if insurer else None,
         "policyNo": _clean(policy.group(1)) if policy else None,
     }

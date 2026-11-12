@@ -162,6 +162,91 @@ class PaddleOcrBackend:
             )
 
 
+def _analyze_and_prepare_image(path: Path) -> tuple[Any, dict]:
+    """Inspect image quality (blur, resolution, brightness, text skew) via OpenCV.
+
+    Returns ``(image_for_ocr, quality_metadata)``. When OpenCV is unavailable or
+    cannot decode the file, returns ``(str(path), {})``. If significant text
+    skew (1.5..25 deg) is detected, returns a deskewed in-memory ndarray so
+    line-order extraction succeeds without altering the stored file on disk.
+    """
+    if not _module_present("cv2"):
+        return str(path), {}
+    try:
+        import cv2  # type: ignore
+        import numpy as np  # type: ignore
+
+        img = cv2.imread(str(path), cv2.IMREAD_COLOR)
+        if img is None:
+            return str(path), {"decode_failed": True}
+        h, w = img.shape[:2]
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        lap_var = round(float(cv2.Laplacian(gray, cv2.CV_64F).var()), 2)
+        mean_luma = round(float(gray.mean()), 2)
+        std_luma = round(float(gray.std()), 2)
+
+        skew = 0.0
+        if std_luma > 1.0:
+            inv = 255 - gray
+            _, bw = cv2.threshold(inv, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+            kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 3))
+            dil = cv2.dilate(bw, kernel)
+            contours, _ = cv2.findContours(dil, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+            angles: list[float] = []
+            for c in contours:
+                if cv2.contourArea(c) < 200:
+                    continue
+                rect = cv2.minAreaRect(c)
+                rw, rh = rect[1]
+                ang = rect[2]
+                if rw < rh:
+                    ang += 90.0
+                if ang > 45.0:
+                    ang -= 90.0
+                if ang < -45.0:
+                    ang += 90.0
+                angles.append(ang)
+            if angles:
+                skew = round(float(np.median(angles)), 2)
+
+        reasons: list[str] = []
+        if std_luma < 2.0:
+            reasons.append("blank_or_uniform_image")
+        else:
+            if lap_var < 60.0:
+                reasons.append("blurry_image")
+            if min(w, h) < 600:
+                reasons.append("low_resolution")
+            if abs(skew) >= 1.5:
+                reasons.append("rotated_skewed_image")
+            if mean_luma < 75.0 or (std_luma < 25.0 and lap_var >= 60.0):
+                reasons.append("low_contrast_or_dark")
+
+        prepared: Any = str(path)
+        deskewed = False
+        if 1.5 <= abs(skew) <= 25.0:
+            mat = cv2.getRotationMatrix2D((w / 2.0, h / 2.0), skew, 1.0)
+            prepared = cv2.warpAffine(
+                img, mat, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE
+            )
+            deskewed = True
+
+        meta = {
+            "width": int(w),
+            "height": int(h),
+            "blur_variance": lap_var,
+            "mean_brightness": mean_luma,
+            "contrast_std": std_luma,
+            "skew_degrees": skew,
+            "deskewed": deskewed,
+            "quality_reasons": reasons,
+            "degraded_quality": bool(reasons),
+        }
+        return prepared, meta
+    except Exception:
+        return str(path), {}
+
+
 class RapidOcrBackend:
     """Real OCR for images via RapidOCR (ONNX Runtime, no torch/paddle needed)."""
     name = "rapidocr"
@@ -174,8 +259,9 @@ class RapidOcrBackend:
             return OcrResult(engine=self.name, method="not-applicable")
         try:
             from rapidocr_onnxruntime import RapidOCR  # type: ignore
+            ocr_input, quality_meta = _analyze_and_prepare_image(path)
             engine = RapidOCR()
-            output = engine(str(path))
+            output = engine(ocr_input)
             result = output[0] if isinstance(output, tuple) else output
             lines: list[str] = []
             scores: list[float] = []
@@ -193,10 +279,20 @@ class RapidOcrBackend:
                     except (TypeError, ValueError):
                         pass
             text = "\n".join(line for line in lines if line.strip())
+            warnings: list[str] = []
+            if not text:
+                warnings.append("RapidOCR returned no text for this image.")
+            if quality_meta.get("degraded_quality"):
+                warnings.append(
+                    "Degraded image quality detected ("
+                    + ", ".join(quality_meta.get("quality_reasons") or [])
+                    + "); verify extracted fields manually."
+                )
             return OcrResult(
                 text=text, engine=self.name, method="rapidocr-onnx-crnn", pages=1,
                 confidence=round(sum(scores) / len(scores), 3) if scores else None,
-                warnings=[] if text else ["RapidOCR returned no text for this image."],
+                warnings=warnings,
+                preprocessing=quality_meta,
                 sha256=sha256_file(path), is_ocr=True,
             )
         except Exception as exc:

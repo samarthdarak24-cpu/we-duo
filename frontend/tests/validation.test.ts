@@ -53,8 +53,10 @@ describe("Email + password policy", () => {
   });
   it("enforces password length and character mix", () => {
     expect(passwordProblem("short")).not.toBeNull();
+    expect(passwordProblem("abc1234")).not.toBeNull();
     expect(passwordProblem("allletters")).not.toBeNull();
     expect(passwordProblem("1234567890")).not.toBeNull();
+    expect(passwordProblem("demo1234")).toBeNull();
     expect(passwordProblem("goodPass123")).toBeNull();
   });
 });

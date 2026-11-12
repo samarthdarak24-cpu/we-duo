@@ -326,6 +326,34 @@ def document_findings(vehicle_id: str, category_id: str | None = None) -> Detect
                     confidence=0.85, recommended_review_action="Request the original invoices from the seller.",
                 ))
 
+    # Also check extracted JSON / cross-vehicle document reference reuse.
+    import json as _json
+    ref_groups: dict[str, list[str]] = {}
+    for d in docs:
+        if d.get("deleted_at"):
+            continue
+        raw = d.get("extracted") or d.get("ocr_extracted")
+        if isinstance(raw, str) and raw.strip():
+            try:
+                parsed = _json.loads(raw)
+                inner = parsed.get("fields") if isinstance(parsed, dict) and isinstance(parsed.get("fields"), dict) else parsed
+                if isinstance(inner, dict):
+                    for k in ("invoice_number", "invoiceNo", "policy_number", "policyNo"):
+                        val = str(inner.get(k) or "").strip().upper()
+                        if val:
+                            ref_groups.setdefault(val, []).append(str(d.get("id")))
+                            break
+            except Exception:
+                pass
+    for ref, ids in ref_groups.items():
+        if len(ids) > 1:
+            findings.append(Finding(
+                anomaly_type="repeated_invoice_number", severity="medium",
+                explanation=f"Document reference {ref} appears on {len(ids)} documents for this vehicle.",
+                evidence=ids, method="extracted-reference-uniqueness", model_version=rules_version,
+                confidence=0.88, recommended_review_action="Inspector must verify whether these are duplicates.",
+            ))
+
     # VIN / chassis / frame / registration mismatch from persisted findings.
     # The identity keyword set is category-aware: a two-wheeler has a stamped
     # frame number, not a 17-character car VIN.

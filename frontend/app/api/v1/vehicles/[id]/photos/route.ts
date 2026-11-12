@@ -3,7 +3,12 @@ import {
   updateListing, updateListingImage,
 } from "@/lib/server/db";
 import { created, fail, ok, requireRole } from "@/lib/server/http";
-import { MAX_IMAGE_BYTES, sniffUpload } from "@/lib/server/files";
+import {
+  MAX_IMAGE_BYTES,
+  isAllowedImageFileName,
+  sanitizeFileName,
+  sniffUpload,
+} from "@/lib/server/files";
 import { guardedSaveUpload } from "@/lib/server/upload-guard";
 import { randomUUID } from "node:crypto";
 
@@ -47,14 +52,21 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   let position = existing.reduce((max, img) => Math.max(max, img.position), 0);
   let added = 0;
   for (const file of files) {
-    if (file.size > MAX_IMAGE_BYTES) return fail(413, "FILE_TOO_LARGE", `${file.name} exceeds 6 MB.`);
+    const safeName = sanitizeFileName(file.name, "photo");
+    if (file.size === 0) return fail(400, "EMPTY_FILE", `${safeName} is empty.`);
+    if (!isAllowedImageFileName(file.name)) {
+      return fail(415, "UNSUPPORTED_FILE_TYPE", `${safeName} extension is not allowed. Upload PNG, JPEG or WebP.`);
+    }
+    if (file.size > MAX_IMAGE_BYTES) return fail(413, "FILE_TOO_LARGE", `${safeName} exceeds 6 MB.`);
     const bytes = Buffer.from(await file.arrayBuffer());
     const sniffed = sniffUpload(bytes);
-    if (!sniffed) return fail(415, "UNSUPPORTED_FILE_TYPE", `${file.name} is not a valid PNG, JPEG or WebP image.`);
+    if (!sniffed || !sniffed.mime.startsWith("image/")) {
+      return fail(415, "UNSUPPORTED_FILE_TYPE", `${safeName} is not a valid PNG, JPEG or WebP image.`);
+    }
     try {
       const guarded = await guardedSaveUpload({
         bytes,
-        fileName: file.name,
+        fileName: safeName,
         mime: sniffed.mime,
         folder: `photos/${params.id}`,
         maxBytes: MAX_IMAGE_BYTES,

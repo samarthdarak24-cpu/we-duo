@@ -1,6 +1,11 @@
 import { replaceDocumentForActor } from "@/lib/server/data";
 import { fail, ok, requireRole } from "@/lib/server/http";
-import { MAX_DOC_BYTES, sniffUpload } from "@/lib/server/files";
+import {
+  MAX_DOC_BYTES,
+  isAllowedDocumentFileName,
+  sanitizeFileName,
+  sniffUpload,
+} from "@/lib/server/files";
 import { attachFileScanDocument, getDocument } from "@/lib/server/db";
 import { guardedSaveUpload } from "@/lib/server/upload-guard";
 import { runDocumentOcr } from "@/lib/server/document-ocr";
@@ -20,6 +25,11 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     if (!form) return fail(400, "VALIDATION_FAILED", "Invalid multipart body.");
     const file = form.get("file");
     if (!(file instanceof File)) return fail(400, "VALIDATION_FAILED", "Attach a replacement file.");
+    const safeName = sanitizeFileName(file.name, "document");
+    if (file.size === 0) return fail(400, "EMPTY_FILE", "The uploaded file is empty.");
+    if (!isAllowedDocumentFileName(file.name)) {
+      return fail(415, "UNSUPPORTED_FILE_TYPE", "File extension is not allowed. Upload a PDF, PNG, JPEG or WebP document.");
+    }
     if (file.size > MAX_DOC_BYTES) return fail(413, "FILE_TOO_LARGE", "Documents must be under 10 MB.");
     const existing = getDocument(params.id);
     if (!existing) return fail(404, "NOT_FOUND", "Document not found.");
@@ -31,7 +41,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       // an unavailable scanner fails closed, and a clean verdict is persisted.
       const guarded = await guardedSaveUpload({
         bytes,
-        fileName: file.name,
+        fileName: safeName,
         mime: sniffed.mime,
         folder: `documents/${existing.vehicle_id}`,
         maxBytes: MAX_DOC_BYTES,
@@ -47,8 +57,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       input.sha256 = guarded.stored.sha256;
       input.sizeBytes = guarded.stored.size;
       input.mime = guarded.stored.mime;
-      input.fileName = file.name;
-      input.content = `${file.name}:${file.size}`;
+      input.fileName = safeName;
+      input.content = `${safeName}:${file.size}`;
     } catch (err) {
       const code = (err as Error).message;
       if (code === "FILE_TOO_LARGE") return fail(413, "FILE_TOO_LARGE", "Documents must be under 10 MB.");

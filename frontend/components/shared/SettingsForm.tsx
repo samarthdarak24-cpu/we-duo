@@ -189,7 +189,7 @@ export function SettingsForm({ profile }: { profile: SettingsProfile }) {
           </div>
         </SectionCard>
 
-        <SectionCard title="Change password" description="Use at least 10 characters with a letter and a number.">
+        <SectionCard title="Change password" description="Use at least 8 characters with a letter and a number.">
           <div className="space-y-3">
             <label className="block">
               <span className="td-label">Current password</span>

@@ -34,6 +34,8 @@ RUN npm install --no-package-lock sharp
 # AI/ML assets (OCR / YOLO / XGBoost / LLM weights + metadata). backend/app/config.py
 # defaults TD_MODEL_DIR to services/ai/shared/models, so this must be in the image.
 COPY services ./services
+# Shared multi-category taxonomy read directly by backend/app/categories.py.
+COPY frontend/lib/vehicle-categories.json ./frontend/lib/vehicle-categories.json
 
 # Intelligence service (slim deps only).
 COPY backend ./backend
@@ -52,6 +54,9 @@ ENV PATH="/opt/venv/bin:$PATH" \
     TD_DATA_DIR=/tmp/trustdrive \
     TD_DB_FILE=/tmp/trustdrive/trustdrive.db \
     TD_UPLOAD_DIR=/tmp/trustdrive/uploads \
+    TD_QUARANTINE_DIR=/tmp/trustdrive/quarantine \
+    TD_CHECKPOINT_DB=/tmp/trustdrive/langgraph-checkpoints.db \
+    TD_MODEL_DIR=/app/services/ai/shared/models \
     TD_DB_URL=sqlite+pysqlite:////tmp/trustdrive/trustdrive.db \
     TD_INTELLIGENCE_URL=http://127.0.0.1:8000 \
     TD_SEED_DEMO=1 \

@@ -13,7 +13,13 @@ const demoAccounts = [
   { label: "Admin", role: "admin", email: "admin@trustdrive.dev", name: "TrustDrive Admin" },
 ];
 
-export function AuthForm({ mode: initialMode }: { mode: "login" | "register" }) {
+export function AuthForm({
+  mode: initialMode,
+  demoEnabled = false,
+}: {
+  mode: "login" | "register";
+  demoEnabled?: boolean;
+}) {
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "register">(initialMode);
 
@@ -126,8 +132,8 @@ export function AuthForm({ mode: initialMode }: { mode: "login" | "register" }) 
       return;
     }
 
-    if (password.length < 10) {
-      setError("Password must be at least 10 characters long.");
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long.");
       return;
     }
 
@@ -313,29 +319,42 @@ export function AuthForm({ mode: initialMode }: { mode: "login" | "register" }) 
             </p>
           </div>
 
-          {/* 1-Click Demo Login Selector */}
-          <div className="p-4 rounded-2xl bg-[var(--surface-tint)] border border-[var(--border)] space-y-2.5">
-            <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-[var(--muted)]">
-              <span>Instant 1-Click Demo Logins</span>
-              <span className="text-[var(--primary)]">PW: demo1234</span>
+          {/* 1-Click Demo Login Selector (shown only when demo accounts are seeded) */}
+          {demoEnabled && mode === "login" ? (
+            <div className="p-4 rounded-2xl bg-[var(--surface-tint)] border border-[var(--border)] space-y-2.5">
+              <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-[var(--muted)]">
+                <span>Instant 1-Click Demo Logins</span>
+                <span className="normal-case text-[var(--primary)]">PW: demo1234</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {demoAccounts.map((acc) => (
+                  <button
+                    key={acc.role}
+                    type="button"
+                    onClick={() => fillDemo(acc)}
+                    className={`py-2 px-2.5 rounded-xl text-xs font-mono transition-all border text-center ${
+                      email === acc.email
+                        ? "bg-[var(--primary)] text-black border-[var(--primary)] font-bold shadow-md shadow-[var(--primary)]/20"
+                        : "bg-[var(--bg)] text-[var(--muted)] border-[var(--border)] hover:border-[var(--primary)]/50 hover:text-white"
+                    }`}
+                  >
+                    &bull; {acc.label}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="grid grid-cols-3 gap-2">
-              {demoAccounts.map((acc) => (
-                <button
-                  key={acc.role}
-                  type="button"
-                  onClick={() => fillDemo(acc)}
-                  className={`py-2 px-2.5 rounded-xl text-xs font-mono transition-all border text-center ${
-                    email === acc.email
-                      ? "bg-[var(--primary)] text-black border-[var(--primary)] font-bold shadow-md shadow-[var(--primary)]/20"
-                      : "bg-[var(--bg)] text-[var(--muted)] border-[var(--border)] hover:border-[var(--primary)]/50 hover:text-white"
-                  }`}
-                >
-                  &bull; {acc.label}
-                </button>
-              ))}
+          ) : !demoEnabled && mode === "login" ? (
+            <div className="p-3.5 rounded-2xl bg-[var(--surface-tint)] border border-[var(--border)] text-xs font-mono text-[var(--muted)] flex items-center justify-between gap-3">
+              <span>Demo logins are disabled in production. Use your registered account or create a new one.</span>
+              <button
+                type="button"
+                onClick={() => switchMode("register")}
+                className="shrink-0 text-[var(--primary)] hover:underline font-bold"
+              >
+                Sign Up
+              </button>
             </div>
-          </div>
+          ) : null}
 
           {/* Error Banner */}
           {error && (
@@ -553,7 +572,7 @@ export function AuthForm({ mode: initialMode }: { mode: "login" | "register" }) 
               {/* Password */}
               <div className="space-y-1.5">
                 <label className="text-xs font-mono text-[var(--muted)] uppercase tracking-wider">
-                  Password (min. 10 chars, letter + number)
+                  Password (min. 8 chars, letter + number)
                 </label>
                 <div className="relative">
                   <input

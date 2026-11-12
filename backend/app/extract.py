@@ -26,26 +26,54 @@ from .ocr import OcrResult, run_ocr, sha256_file, validate_file
 
 EXTRACTION_VERSION = "extract-2.0.0-multicategory"
 
-REG_RE = re.compile(r"\b([A-Z]{2}[-\s]?\d{1,2}[-\s]?[A-Z]{0,2}[-\s]?\d{1,4})\b")
+REG_LABEL_RE = re.compile(
+    r"\b(?:registration(?:\s*(?:no\.?|number))?|reg\.?\s*(?:no\.?|number)?)\s*[:#\uff1a]?\s*"
+    r"([A-Z]{2}[-\s]?\d{1,2}[-\s]?[A-Z]{1,3}[-\s]?\d{1,4})\b",
+    re.I,
+)
+REG_RE = re.compile(r"(?<![A-Z0-9-])([A-Z]{2}[-\s]?\d{1,2}[-\s]?[A-Z]{1,3}[-\s]?\d{1,4})\b")
 VIN_RE = re.compile(r"\b([A-HJ-NPR-Z0-9]{17})\b", re.I)
-POLICY_RE = re.compile(r"\b(?:policy|policy\s*no\.?|policy\s*number)\s*[:#]?\s*([A-Z0-9/-]{6,24})\b", re.I)
+POLICY_RE = re.compile(r"\b(?:policy|policy\s*no\.?|policy\s*number)\s*[:#\uff1a]?\s*([A-Z0-9/-]{6,24})\b", re.I)
+INVOICE_NO_RE = re.compile(
+    r"\b(?:invoice\s*(?:no\.?|number|#)|report\s*(?:no\.?|number|#)|bill\s*(?:no\.?|number|#)|receipt\s*(?:no\.?|number|#))"
+    r"\s*[:#\uff1a]?\s*([A-Z0-9][A-Z0-9/-]{3,30})\b",
+    re.I,
+)
 DATE_RE = re.compile(r"\b(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}-\d{2}-\d{2})\b")
+DOC_DATE_RE = re.compile(
+    r"\b(?:invoice\s*date|report\s*date|service\s*date|registered\s*on|photo\s*date|date)\s*[:#\uff1a]?\s*"
+    r"(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}-\d{2}-\d{2})\b",
+    re.I,
+)
+MODEL_YEAR_RE = re.compile(
+    r"\b(?:model\s*year|mfg\.?\s*year|manufacturing\s*year|year\s*of\s*(?:mfg|manufacture))\s*[:#\uff1a]?\s*((?:19|20)\d{2})\b",
+    re.I,
+)
 ODOMETER_RE = re.compile(
-    r"\b(?:odometer|odo|km\s*reading|mileage|total\s*distance|distance\s*run|kms?)\s*[:#]?\s*([\d,]{3,7})\b",
+    r"\b(?:odometer|odo|0d0|od0|0do|km\s*reading|mileage|total\s*distance|distance\s*run)"
+    r"\s*[:#\uff1a]?\s*([\d][0-9,.]{1,8})(?:\s*(?:km|kms|kilometres?|kilometers?))?(?!\d)",
+    re.I,
+)
+ODOMETER_UNIT_RE = re.compile(
+    r"\b(\d{1,3}(?:[,.]\d{3})+|\d{3,7})\s*(?:km|kms|kilometres?|kilometers?)\b",
     re.I,
 )
 AMOUNT_RE = re.compile(r"(?:₹|INR|Rs\.?)\s*([\d,]+(?:\.\d{2})?)", re.I)
-MODEL_RE = re.compile(r"\b(?:model|vehicle|make)\s*[:#]?\s*([A-Za-z0-9 ]{2,30})", re.I)
+MODEL_RE = re.compile(r"\b(?:make\s*/\s*model|model(?!\s*year)|vehicle\s*model)\s*[:#\uff1a]?\s*([A-Za-z0-9][A-Za-z0-9 \-]{1,40})", re.I)
+OWNER_RE = re.compile(r"\b(?:owner\s*(?:name)?|registered\s*to)\s*[:#\uff1a]?\s*([A-Za-z][A-Za-z .]{1,40})", re.I)
+FUEL_RE = re.compile(r"\b(?:fuel\s*type|fuel)\s*[:#\uff1a]?\s*([A-Za-z-]{3,20})\b", re.I)
 
 # Category-specific identity/powertrain fields. Every one is label-anchored:
 # an unlabelled token is never promoted into an identity claim.
 CHASSIS_RE = re.compile(
     r"\b(?:chassis|frame|chassis\s*no\.?|frame\s*no\.?|chassis\s*number|frame\s*number|"
-    r"vehicle\s*identification\s*number|vin)\s*[:#]?\s*([A-Z0-9]{8,22})\b", re.I)
-ENGINE_RE = re.compile(r"\b(?:engine\s*(?:no\.?|number|serial)?)\s*[:#]?\s*([A-Z0-9]{5,22})\b", re.I)
-MOTOR_RE = re.compile(r"\b(?:motor\s*(?:no\.?|number|serial)?|traction\s*motor)\s*[:#]?\s*([A-Z0-9]{5,22})\b", re.I)
-BATTERY_SERIAL_RE = re.compile(r"\b(?:battery\s*(?:no\.?|number|serial|id)|pack\s*serial)\s*[:#]?\s*([A-Z0-9-]{5,30})\b", re.I)
-BATTERY_CAPACITY_RE = re.compile(r"\b(?:battery\s*capacity|capacity|kwh)\s*[:#]?\s*([\d.]{1,6})\s*(?:kwh)?\b", re.I)
+    r"vehicle\s*identification\s*number|vin)\s*[:#\uff1a]?\s*([A-Z0-9]{8,22})\b", re.I)
+ENGINE_RE = re.compile(r"\b(?:engine\s*(?:no\.?|number|serial)?)\s*[:#\uff1a]?\s*([A-Z0-9][A-Z0-9-]{4,24})\b", re.I)
+MOTOR_RE = re.compile(r"\b(?:motor\s*(?:no\.?|number|serial)?|traction\s*motor)\s*[:#\uff1a]?\s*([A-Z0-9][A-Z0-9-]{4,24})\b", re.I)
+BATTERY_SERIAL_RE = re.compile(r"\b(?:battery\s*(?:no\.?|number|serial|id)|pack\s*serial)\s*[:#\uff1a]?\s*([A-Z0-9-]{5,30})\b", re.I)
+BATTERY_CAPACITY_RE = re.compile(r"\b(?:battery\s*capacity|capacity|kwh)\s*[:#\uff1a]?\s*([\d.]{1,6})\s*(?:kwh)?\b", re.I)
+BATTERY_CHEM_RE = re.compile(r"\b(?:battery\s*chemistry|chemistry)\s*[:#\uff1a]?\s*([A-Za-z0-9-]{2,20})\b", re.I)
+BATTERY_SOH_RE = re.compile(r"\b(?:state\s*of\s*health|soh)\s*[:#\uff1a]?\s*(\d{1,3}(?:\.\d{1,2})?)\s*%?", re.I)
 
 
 class ExtractedFields(BaseModel):
@@ -53,7 +81,11 @@ class ExtractedFields(BaseModel):
     vin: str | None = None
     owner_name: str | None = None
     vehicle_model: str | None = None
+    model_year: int | None = None
+    fuel_type: str | None = None
     policy_number: str | None = None
+    invoice_number: str | None = None
+    document_date: str | None = None
     dates: list[str] = Field(default_factory=list)
     odometer_km: int | None = None
     invoice_amount: float | None = None
@@ -69,6 +101,8 @@ class ExtractedFields(BaseModel):
     motor_number: str | None = None
     battery_serial: str | None = None
     battery_capacity_kwh: float | None = None
+    battery_chemistry: str | None = None
+    battery_soh: float | None = None
 
 
 class ExtractionResult(BaseModel):
@@ -103,6 +137,18 @@ def _parse_date(value: str) -> datetime | None:
     return None
 
 
+def _parse_odometer(raw: str | None) -> int | None:
+    if not raw:
+        return None
+    s = raw.strip()
+    if re.fullmatch(r"\d{1,3}(?:[,.]\d{3})+", s):
+        return int(s.replace(",", "").replace(".", ""))
+    cleaned = s.replace(",", "")
+    if cleaned.isdigit():
+        return int(cleaned)
+    return None
+
+
 def extract_fields(text: str, category_id: str | None = None) -> ExtractedFields:
     """Category-correct structured extraction. NO universal 17-character rule.
 
@@ -114,12 +160,17 @@ def extract_fields(text: str, category_id: str | None = None) -> ExtractedFields
     cid = category_id or categories.DEFAULT_CATEGORY_ID
     ident = categories.identity_for(cid)
     vin_applicable = bool(ident.get("vinApplicable"))
-    reg = REG_RE.search(text)
+    reg = REG_LABEL_RE.search(text) or REG_RE.search(text)
     policy = POLICY_RE.search(text)
+    invoice = INVOICE_NO_RE.search(text)
     dates = [m.group(1) for m in DATE_RE.finditer(text)]
-    odo = ODOMETER_RE.search(text)
+    doc_date = DOC_DATE_RE.search(text)
+    model_year_m = MODEL_YEAR_RE.search(text)
+    odo = ODOMETER_RE.search(text) or ODOMETER_UNIT_RE.search(text)
     amount = AMOUNT_RE.search(text)
     model = MODEL_RE.search(text)
+    owner = OWNER_RE.search(text)
+    fuel_m = FUEL_RE.search(text)
 
     vin_value: str | None = None
     primary: str | None = None
@@ -149,6 +200,8 @@ def extract_fields(text: str, category_id: str | None = None) -> ExtractedFields
 
     battery_serial = None
     battery_capacity = None
+    battery_chemistry = None
+    battery_soh = None
     if categories.has_battery_pack(cid):
         m = BATTERY_SERIAL_RE.search(text)
         battery_serial = m.group(1).upper() if m else None
@@ -158,15 +211,34 @@ def extract_fields(text: str, category_id: str | None = None) -> ExtractedFields
                 battery_capacity = float(m.group(1))
             except ValueError:
                 battery_capacity = None
+        m = BATTERY_CHEM_RE.search(text)
+        battery_chemistry = m.group(1).strip() if m else None
+        m = BATTERY_SOH_RE.search(text)
+        if m:
+            try:
+                soh_val = float(m.group(1))
+                if 0.0 <= soh_val <= 100.0:
+                    battery_soh = soh_val
+            except ValueError:
+                battery_soh = None
+
+    model_str = model.group(1).strip() if model else None
+    if model_str and ("registration" in model_str.lower() or model_str.isdigit()):
+        model_str = None
 
     return ExtractedFields(
-        registration_number=re.sub(r"\s", "", reg.group(1)) if reg else None,
+        registration_number=re.sub(r"[\s-]", "", reg.group(1)).upper() if reg else None,
         vin=vin_value,
-        policy_number=policy.group(1) if policy else None,
+        owner_name=re.sub(r"\s+", " ", owner.group(1)).strip() if owner else None,
+        policy_number=policy.group(1).upper() if policy else None,
+        invoice_number=invoice.group(1).upper() if invoice else None,
+        document_date=doc_date.group(1) if doc_date else (dates[0] if dates else None),
         dates=dates[:20],
-        odometer_km=int(odo.group(1).replace(",", "")) if odo else None,
+        odometer_km=_parse_odometer(odo.group(1)) if odo else None,
         invoice_amount=float(amount.group(1).replace(",", "")) if amount else None,
-        vehicle_model=model.group(1).strip() if model else None,
+        vehicle_model=model_str,
+        model_year=int(model_year_m.group(1)) if model_year_m else None,
+        fuel_type=fuel_m.group(1).strip() if fuel_m else None,
         service_details=text[:400] or None,
         category_id=cid,
         identifier_label=str(ident.get("primaryLabel") or "VIN"),
@@ -177,14 +249,17 @@ def extract_fields(text: str, category_id: str | None = None) -> ExtractedFields
         motor_number=motor,
         battery_serial=battery_serial,
         battery_capacity_kwh=battery_capacity,
+        battery_chemistry=battery_chemistry,
+        battery_soh=battery_soh,
     )
 
 
 def _confidence(fields: ExtractedFields, ocr: OcrResult) -> float:
     present = sum(1 for v in (
         fields.registration_number, fields.primary_identifier, fields.policy_number,
-        fields.odometer_km, fields.invoice_amount, fields.vehicle_model,
-        fields.engine_number, fields.motor_number, fields.battery_serial,
+        fields.invoice_number, fields.odometer_km, fields.invoice_amount,
+        fields.vehicle_model, fields.model_year, fields.engine_number,
+        fields.motor_number, fields.battery_serial, fields.battery_soh,
     ) if v is not None)
     base = 0.15 + 0.12 * present
     if ocr.is_ocr:
@@ -193,6 +268,8 @@ def _confidence(fields: ExtractedFields, ocr: OcrResult) -> float:
         base -= 0.1
     if ocr.confidence is not None:
         base = 0.6 * base + 0.4 * ocr.confidence
+    if (ocr.preprocessing or {}).get("degraded_quality"):
+        base = min(base, 0.72)
     return round(max(0.0, min(1.0, base)), 3)
 
 
@@ -207,6 +284,7 @@ def _find_duplicate(sha: str, document_id: str, vehicle_id: str) -> str | None:
         return None
     rows = (db.read("documents", where="vehicle_id = :v", params={"v": vehicle_id}, limit=500)
             if "vehicle_id" in cols else db.read("documents", limit=500))
+    rows = [r for r in rows if not r.get("deleted_at")]
     for r in rows:
         if str(r.get("id")) != document_id and str(r.get(hash_col) or "") == sha:
             return str(r.get("id"))
@@ -218,6 +296,58 @@ def _find_duplicate(sha: str, document_id: str, vehicle_id: str) -> str | None:
                 if str(r.get("id")) != document_id and str(r.get(hash_col) or "") == stored:
                     return str(r.get("id"))
     return None
+
+
+def _doc_reference_value(row: dict) -> str | None:
+    for col in ("invoice_no", "doc_number", "policy_number", "number"):
+        val = row.get(col)
+        if isinstance(val, str) and val.strip():
+            return val.strip().upper()
+    for raw_col in ("extracted", "ocr_extracted"):
+        raw = row.get(raw_col)
+        if isinstance(raw, str) and raw.strip():
+            try:
+                parsed = json.loads(raw)
+                if isinstance(parsed, dict):
+                    inner = parsed.get("fields") if isinstance(parsed.get("fields"), dict) else parsed
+                    for k in ("invoice_number", "invoiceNo", "report_number", "policy_number", "policyNo"):
+                        v = inner.get(k)
+                        if isinstance(v, str) and v.strip():
+                            return v.strip().upper()
+            except Exception:
+                pass
+    return None
+
+
+def _find_reference_duplicates(
+    fields: ExtractedFields, sha: str, document_id: str, vehicle_id: str
+) -> tuple[str | None, tuple[str, str] | None]:
+    """Return (same_vehicle_doc_id, (other_vehicle_id, other_doc_id)) for matching invoice/policy references."""
+    ref = (fields.invoice_number or fields.policy_number or "").strip().upper()
+    if not ref or not db.has_table("documents"):
+        return None, None
+    cols = db.columns("documents")
+    hash_col = next((c for c in ("sha256", "hash", "file_hash", "content_hash") if c in cols), None)
+    rows = db.read("documents", limit=1000)
+    same_vehicle_dup: str | None = None
+    cross_vehicle_dup: tuple[str, str] | None = None
+    for r in rows:
+        if r.get("deleted_at"):
+            continue
+        rid = str(r.get("id") or "")
+        if not rid or rid == document_id:
+            continue
+        other_ref = _doc_reference_value(r)
+        if not other_ref or other_ref != ref:
+            continue
+        other_vid = str(r.get("vehicle_id") or "")
+        other_sha = str(r.get(hash_col) or "") if hash_col else ""
+        if other_vid == vehicle_id:
+            if not sha or other_sha != sha:
+                same_vehicle_dup = rid
+        elif other_vid:
+            cross_vehicle_dup = (other_vid, rid)
+    return same_vehicle_dup, cross_vehicle_dup
 
 
 def _compare_with_vehicle(vehicle_id: str, fields: ExtractedFields,
@@ -252,6 +382,17 @@ def _compare_with_vehicle(vehicle_id: str, fields: ExtractedFields,
             "expected": stored_primary, "extracted": got,
             "label": ident.get("primaryLabel"),
         })
+    if fields.model_year is not None and v.get("year"):
+        try:
+            stored_year = int(v["year"])
+            out["checks"].append({
+                "field": "model_year",
+                "result": "match" if stored_year == int(fields.model_year) else "mismatch",
+                "expected": str(stored_year),
+                "extracted": str(fields.model_year),
+            })
+        except (TypeError, ValueError):
+            pass
     if fields.odometer_km is not None:
         readings = db.read("mileage_readings", where="vehicle_id = :v", params={"v": vehicle_id}, limit=100)
         kms = [int(r["km"]) for r in readings if isinstance(r.get("km"), (int, float))]
@@ -295,20 +436,34 @@ def _compare_with_vehicle(vehicle_id: str, fields: ExtractedFields,
     return out
 
 
-def _expiry(fields: ExtractedFields, doc_type: str) -> dict | None:
+def _date_checks(fields: ExtractedFields, doc_type: str, vehicle_year: int | None) -> tuple[dict | None, list[str]]:
     parsed = [(_parse_date(d), d) for d in fields.dates]
     parsed = [(p, d) for p, d in parsed if p]
     if not parsed:
-        return None
+        return None, []
+    today = datetime.now(timezone.utc).date()
     latest = max(parsed, key=lambda x: x[0])
-    days = (latest[0] - datetime.now()).days
-    return {
+    days = (latest[0].date() - today).days
+
+    doc_date_parsed = _parse_date(fields.document_date) if fields.document_date else None
+    date_flags: list[str] = []
+    # Future-dated invoice/service/registration/report dates (distinct from future insurance expiry)
+    if doc_date_parsed and doc_date_parsed.date() > today and not doc_type.startswith("insurance") and doc_type != "puc":
+        date_flags.append("future_document_date")
+    if vehicle_year and doc_date_parsed and doc_date_parsed.year < vehicle_year:
+        date_flags.append("date_before_manufacture_year")
+
+    expiry_info = {
         "latest_date": latest[1],
+        "document_date": fields.document_date,
         "days_from_today": days,
-        "expired": days < 0,
+        "expired": days < 0 if (doc_type.startswith("insurance") or doc_type == "puc") else False,
+        "future_dated": bool(doc_date_parsed and doc_date_parsed.date() > today),
+        "before_manufacture_year": bool(vehicle_year and doc_date_parsed and doc_date_parsed.year < vehicle_year),
         "doc_type": doc_type,
         "note": "Date is machine-read; expiry is indicative, not a validity guarantee.",
     }
+    return expiry_info, date_flags
 
 
 def _queue_review(document_id: str, vehicle_id: str, reasons: list[str], confidence: float) -> str | None:
@@ -386,11 +541,17 @@ def process_document(path: Path, document_id: str, vehicle_id: str, doc_type: st
     wf.append(_step(8, "Compare with vehicle database", "passed",
                     ", ".join(f"{c['field']}:{c['result']}" for c in comparison["checks"])))
     duplicate = _find_duplicate(sha, document_id, vehicle_id)
-    wf.append(_step(9, "Check duplicates", "passed" if not duplicate else "flagged",
-                    duplicate or "none"))
-    expiry = _expiry(fields, doc_type)
-    wf.append(_step(10, "Check date and expiry", "passed" if expiry else "no_date_found",
-                     str(expiry or "")))
+    same_ref_dup, cross_ref_dup = _find_reference_duplicates(fields, sha, document_id, vehicle_id)
+    dup_detail = duplicate or same_ref_dup or (f"{cross_ref_dup[0]}:{cross_ref_dup[1]}" if cross_ref_dup else "none")
+    wf.append(_step(9, "Check duplicates",
+                    "flagged" if (duplicate or same_ref_dup or cross_ref_dup) else "passed",
+                    dup_detail))
+    vehicle_rows_year = db.read("vehicles", where="id = :id", params={"id": vehicle_id}, limit=1)
+    v_year = int(vehicle_rows_year[0]["year"]) if (vehicle_rows_year and vehicle_rows_year[0].get("year")) else None
+    expiry, date_flags = _date_checks(fields, doc_type, v_year)
+    wf.append(_step(10, "Check date and expiry",
+                    "flagged" if date_flags else ("passed" if expiry else "no_date_found"),
+                    str(expiry or "")))
     wf.append(_step(11, "Check metadata", "passed",
                      str(ocr.preprocessing.get("pdf_metadata_suspicious", []))))
     confidence = _confidence(fields, ocr)
@@ -398,10 +559,21 @@ def process_document(path: Path, document_id: str, vehicle_id: str, doc_type: st
     wf.append(_step(12, "Calculate extraction confidence", "passed", str(confidence)))
     wf.append(_step(13, "Flag low-confidence results", "flagged" if low else "clear"))
     flags: list[str] = []
+    if not ocr.text.strip():
+        flags.append("unreadable_no_text")
+    if (ocr.preprocessing or {}).get("degraded_quality"):
+        flags.append("low_image_quality")
     if duplicate:
         flags.append(f"duplicate_of:{duplicate}")
+    if same_ref_dup:
+        flags.append(f"duplicate_reference_same_vehicle:{same_ref_dup}")
+    if cross_ref_dup:
+        flags.append(f"cross_vehicle_reference_reuse:{cross_ref_dup[0]}:{cross_ref_dup[1]}")
     if expiry and expiry.get("expired"):
         flags.append("document_date_expired")
+    for df in date_flags:
+        if df not in flags:
+            flags.append(df)
     for c in comparison["checks"]:
         if c["result"] == "mismatch":
             flags.append(f"{c['field']}_mismatch")
@@ -410,7 +582,7 @@ def process_document(path: Path, document_id: str, vehicle_id: str, doc_type: st
     if low:
         flags.append("low_extraction_confidence")
     review_id = None
-    if low or duplicate or any("mismatch" in f for f in flags):
+    if low or duplicate or same_ref_dup or cross_ref_dup or date_flags or "low_image_quality" in flags or any("mismatch" in f for f in flags):
         review_id = _queue_review(document_id, vehicle_id, flags or ["low_confidence"], confidence)
     wf.append(_step(14, "Send for manual review when required", "queued" if review_id else "not_required",
                     review_id or ""))

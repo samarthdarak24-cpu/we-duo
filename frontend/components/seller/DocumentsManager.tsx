@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Icon } from "@/components/ui/Icon";
@@ -11,6 +11,7 @@ import { InlineAlert } from "@/components/shared/InlineAlert";
 import { OcrExtract } from "@/components/seller/OcrExtract";
 import { cn } from "@/lib/cn";
 import { apiCall } from "@/lib/client/api";
+import { documentLabel, documentsForCategory } from "@/lib/vehicle-categories";
 
 export interface DocumentRow {
   id: string;
@@ -93,11 +94,13 @@ function formatBytes(bytes: number) {
 
 export function DocumentsManager({
   vehicleId,
+  categoryId = "passenger_car",
   docs,
   completeness,
   nearDuplicates,
 }: {
   vehicleId: string;
+  categoryId?: string;
   docs: DocumentRow[];
   completeness: number;
   nearDuplicates: NearDuplicatesView;
@@ -107,7 +110,14 @@ export function DocumentsManager({
   const replaceRef = useRef<HTMLInputElement>(null);
   const [replaceTarget, setReplaceTarget] = useState<DocumentRow | null>(null);
   const docNames = new Map(docs.map((d) => [d.id, d.file_name]));
-  const [type, setType] = useState("rc");
+  const allowedDocs = useMemo(() => documentsForCategory(categoryId), [categoryId]);
+  const defaultDocType = allowedDocs.find((d) => d.required)?.id ?? allowedDocs[0]?.id ?? "rc";
+  const [type, setType] = useState(defaultDocType);
+  useEffect(() => {
+    if (!allowedDocs.some((d) => d.id === type)) {
+      setType(defaultDocType);
+    }
+  }, [allowedDocs, defaultDocType, type]);
   const [consent, setConsent] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -332,9 +342,9 @@ export function DocumentsManager({
           <label className="block">
             <span className="td-label">Document type</span>
             <select value={type} onChange={(e) => setType(e.target.value)} className="td-input td-select">
-              {docTypes.map((t) => (
-                <option key={t} value={t}>
-                  {labels[t]}
+              {allowedDocs.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.label}{d.required ? " (Required)" : ""}
                 </option>
               ))}
             </select>
@@ -452,7 +462,7 @@ export function DocumentsManager({
                           ) : null}
                           {d.duplicate && (
                             <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-danger">
-                              <Icon name="ShieldAlert" size={11} /> Same hash found on another vehicle
+                              <Icon name="ShieldAlert" size={11} /> Duplicate SHA-256 hash matches another uploaded document
                             </div>
                           )}
                           {d.status_reason && <div className="mt-1 text-[11px] text-danger">{d.status_reason}</div>}
@@ -531,7 +541,7 @@ export function DocumentsManager({
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-4 text-[12.5px] text-muted">{labels[d.type] ?? d.type}</td>
+                    <td className="px-4 py-4 text-[12.5px] text-muted">{labels[d.type] ?? documentLabel(d.type)}</td>
                     <td className="px-4 py-4">
                       <StatusBadge status={d.status} />
                     </td>

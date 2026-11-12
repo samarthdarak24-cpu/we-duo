@@ -2,7 +2,12 @@ import { addDocumentForVehicle, getDocumentsView } from "@/lib/server/data";
 import { attachFileScanDocument, getListingByVehicle, getVehicle } from "@/lib/server/db";
 import { fail, created, ok, requireRole } from "@/lib/server/http";
 import { paginate } from "@/lib/server/pagination";
-import { MAX_DOC_BYTES, sniffUpload } from "@/lib/server/files";
+import {
+  MAX_DOC_BYTES,
+  isAllowedDocumentFileName,
+  sanitizeFileName,
+  sniffUpload,
+} from "@/lib/server/files";
 import { nearDuplicateDocuments, recordDocumentExtractions } from "@/lib/server/evidence";
 import type { ScanResult } from "@/lib/server/scan";
 import { guardedSaveUpload } from "@/lib/server/upload-guard";
@@ -65,6 +70,11 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     type = String(form.get("type") ?? "");
     const file = form.get("file");
     if (!(file instanceof File)) return fail(400, "VALIDATION_FAILED", "Attach a file.");
+    const safeName = sanitizeFileName(file.name, "document");
+    if (file.size === 0) return fail(400, "EMPTY_FILE", "The uploaded file is empty.");
+    if (!isAllowedDocumentFileName(file.name)) {
+      return fail(415, "UNSUPPORTED_FILE_TYPE", "File extension is not allowed. Upload a PDF, PNG, JPEG or WebP document.");
+    }
     if (file.size > MAX_DOC_BYTES) return fail(413, "FILE_TOO_LARGE", "Documents must be under 10 MB.");
     const bytes = Buffer.from(await file.arrayBuffer());
     const sniffed = sniffUpload(bytes);
@@ -73,7 +83,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     // the upload root; an unavailable configured scanner fails closed (503).
     const guarded = await guardedSaveUpload({
       bytes,
-      fileName: file.name,
+      fileName: safeName,
       mime: sniffed.mime,
       folder: `documents/${params.id}`,
       maxBytes: MAX_DOC_BYTES,
@@ -92,9 +102,9 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     mime = guarded.stored.mime;
     sizeBytes = guarded.stored.size;
     sha256 = guarded.stored.sha256;
-    fileName = file.name;
+    fileName = safeName;
     consent = form.get("consent") !== "false";
-    content = `${file.name}:${file.size}`;
+    content = `${safeName}:${file.size}`;
   } else {
     const body = (await req.json().catch(() => null)) as {
       type?: string;

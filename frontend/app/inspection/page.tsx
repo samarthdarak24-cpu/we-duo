@@ -7,6 +7,8 @@ import { getAllListings, getVehicle } from "@/lib/server/db";
 import { hotspotsFor } from "@/lib/server/data";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "3D Vehicle Inspection Studio — TrustDrive",
   description:

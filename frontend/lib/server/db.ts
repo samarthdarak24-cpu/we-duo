@@ -1710,7 +1710,7 @@ export function updateDocument(id: string, fields: Partial<DocumentRow>) {
   run(`UPDATE documents SET ${sets} WHERE id = ?`, ...entries.map(([, v]) => v as string | number | null), id);
 }
 export function getDuplicateDocumentCount(sha256: string): number {
-  const r = one<{ c: number }>("SELECT COUNT(*) AS c FROM documents WHERE sha256 = ?", sha256);
+  const r = one<{ c: number }>("SELECT COUNT(*) AS c FROM documents WHERE sha256 = ? AND deleted_at IS NULL", sha256);
   return r?.c ?? 0;
 }
 
@@ -2260,5 +2260,17 @@ export function getNotificationDeliveries(notificationId: string): DeliveryRow[]
     "SELECT * FROM notification_deliveries WHERE notification_id = ? ORDER BY created_at DESC",
     notificationId
   );
+}
+
+/** True only when demo accounts are enabled and seeded in the database. */
+export function areDemoAccountsEnabled(): boolean {
+  if (process.env.TD_SEED_DEMO === "0" || process.env.TD_ENV === "production") {
+    return false;
+  }
+  try {
+    return Boolean(getUserByEmail("aditya@trustdrive.dev"));
+  } catch {
+    return false;
+  }
 }
 

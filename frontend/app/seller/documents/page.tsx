@@ -66,6 +66,7 @@ export default function SellerDocumentsPage({ searchParams }: { searchParams: { 
 
           <DocumentsManager
             vehicleId={selected.id}
+            categoryId={selected.categoryId}
             docs={getDocumentsView(selected.id)}
             completeness={getVehicleReport(selected.id)?.coverage ?? 0}
             nearDuplicates={nearDuplicateDocuments(selected.id)}

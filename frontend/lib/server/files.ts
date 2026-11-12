@@ -117,6 +117,55 @@ async function s3Client(): Promise<S3Client> {
 }
 
 // ---- Validation ------------------------------------------------------------
+const ALLOWED_DOC_EXTS = new Set(["pdf", "png", "jpg", "jpeg", "webp"]);
+const ALLOWED_IMAGE_EXTS = new Set(["png", "jpg", "jpeg", "webp"]);
+const DANGEROUS_INNER_EXTS = new Set([
+  "exe", "dll", "bat", "cmd", "sh", "ps1", "vbs", "js", "mjs", "cjs",
+  "php", "py", "rb", "pl", "cgi", "jar", "msi", "scr", "com", "pif",
+  "html", "htm", "svg",
+]);
+
+/** Strip directory traversal, URL-encoded slashes, and control characters from a display file name. */
+export function sanitizeFileName(raw: string, fallback = "upload"): string {
+  let decoded = String(raw ?? "");
+  try {
+    decoded = decodeURIComponent(decoded);
+  } catch {
+    /* keep raw when malformed percent-encoding is sent */
+  }
+  const base = decoded.replace(/\\/g, "/").split("/").pop() ?? "";
+  const cleaned = base
+    .replace(/\.\.+/g, ".")
+    .replace(/[^a-zA-Z0-9._ -]/g, "_")
+    .replace(/^[-_. ]+/, "")
+    .trim()
+    .slice(0, 140);
+  return cleaned || fallback;
+}
+
+function checkExtensionAllowList(rawName: string, allowed: Set<string>): boolean {
+  const safe = sanitizeFileName(rawName, "");
+  if (!safe || !safe.includes(".")) return false;
+  const parts = safe.toLowerCase().split(".").filter(Boolean);
+  if (parts.length < 2) return false;
+  const finalExt = parts[parts.length - 1];
+  if (!allowed.has(finalExt)) return false;
+  for (let i = 1; i < parts.length - 1; i++) {
+    if (DANGEROUS_INNER_EXTS.has(parts[i])) return false;
+  }
+  return true;
+}
+
+/** Allow only safe document extensions (rejects .exe, .pdf.txt, etc.). */
+export function isAllowedDocumentFileName(name: string): boolean {
+  return checkExtensionAllowList(name, ALLOWED_DOC_EXTS);
+}
+
+/** Allow only safe image extensions. */
+export function isAllowedImageFileName(name: string): boolean {
+  return checkExtensionAllowList(name, ALLOWED_IMAGE_EXTS);
+}
+
 /** Identify a buffer from its magic bytes. */
 export function sniffUpload(data: Buffer): { mime: string; ext: string } | null {
   const sig = SIGNATURES.find((s) => s.test(data));

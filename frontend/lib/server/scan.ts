@@ -34,9 +34,18 @@ const EICAR = [
   "-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*",
 ].join("");
 
-const HEURISTICS: { name: string; test: (text: string) => boolean }[] = [
-  { name: "pdf-javascript", test: (t) => t.includes("/JavaScript") || t.includes("/JS") },
-  { name: "pdf-launch-action", test: (t) => t.includes("/Launch") },
+const HEURISTICS: { name: string; test: (text: string, meta: { fileName: string; mime: string }) => boolean }[] = [
+  {
+    name: "pdf-javascript",
+    test: (t, meta) =>
+      (meta.mime === "application/pdf" || /\.pdf$/i.test(meta.fileName)) &&
+      (t.includes("/JavaScript") || /\/JS(?=[\s<(\[\/]|$)/.test(t)),
+  },
+  {
+    name: "pdf-launch-action",
+    test: (t, meta) =>
+      (meta.mime === "application/pdf" || /\.pdf$/i.test(meta.fileName)) && t.includes("/Launch"),
+  },
   { name: "office-auto-open-macro", test: (t) => /AutoOpen|Auto_Open|Document_Open/i.test(t) },
   {
     name: "download-and-run",
@@ -59,7 +68,7 @@ export function localSignatureScan(
     };
   }
   for (const rule of HEURISTICS) {
-    if (rule.test(text)) {
+    if (rule.test(text, meta)) {
       return {
         status: "infected",
         engine: "local-signature-v1",
