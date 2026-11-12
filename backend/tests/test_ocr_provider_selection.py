@@ -13,6 +13,8 @@ def test_provider_preference_aliases(monkeypatch):
         "paddle": "paddleocr",
         "PaddleOCR": "paddleocr",
         "rapid": "rapidocr",
+        "tess": "tesseract",
+        "Tesseract": "tesseract",
         "text-layer": "pymupdf-text-layer",
         "none": "none",
         "unknown-value": "auto",
@@ -24,7 +26,7 @@ def test_provider_preference_aliases(monkeypatch):
 def test_available_backends_marks_the_preferred_engine(monkeypatch):
     monkeypatch.setenv("TD_OCR_PROVIDER", "rapidocr")
     backends = ocr.available_backends()
-    assert len(backends) == 4
+    assert len(backends) == 5
     assert [b["engine"] for b in backends if b["preferred"]] == ["rapidocr"]
 
 
@@ -33,7 +35,7 @@ def test_ordered_backends_puts_the_preference_first(monkeypatch):
     ordered = ocr._ordered_backends()
     assert ordered[0].name == "pymupdf-text-layer"
     assert {b.name for b in ordered} == {
-        "paddleocr", "rapidocr", "pymupdf-text-layer", "opencv-preprocess"
+        "paddleocr", "rapidocr", "tesseract", "pymupdf-text-layer", "opencv-preprocess"
     }
 
 

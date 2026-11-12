@@ -131,10 +131,13 @@ TD_INTELLIGENCE_URL=http://127.0.0.1:8000
 TD_SEED_DEMO=1
 # Run the DB worker as a FastAPI thread instead of a third Python process.
 TD_WORKER_MODE=inline
-# Bound OCR memory on small instances: cap the decoded image and refuse OCR
-# when less than this much memory is free (the document stays pending).
+# On the 512 MB Free plan use Tesseract: a real OCR engine whose CLI process
+# peaks at ~30-60 MB. Set rapidocr (or leave auto) on a Starter 2 GB instance.
+TD_OCR_PROVIDER=tesseract
+# Bound the image sent to OCR and refuse OCR when less than this much memory is
+# free (the document stays pending with the honest reason).
 TD_OCR_MAX_IMAGE_SIDE=1024
-TD_OCR_MIN_FREE_MB=280
+TD_OCR_MIN_FREE_MB=160
 TD_LLM_PROVIDER=none
 ```
 
@@ -273,10 +276,17 @@ created.
 ### OCR upload fails or the service restarts
 
 The combined image runs Next.js, FastAPI and the DB worker in one container.
-RapidOCR needs roughly 250-300 MB of peak headroom, so on the 512 MB Free plan
-the upload path enforces `TD_OCR_MIN_FREE_MB` (default 280). If there is not
-enough free memory, the document is stored and stays `pending` with an honest
-reason instead of OOM-killing the service. Check the admin integration payload:
+RapidOCR's ONNX sessions need roughly 250-330 MB of peak headroom, which can
+exceed the 512 MB Free plan even after the worker moved inline; the kernel then
+kills the service mid-upload. The Free blueprint therefore sets
+`TD_OCR_PROVIDER=tesseract`. Tesseract 5 is a real OCR engine that runs as a
+short-lived binary with a ~30-60 MB peak, and every result still names the
+engine and binary version that ran.
+
+The upload path also enforces `TD_OCR_MIN_FREE_MB` (160 on this blueprint). If
+there is not enough free memory, the document is stored and stays `pending`
+with an honest reason instead of OOM-killing the service. Check the admin
+integration payload:
 
 ```text
 GET /api/v1/health/integrations  ->  memory, ocrHeadroom
@@ -286,8 +296,9 @@ Mitigations, in order:
 
 1. Keep `TD_WORKER_MODE=inline` so the worker shares the FastAPI process.
 2. Keep `TD_OCR_MAX_IMAGE_SIDE` at `1024` or lower for large phone photos.
-3. Move to a larger Render instance (Starter has 2 GB) for reliable OCR of
-   photos. PDFs with a real text layer do not load the OCR engine.
+3. Keep `TD_OCR_PROVIDER=tesseract` on Free. On Starter (2 GB) you can set
+   `TD_OCR_PROVIDER=rapidocr` for higher accuracy on noisy photos; PDFs with a
+   real text layer never load an OCR engine.
 4. Retry the extraction when the service is idle; the document is not lost.
 
 ### Data disappeared

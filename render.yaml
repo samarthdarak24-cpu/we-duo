@@ -63,13 +63,17 @@ services:
       # On a 512 MB instance this saves ~70-90 MB and leaves room for OCR.
       - key: TD_WORKER_MODE
         value: inline
-      # Bound OCR memory: cap the decoded image and refuse OCR below 280 MB
-      # free instead of letting the kernel kill the service. Raise both values
-      # if the service moves to a larger instance.
+      # The 512 MB Free plan cannot hold RapidOCR's ONNX peak plus Next.js and
+      # FastAPI. Tesseract is a real OCR engine with a ~30-60 MB CLI peak; set
+      # TD_OCR_PROVIDER=rapidocr on a Starter (2 GB) instance for higher accuracy.
+      - key: TD_OCR_PROVIDER
+        value: tesseract
+      # Bound the image sent to OCR and refuse OCR below 160 MB free instead of
+      # letting the kernel kill the service. Raise both on a larger instance.
       - key: TD_OCR_MAX_IMAGE_SIDE
         value: "1024"
       - key: TD_OCR_MIN_FREE_MB
-        value: "280"
+        value: "160"
       - key: TD_LLM_PROVIDER
         value: none
       # Generated once by Render and kept across deploys.

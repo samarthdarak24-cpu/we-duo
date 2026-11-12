@@ -142,17 +142,20 @@ export function memorySnapshot(): MemorySnapshot {
 
 function configuredRequiredBytes(): number {
   const raw = Number(process.env.TD_OCR_MIN_FREE_MB);
-  const mb = Number.isFinite(raw) && raw > 0 ? raw : 280;
+  const provider = (process.env.TD_OCR_PROVIDER || "auto").trim().toLowerCase();
+  // Tesseract's CLI peak is ~30-60 MB; RapidOCR's ONNX sessions need 250-330 MB.
+  const fallback = provider === "tesseract" || provider === "tess" ? 160 : 280;
+  const mb = Number.isFinite(raw) && raw > 0 ? raw : fallback;
   return Math.round(mb * MB);
 }
 
 /**
  * Decide whether a synchronous OCR run is safe on this instance.
  *
- * The default 280 MB requirement covers RapidOCR's ONNX peak plus the transient
- * OpenCV decode of a large photo after it is capped at 1024 px on its longest
- * side. Operators
- * can lower it with TD_OCR_MIN_FREE_MB, but doing so risks a container OOM.
+ * The default is provider-aware: 280 MB for the ONNX engines (RapidOCR) and
+ * 160 MB for the Tesseract CLI, whose peak is only ~30-60 MB. Both assume the
+ * image is capped at 1024 px on its longest side. Operators can override the
+ * value with TD_OCR_MIN_FREE_MB, but lowering it too far risks a container OOM.
  */
 export function checkOcrHeadroom(requiredBytes = configuredRequiredBytes()): OcrHeadroom {
   const memory = memorySnapshot();

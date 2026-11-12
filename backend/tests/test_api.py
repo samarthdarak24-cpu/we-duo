@@ -14,7 +14,7 @@ def test_health_is_ok_and_names_active_backends():
     body = r.json()
     assert body["status"] == "ok"
     assert body["database"]["database"] == "connected"
-    assert len(body["ocr_backends"]) == 4
+    assert len(body["ocr_backends"]) == 5
     assert any(b["engine"] == "rapidocr" and b["available"] for b in body["ocr_backends"])
     assert len(body["agent"]["nodes"]) == 16
     assert body["agent"]["conditional"] is True

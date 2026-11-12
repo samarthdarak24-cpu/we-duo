@@ -174,6 +174,27 @@ def test_intelligence_status_aggregates_all_adapters():
     assert st["retrieval"]["backend"]
 
 
+def test_tesseract_backend_reads_rendered_text(tmp_path: Path):
+    import shutil
+
+    if not shutil.which("tesseract"):
+        pytest.skip("tesseract binary is not installed")
+    cv2 = pytest.importorskip("cv2")
+    np = pytest.importorskip("numpy")
+    from app.ocr import TesseractBackend
+
+    img = np.full((240, 900, 3), 255, np.uint8)
+    cv2.putText(img, "TRUSTDRIVE OCR 42000 KM", (20, 150), cv2.FONT_HERSHEY_SIMPLEX, 1.6, (0, 0, 0), 4)
+    path = tmp_path / "tesseract.png"
+    cv2.imwrite(str(path), img)
+    result = TesseractBackend().run(path)
+    assert result.is_ocr is True
+    assert result.engine == "tesseract"
+    assert result.method.startswith("tesseract-cli-lstm")
+    assert "42000" in result.text
+    assert result.sha256
+
+
 def test_rapidocr_backend_reads_rendered_text(tmp_path: Path):
     pytest.importorskip("rapidocr_onnxruntime")
     cv2 = pytest.importorskip("cv2")

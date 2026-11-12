@@ -22,6 +22,8 @@ os.environ.setdefault("FLAGS_use_onednn", "0")
 
 from pydantic import BaseModel, Field
 
+from services.ai.ocr import tesseract_engine
+
 from .logging import emit
 
 MAX_FILE_BYTES = 25 * 1024 * 1024
@@ -165,6 +167,43 @@ class PaddleOcrBackend:
                 warnings=[f"PaddleOCR failed: {type(exc).__name__}: {exc}"],
                 sha256=sha256_file(path),
             )
+
+
+class TesseractBackend:
+    """Real OCR via the Tesseract CLI, for memory-constrained instances.
+
+    Tesseract runs as a separate native process with a ~30-60 MB peak, whereas
+    RapidOCR's ONNX sessions need 250-330 MB. It is a genuine OCR engine, not a
+    fallback substitute for one: the engine name, binary version and method are
+    reported in every result.
+    """
+    name = "tesseract"
+
+    def available(self) -> bool:
+        return tesseract_engine.available()
+
+    def run(self, path: Path) -> OcrResult:
+        if path.suffix.lower() == ".pdf":
+            return OcrResult(engine=self.name, method="not-applicable")
+        result = tesseract_engine.run(path)
+        return OcrResult(
+            text=str(result.get("text") or ""),
+            engine=self.name if result.get("available") else "unavailable",
+            method=str(result.get("method") or "none"),
+            pages=1 if result.get("available") else 0,
+            confidence=result.get("confidence"),
+            warnings=list(result.get("warnings") or [])
+            + ([str(result["reason"])] if result.get("reason") else []),
+            preprocessing={
+                **(result.get("preprocessing") or {}),
+                "binary_version": tesseract_engine.binary_version(),
+                "psm": os.getenv("TD_TESSERACT_PSM", tesseract_engine.DEFAULT_PSM),
+                "lang": os.getenv("TD_TESSERACT_LANG", tesseract_engine.DEFAULT_LANG),
+                "words": result.get("words", 0),
+            },
+            sha256=sha256_file(path),
+            is_ocr=bool(result.get("is_ocr")),
+        )
 
 
 def _analyze_and_prepare_image(path: Path) -> tuple[Any, dict]:
@@ -440,6 +479,7 @@ def _suspicious_metadata(meta: dict) -> list[str]:
 BACKENDS: tuple[OcrBackend, ...] = (
     RapidOcrBackend(),
     PaddleOcrBackend(),
+    TesseractBackend(),
     PdfTextBackend(),
     OpenCVPreprocessBackend(),
 )
@@ -454,9 +494,11 @@ BACKENDS: tuple[OcrBackend, ...] = (
 #
 # RapidOCR is the default ("auto") because on this hardware it returns in
 # seconds with accurate results, whereas PaddleOCR can take minutes (see the
-# OCR comparison report). PaddleOCR remains installed, available and selectable
-# via TD_OCR_PROVIDER=paddleocr; it is never silently substituted for rapidocr.
-#   auto (default) | paddleocr | rapidocr | text-layer | none
+# OCR comparison report). On a 512 MB combined container the ONNX peak can
+# exceed the cgroup limit, so the Render blueprint sets TD_OCR_PROVIDER=tesseract:
+# a real engine whose CLI process peaks at ~30-60 MB. PaddleOCR and RapidOCR
+# remain installed and selectable; none is ever silently substituted for another.
+#   auto (default) | paddleocr | rapidocr | tesseract | text-layer | none
 # ---------------------------------------------------------------------------
 _PROVIDER_ALIASES = {
     "auto": "auto",
@@ -464,6 +506,8 @@ _PROVIDER_ALIASES = {
     "paddleocr": "paddleocr",
     "rapid": "rapidocr",
     "rapidocr": "rapidocr",
+    "tess": "tesseract",
+    "tesseract": "tesseract",
     "text": "pymupdf-text-layer",
     "text-layer": "pymupdf-text-layer",
     "pymupdf": "pymupdf-text-layer",

@@ -10,8 +10,10 @@ Interactive default: RapidOCR (ONNX Runtime) is preferred when installed.
 Measured locally, PaddleOCR's first CPU inference needs ~96 s -- longer than the
 Next.js proxy's 90 s timeout, so the "Extract with OCR" button always failed --
 while RapidOCR reads the same document in ~5 s. Set ``TD_OCR_PROVIDER=paddleocr``
-to force the heavyweight engine. PDFs use their real text layer (never labelled
-as OCR); a fallback is never reported as the primary engine.
+to force the heavyweight engine. On a 512 MB combined container the ONNX peak
+can exceed the cgroup limit; set ``TD_OCR_PROVIDER=tesseract`` there for a real
+engine whose CLI process peaks at ~30-60 MB. PDFs use their real text layer
+(never labelled as OCR); a fallback is never reported as the primary engine.
 
 Field extraction (``extract_fields``) is independent of the engine: it applies
 honest regular expressions over arbitrary OCR text and never hardcodes sample
@@ -24,6 +26,8 @@ import os
 import re
 from pathlib import Path
 from typing import Any
+
+from . import tesseract_engine
 
 os.environ.setdefault("FLAGS_use_mkldnn", "0")
 os.environ.setdefault("FLAGS_use_onednn", "0")
@@ -43,6 +47,12 @@ _ENGINES = {
         "module": "paddleocr",
         "version": ENGINE_VERSION,
         "method": "paddleocr-predict",
+    },
+    "tesseract": {
+        # The binary, not a Python module; availability is probed with `which`.
+        "module": None,
+        "version": "tesseract-cli-honest-adapter-1.0.0",
+        "method": "tesseract-cli-lstm",
     },
 }
 _PDF_ENGINE = {"version": "pymupdf-text-layer-1.0.0", "method": "pdf-text-layer"}
@@ -88,17 +98,30 @@ def _has(module: str) -> bool:
 
 
 def installed_engines() -> list[str]:
-    return [name for name, spec in _ENGINES.items() if _has(spec["module"])]
+    return [
+        name
+        for name, spec in _ENGINES.items()
+        if (tesseract_engine.available() if spec["module"] is None else _has(spec["module"]))
+    ]
+
+
+def _engine_version(engine: str) -> str:
+    if engine == "tesseract":
+        return tesseract_engine.method()
+    return _ENGINES[engine]["version"]
 
 
 def active_engine() -> str | None:
     """Pick one real engine. Never silently switches when the chosen one fails."""
     requested = (os.getenv("TD_OCR_PROVIDER") or "auto").strip().lower()
+    if requested in ("tess", "tesseract"):
+        requested = "tesseract"
     available = installed_engines()
     if requested in available:
         return requested
-    # Interactive default: the fast ONNX engine, then the heavyweight one.
-    for name in ("rapidocr", "paddleocr"):
+    # Interactive default: the fast ONNX engine, then Tesseract (low memory),
+    # then the heavyweight PaddleOCR.
+    for name in ("rapidocr", "tesseract", "paddleocr"):
         if name in available:
             return name
     return None
@@ -110,7 +133,7 @@ def status() -> dict:
     return {
         "available": engine is not None or _has("fitz"),
         "engine": engine or ("pymupdf-text-layer" if _has("fitz") else "none"),
-        "version": (_ENGINES[engine]["version"] if engine else
+        "version": (_engine_version(engine) if engine else
                     _PDF_ENGINE["version"] if _has("fitz") else None),
         "engines": installed_engines(),
         "reason": None if engine or _has("fitz") else "No OCR engine or PDF text layer is installed",
@@ -166,6 +189,28 @@ def _paddleocr(p: Path) -> dict:
             "text": "\n".join(l["text"] for l in lines), "lines": lines}
 
 
+def _tesseract(p: Path) -> dict:
+    result = tesseract_engine.run(p)
+    if not result.get("available"):
+        return _empty("tesseract", _ENGINES["tesseract"]["version"],
+                      str(result.get("reason") or "Tesseract is unavailable."),
+                      "none")
+    text = str(result.get("text") or "")
+    lines = [{"text": line, "confidence": None} for line in text.splitlines() if line.strip()]
+    return {
+        "available": True,
+        "engine": "tesseract",
+        "version": tesseract_engine.method(),
+        "method": tesseract_engine.method(),
+        "is_ocr": True,
+        "text": text,
+        "lines": lines,
+        "confidence": result.get("confidence"),
+        "preprocessing": result.get("preprocessing") or {},
+        "warnings": list(result.get("warnings") or []),
+    }
+
+
 def _pdf_text_layer(p: Path) -> dict:
     """A PDF text layer is real extraction, but it is NOT OCR. Say so."""
     import fitz  # type: ignore
@@ -206,11 +251,16 @@ def ocr_image(path: str | Path) -> dict:
 
     engine = active_engine()
     if engine is None:
-        return _empty("none", "", "No OCR engine is installed (RapidOCR or PaddleOCR required).")
+        return _empty("none", "",
+                      "No OCR engine is installed (RapidOCR, PaddleOCR or Tesseract required).")
 
     spec = _ENGINES[engine]
     try:
-        return _rapidocr(p) if engine == "rapidocr" else _paddleocr(p)
+        if engine == "rapidocr":
+            return _rapidocr(p)
+        if engine == "tesseract":
+            return _tesseract(p)
+        return _paddleocr(p)
     except Exception as exc:  # pragma: no cover - depends on the native runtime
         return _empty(engine, spec["version"],
                       f"{engine} failed: {type(exc).__name__}: {exc}", spec["method"])
