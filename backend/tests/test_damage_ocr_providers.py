@@ -155,4 +155,4 @@ def test_provider_status_endpoints_return_structured_json():
         assert registry["sources"][src]["status"] in ("available", "blocked")
     # Notifications always report an active provider.
     notifications = client.get("/api/v1/system/notifications").json()
-    assert notifications["provider"] in ("log-only", "smtp")
+    assert notifications["provider"] in ("log-only", "smtp", "resend-api")

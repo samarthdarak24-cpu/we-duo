@@ -4,7 +4,9 @@
 // Every send is a real provider call or an explicit "not configured" result.
 // Nothing is reported as delivered unless the provider accepted it.
 //
-// Email: SMTP via nodemailer (TD_SMTP_*). Retries use exponential backoff.
+// Email: Resend HTTPS API (TD_RESEND_API_KEY), else SMTP via nodemailer
+// (TD_SMTP_*). The HTTPS API is preferred because Render free web services
+// block outbound SMTP (ports 25, 465, 587). Retries use exponential backoff.
 // SMS:   HTTP gateway (TD_SMS_URL / TD_SMS_TOKEN / TD_SMS_FROM).
 //
 // Each final outcome is persisted in `notification_deliveries` with the
@@ -89,7 +91,33 @@ function smsConfig() {
   };
 }
 
+function resendConfig() {
+  const apiKey = process.env.TD_RESEND_API_KEY?.trim();
+  if (!apiKey) return null;
+  return {
+    apiKey,
+    endpoint: process.env.TD_RESEND_ENDPOINT?.trim() || "https://api.resend.com/emails",
+    from:
+      process.env.TD_RESEND_FROM?.trim() ||
+      process.env.TD_SMTP_FROM?.trim() ||
+      "TrustDrive <onboarding@resend.dev>",
+    timeoutMs: Number(process.env.TD_RESEND_TIMEOUT_MS || 15000) || 15000,
+    maxAttempts: Math.max(1, Number(process.env.TD_RESEND_MAX_ATTEMPTS || 3) || 3),
+  };
+}
+
 export function getMailerStatus() {
+  const resend = resendConfig();
+  if (resend) {
+    return {
+      channel: "email" as const,
+      configured: true,
+      provider: "resend-api",
+      endpoint: resend.endpoint,
+      from: resend.from,
+      note: "Delivery uses the Resend HTTPS API. Render free web services block outbound SMTP (ports 25/465/587).",
+    };
+  }
   const cfg = smtpConfig();
   if (!cfg) {
     return {
@@ -97,7 +125,7 @@ export function getMailerStatus() {
       configured: false,
       provider: "none",
       reason:
-        "TD_SMTP_HOST is not set. Verification and reset links are only shown in non-production demo mode.",
+        "TD_RESEND_API_KEY / TD_SMTP_HOST are not set. Verification and reset links are only shown in non-production demo mode.",
     };
   }
   return {
@@ -130,8 +158,76 @@ export function getSmsStatus() {
   };
 }
 
-/** Send an email through SMTP. Returns an honest, persisted outcome. */
+/** Send an email through the Resend HTTPS API. Returns an honest, persisted outcome. */
+async function sendViaResendApi(
+  cfg: NonNullable<ReturnType<typeof resendConfig>>,
+  mail: OutboundMail
+): Promise<DeliveryResult> {
+  const text = mail.link ? `${mail.body}\n\n${mail.link}` : mail.body;
+  let lastError = "Unknown Resend API error";
+  for (let attempt = 1; attempt <= cfg.maxAttempts; attempt++) {
+    try {
+      const res = await fetch(cfg.endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${cfg.apiKey}`,
+        },
+        body: JSON.stringify({
+          from: cfg.from,
+          to: [mail.to],
+          subject: mail.subject,
+          text,
+          headers: { "X-TrustDrive-Notification": mail.notificationId ?? "transactional" },
+        }),
+        signal: AbortSignal.timeout(cfg.timeoutMs),
+      });
+      const payload = (await res.json().catch(() => ({}))) as {
+        id?: string;
+        message?: string;
+        name?: string;
+      };
+      if (res.ok) {
+        return record(
+          {
+            ok: true,
+            channel: "email",
+            provider: "resend-api",
+            configured: true,
+            attempts: attempt,
+            status: "sent",
+            messageId: payload.id ?? null,
+          },
+          mail.to,
+          mail.notificationId
+        );
+      }
+      lastError = payload.message ?? payload.name ?? `Resend API returned ${res.status}`;
+    } catch (error) {
+      lastError = (error as Error).message;
+    }
+    if (attempt < cfg.maxAttempts) await sleep(500 * 2 ** (attempt - 1));
+  }
+  return record(
+    {
+      ok: false,
+      channel: "email",
+      provider: "resend-api",
+      configured: true,
+      attempts: cfg.maxAttempts,
+      status: "failed",
+      error: lastError,
+    },
+    mail.to,
+    mail.notificationId
+  );
+}
+
+/** Send an email. Uses the Resend HTTPS API when configured, else SMTP. */
 export async function sendMail(mail: OutboundMail): Promise<DeliveryResult> {
+  const resend = resendConfig();
+  if (resend) return sendViaResendApi(resend, mail);
+
   const cfg = smtpConfig();
   if (!cfg) {
     // Development demo behaviour: surface the link in the server log only.
@@ -149,7 +245,7 @@ export async function sendMail(mail: OutboundMail): Promise<DeliveryResult> {
         configured: false,
         attempts: 0,
         status: "not_configured",
-        error: "TD_SMTP_HOST is not set.",
+        error: "TD_RESEND_API_KEY / TD_SMTP_HOST are not set.",
       },
       mail.to,
       mail.notificationId

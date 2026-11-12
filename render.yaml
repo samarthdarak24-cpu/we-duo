@@ -86,11 +86,15 @@ services:
         value: qwen/qwen3.8-27b
       - key: TD_LLM_API_KEY
         sync: false
-      # Transactional email. The live service uses Resend's free tier
-      # (100 emails/day, no card). TD_SMTP_PASS is read by the Python service,
-      # TD_SMTP_PASSWORD by Next.js; set both from the same provider secret.
-      # Port 587 = STARTTLS, port 465 = implicit TLS; the transport follows
-      # TD_SMTP_SECURE / the port.
+      # Transactional email. The preferred transport is the Resend HTTPS API
+      # (port 443): Render free web services block outbound SMTP (ports 25,
+      # 465 and 587), so an SMTP connection from the hosted instance times out.
+      # The SMTP_* values below remain the fallback for hosts that allow SMTP.
+      # TD_SMTP_PASS is read by the Python service, TD_SMTP_PASSWORD by Next.js.
+      - key: TD_RESEND_API_KEY
+        sync: false
+      - key: TD_RESEND_FROM
+        sync: false
       - key: TD_SMTP_HOST
         sync: false
       - key: TD_SMTP_PORT

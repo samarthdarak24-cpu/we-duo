@@ -1,11 +1,14 @@
 """Notification provider interface.
 
 Real interface, honest status. ``LogNotificationProvider`` always works (it just
-logs) and is the default in local/dev. ``SMTPEmailProvider`` is gated by
-``TD_SMTP_HOST`` / ``TD_SMTP_USER`` and ``TD_SMTP_PASS`` (or the Next.js name
-``TD_SMTP_PASSWORD``) and reports ``disabled`` when those are absent -- it never
-pretends to have sent a real email. ``get_notification_status`` reports which
-provider is active.
+logs) and is the default in local/dev. ``ResendApiEmailProvider`` (HTTPS, port
+443) is used when ``TD_RESEND_API_KEY`` is set; it is the only email route that
+works from Render free web services, which block outbound SMTP. ``
+SMTPEmailProvider`` is the fallback and is gated by ``TD_SMTP_HOST`` /
+``TD_SMTP_USER`` and ``TD_SMTP_PASS`` (or the Next.js name
+``TD_SMTP_PASSWORD``). Both report ``disabled`` when their credentials are
+absent -- they never pretend to have sent a real email.
+``get_notification_status`` reports which provider is active.
 """
 from __future__ import annotations
 
@@ -118,7 +121,83 @@ class SMTPEmailProvider(NotificationProvider):
             })
 
 
+class ResendApiEmailProvider(NotificationProvider):
+    """Resend HTTPS API provider (port 443).
+
+    Render free web services block outbound SMTP (ports 25, 465 and 587), so an
+    SMTP connection from the hosted instance times out. The provider's HTTP API
+    is reachable over HTTPS and is the only route that works there. It is
+    selected whenever ``TD_RESEND_API_KEY`` is set.
+    """
+
+    name = "resend-api"
+
+    def __init__(self) -> None:
+        self.api_key = os.getenv("TD_RESEND_API_KEY")
+        self.endpoint = os.getenv("TD_RESEND_ENDPOINT", "https://api.resend.com/emails")
+        self.from_addr = (
+            os.getenv("TD_RESEND_FROM")
+            or os.getenv("TD_SMTP_FROM")
+            or "no-reply@trustdrive.local"
+        )
+        self.timeout = max(1.0, float(os.getenv("TD_RESEND_TIMEOUT_MS", "15000")) / 1000)
+
+    def available(self) -> bool:
+        return bool(self.api_key)
+
+    def send(self, subject: str, body: str, recipient: str) -> NotificationResult:
+        if not self.available():
+            return NotificationResult({
+                "provider": self.name, "delivered": False, "channel": "email",
+                "recipient": recipient, "subject": subject,
+                "error": "TD_RESEND_API_KEY is not configured.",
+            })
+        try:
+            import httpx  # imported lazily: keeps the module import cheap
+
+            response = httpx.post(
+                self.endpoint,
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "from": self.from_addr,
+                    "to": [recipient],
+                    "subject": subject,
+                    "text": body,
+                },
+                timeout=self.timeout,
+            )
+            if response.status_code >= 400:
+                return NotificationResult({
+                    "provider": self.name, "delivered": False, "channel": "email",
+                    "recipient": recipient, "subject": subject,
+                    "error": f"HTTP {response.status_code}: {response.text[:200]}",
+                })
+            try:
+                payload = response.json()
+            except ValueError:
+                payload = {}
+            message_id = payload.get("id") if isinstance(payload, dict) else None
+            emit("notification.sent", provider=self.name, recipient=recipient,
+                 subject=subject, channel="email", message_id=message_id)
+            return NotificationResult({
+                "provider": self.name, "delivered": True, "channel": "email",
+                "recipient": recipient, "subject": subject, "message_id": message_id,
+            })
+        except Exception as exc:
+            return NotificationResult({
+                "provider": self.name, "delivered": False, "channel": "email",
+                "recipient": recipient, "subject": subject,
+                "error": f"{type(exc).__name__}: {exc}",
+            })
+
+
 def _active_provider() -> NotificationProvider:
+    resend = ResendApiEmailProvider()
+    if resend.available():
+        return resend
     smtp = SMTPEmailProvider()
     if smtp.available():
         return smtp
@@ -127,14 +206,18 @@ def _active_provider() -> NotificationProvider:
 
 def get_notification_status() -> dict[str, Any]:
     smtp = SMTPEmailProvider()
+    resend = ResendApiEmailProvider()
     active = _active_provider()
     return {
         "enabled": True,
         "provider": active.name,
         "smtp_configured": bool(smtp.available()),
+        "resend_configured": bool(resend.available()),
         "note": (
-            "SMTP is not configured; falling back to log-only delivery."
+            "No email provider is configured; falling back to log-only delivery."
             if active.name == "log-only"
+            else "Email delivery is configured over HTTPS (Resend API)."
+            if active.name == "resend-api"
             else "SMTP email delivery is configured."
         ),
     }

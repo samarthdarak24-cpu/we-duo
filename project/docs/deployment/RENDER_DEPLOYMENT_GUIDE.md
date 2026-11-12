@@ -193,7 +193,19 @@ deterministic evidence-only answer when validation fails. A score written as
 match the persisted trust score is rejected.
 
 **Resend (email).** Free tier: 3,000 emails/month, 100/day, no credit card
-required. The Resend SMTP endpoint accepts these values:
+required. **Use the HTTPS API, not SMTP.** Render free web services block
+outbound traffic to SMTP ports 25, 465 and 587 (Render changelog, 26 Sep
+2025), so an SMTP connection from the hosted instance times out. Port 443 is
+open, and the provider's HTTP API is reachable:
+
+```env
+TD_RESEND_API_KEY=<Resend API key>
+TD_RESEND_FROM=TrustDrive <onboarding@resend.dev>
+```
+
+The Next.js mailer and the Python notification provider both prefer this
+transport when `TD_RESEND_API_KEY` is set and report `provider=resend-api`.
+The SMTP values remain the fallback for hosts that allow SMTP:
 
 ```env
 TD_SMTP_HOST=smtp.resend.com
@@ -207,13 +219,13 @@ TD_SMTP_FROM=TrustDrive <onboarding@resend.dev>
 
 The Python notification provider reads `TD_SMTP_PASS` **or**
 `TD_SMTP_PASSWORD`, and it follows the port: 465 uses implicit TLS
-(`smtplib.SMTP_SSL`), 587 uses STARTTLS. Without SMTP configured the app never
-pretends to send — the API reports `configured: false` and the sign-up screen
-shows the verification link only in demo mode.
+(`smtplib.SMTP_SSL`), 587 uses STARTTLS. Without any email provider configured
+the app never pretends to send — the API reports `configured: false` and the
+sign-up screen shows the verification link only in demo mode.
 
 With `onboarding@resend.dev` Resend only delivers to the account's own
 address. To email real users, verify a domain in the Resend dashboard and set
-`TD_SMTP_FROM` to that domain.
+`TD_RESEND_FROM` to that domain.
 
 **Verify it.** `GET /api/v1/health/integrations` (admin session) reports the
 live state:
