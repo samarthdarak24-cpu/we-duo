@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { fail, requireRole } from "@/lib/server/http";
 import { callBackendAsUser, userBearer } from "@/lib/server/backend";
+import { checkOcrHeadroom } from "@/lib/server/memory";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,6 +12,17 @@ export async function POST(req: Request, { params }: { params: { id: string; doc
   if (!guard.ok) return guard.response;
   const token = userBearer(req);
   if (!token) return fail(401, "UNAUTHENTICATED", "Session token missing.");
+
+  // Guard the intel process before it loads ONNX models. A refusal is an
+  // honest 409 (same shape as "engine unavailable"), never a fake result and
+  // never an OOM-kill of the shared container.
+  const headroom = checkOcrHeadroom();
+  if (!headroom.ok) {
+    return NextResponse.json(
+      { available: false, engine: "none", is_ocr: false, reason: headroom.reason },
+      { status: 409 }
+    );
+  }
 
   // The default RapidOCR engine answers in ~5 s. When an operator explicitly
   // forces PaddleOCR (TD_OCR_PROVIDER=paddleocr) the first CPU inference can

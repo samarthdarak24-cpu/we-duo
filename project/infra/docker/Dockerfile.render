@@ -60,6 +60,9 @@ ENV PATH="/opt/venv/bin:$PATH" \
     TD_DB_URL=sqlite+pysqlite:////tmp/trustdrive/trustdrive.db \
     TD_INTELLIGENCE_URL=http://127.0.0.1:8000 \
     TD_SEED_DEMO=1 \
+    TD_WORKER_MODE=inline \
+    TD_OCR_MAX_IMAGE_SIDE=1024 \
+    TD_OCR_MIN_FREE_MB=280 \
     TD_LLM_PROVIDER=none
 
 EXPOSE 10000

@@ -33,6 +33,7 @@ import {
 import { RULESET_VERSION, recordDocumentExtractions } from "./evidence";
 import { materializeUpload } from "./files";
 import { callIntelligence } from "./intelligence";
+import { checkOcrHeadroom } from "./memory";
 import { hasBatteryPack } from "@/lib/vehicle-categories";
 import { categoryIdForVehicle } from "./data";
 
@@ -464,6 +465,11 @@ function syncTimelineAndBatteryFromExtraction(
   }
 }
 
+// A single Node process must not run two OCR pipelines at once: each ONNX run
+// peaks at ~220 MB, and two concurrent runs would exceed a small container's
+// memory limit even when one run fits. Callers get an honest "pending" state.
+let ocrInFlight = 0;
+
 export async function runDocumentOcr(documentId: string): Promise<DocumentOcrOutcome> {
   const doc = getDocument(documentId);
   if (!doc) return { status: "not_applicable", reason: "Document not found." };
@@ -472,86 +478,103 @@ export async function runDocumentOcr(documentId: string): Promise<DocumentOcrOut
     // an OCR run against bytes that do not exist.
     return { status: "not_applicable", reason: "No stored file is linked to this document." };
   }
-  // Local storage returns the existing path; S3 downloads to a transient temp
-  // file that is removed in `finally` after the Python service has read it.
-  const materialized = await materializeUpload(doc.file_key).catch(() => null);
-  if (!materialized) {
-    return markUnavailable(documentId, "the stored file could not be found in storage.");
+
+  if (ocrInFlight > 0) {
+    return markUnavailable(
+      documentId,
+      "another OCR extraction is already running on this instance. The document stays pending; retry when it finishes."
+    );
+  }
+  const headroom = checkOcrHeadroom();
+  if (!headroom.ok) {
+    return markUnavailable(documentId, headroom.reason);
   }
 
+  ocrInFlight += 1;
   try {
-    const response = await callIntelligence<PythonExtraction>(
-      "/api/intelligence/documents/process",
-      {
-        document_id: doc.id,
-        vehicle_id: doc.vehicle_id,
-        path: materialized.path,
-        doc_type: doc.type,
-        async: false,
-      },
-      { timeout: 150_000 }
-    );
-
-    if (!response.ok || !response.data) {
-      return markUnavailable(documentId, response.error ?? "the extraction service returned no result.");
+    // Local storage returns the existing path; S3 downloads to a transient temp
+    // file that is removed in `finally` after the Python service has read it.
+    const materialized = await materializeUpload(doc.file_key).catch(() => null);
+    if (!materialized) {
+      return markUnavailable(documentId, "the stored file could not be found in storage.");
     }
 
-    const result = response.data;
-    const lowConfidence = result.low_confidence || result.confidence < 0.55;
-    const flags = Array.isArray(result.flags) ? result.flags : [];
-    const hasMismatch = (result.comparison?.checks ?? []).some((check) => check.result === "mismatch");
-    const unreadable = flags.includes("unreadable_no_text");
-    const needsCorrection = lowConfidence || hasMismatch || flags.length > 0;
-    const status = needsCorrection ? "needs_correction" : "verified";
-    const statusReason = unreadable
-      ? "Unreadable or blank image — no text or fields extracted. Queued for manual review."
-      : needsCorrection
-        ? flags.join(", ") || (hasMismatch ? "Extracted values conflict with the vehicle record." : "Low extraction confidence.")
-        : null;
+    try {
+      const response = await callIntelligence<PythonExtraction>(
+        "/api/intelligence/documents/process",
+        {
+          document_id: doc.id,
+          vehicle_id: doc.vehicle_id,
+          path: materialized.path,
+          doc_type: doc.type,
+          async: false,
+        },
+        { timeout: 150_000 }
+      );
 
-    // Store the real fields plus the traceability metadata the UI and PDF report
-    // need. `fields` is nested so `recordDocumentExtractions` can write one row per
-    // field without treating the engine metadata as an extracted value.
-    const extracted = {
-      fields: result.fields ?? {},
-      confidence: result.confidence,
-      method: result.method,
-      engine: result.engine,
-      is_ocr: result.is_ocr,
-      flags,
-      comparison: result.comparison ?? {},
-      workflow: result.workflow ?? [],
-      expiry: result.expiry,
-      duplicate_of: result.duplicate_of,
-      review_id: result.manual_review_id,
-      version: result.version,
-      source: "python-intelligence",
-      warning: result.warning ?? "Machine-read text is not proof of document authenticity.",
-    };
+      if (!response.ok || !response.data) {
+        return markUnavailable(documentId, response.error ?? "the extraction service returned no result.");
+      }
 
-    updateDocument(documentId, {
-      extracted: JSON.stringify(extracted),
-      status,
-      status_reason: statusReason,
-      verified_at: status === "verified" ? new Date().toISOString() : null,
-    });
-    const fieldsStored = recordDocumentExtractions(documentId);
-    syncFindingsFromExtraction(doc, result);
-    syncTimelineAndBatteryFromExtraction(doc, result, status);
+      const result = response.data;
+      const lowConfidence = result.low_confidence || result.confidence < 0.55;
+      const flags = Array.isArray(result.flags) ? result.flags : [];
+      const hasMismatch = (result.comparison?.checks ?? []).some((check) => check.result === "mismatch");
+      const unreadable = flags.includes("unreadable_no_text");
+      const needsCorrection = lowConfidence || hasMismatch || flags.length > 0;
+      const status = needsCorrection ? "needs_correction" : "verified";
+      const statusReason = unreadable
+        ? "Unreadable or blank image — no text or fields extracted. Queued for manual review."
+        : needsCorrection
+          ? flags.join(", ") || (hasMismatch ? "Extracted values conflict with the vehicle record." : "Low extraction confidence.")
+          : null;
 
-    return {
-      status: "processed",
-      engine: result.engine,
-      method: result.method,
-      isOcr: result.is_ocr,
-      confidence: result.confidence,
-      flags,
-      reviewId: result.manual_review_id,
-      fieldsStored,
-      documentStatus: status,
-    };
+      // Store the real fields plus the traceability metadata the UI and PDF report
+      // need. `fields` is nested so `recordDocumentExtractions` can write one row per
+      // field without treating the engine metadata as an extracted value.
+      const extracted = {
+        fields: result.fields ?? {},
+        confidence: result.confidence,
+        method: result.method,
+        engine: result.engine,
+        is_ocr: result.is_ocr,
+        flags,
+        comparison: result.comparison ?? {},
+        workflow: result.workflow ?? [],
+        expiry: result.expiry,
+        duplicate_of: result.duplicate_of,
+        review_id: result.manual_review_id,
+        version: result.version,
+        source: "python-intelligence",
+        warning: result.warning ?? "Machine-read text is not proof of document authenticity.",
+      };
+
+      updateDocument(documentId, {
+        extracted: JSON.stringify(extracted),
+        status,
+        status_reason: statusReason,
+        verified_at: status === "verified" ? new Date().toISOString() : null,
+      });
+      const fieldsStored = recordDocumentExtractions(documentId);
+      syncFindingsFromExtraction(doc, result);
+      syncTimelineAndBatteryFromExtraction(doc, result, status);
+
+      return {
+        status: "processed",
+        engine: result.engine,
+        method: result.method,
+        isOcr: result.is_ocr,
+        confidence: result.confidence,
+        flags,
+        reviewId: result.manual_review_id,
+        fieldsStored,
+        documentStatus: status,
+      };
+    } finally {
+      materialized.cleanup();
+    }
   } finally {
-    materialized.cleanup();
+    ocrInFlight -= 1;
   }
 }
 

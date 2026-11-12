@@ -106,7 +106,9 @@ Set these manually in the Render dashboard:
 
 Set them before the first deployment finishes. With `TD_SEED_DEMO=0`, the first
 boot creates the administrator from these values and does not create demo
-accounts.
+accounts. With `TD_SEED_DEMO=1` it also seeds the labelled synthetic demo
+dataset (buyer, seller, vehicles, listings). Use `0` for a real customer
+instance and `1` only for a demo or QA deployment.
 
 ### Database and runtime variables
 
@@ -125,7 +127,14 @@ TD_QUARANTINE_DIR=/data/trustdrive/quarantine
 TD_CHECKPOINT_DB=/data/trustdrive/langgraph-checkpoints.db
 TD_MODEL_DIR=/app/services/ai/shared/models
 TD_INTELLIGENCE_URL=http://127.0.0.1:8000
-TD_SEED_DEMO=0
+# 1 = seed the labelled synthetic demo dataset; 0 = admin bootstrap only.
+TD_SEED_DEMO=1
+# Run the DB worker as a FastAPI thread instead of a third Python process.
+TD_WORKER_MODE=inline
+# Bound OCR memory on small instances: cap the decoded image and refuse OCR
+# when less than this much memory is free (the document stays pending).
+TD_OCR_MAX_IMAGE_SIDE=1024
+TD_OCR_MIN_FREE_MB=280
 TD_LLM_PROVIDER=none
 ```
 
@@ -257,7 +266,29 @@ The health endpoint is:
 ### Login does not work
 
 Confirm `ADMIN_EMAIL` and `ADMIN_PASSWORD` are set in Render Environment and
-redeploy. Do not enable `TD_SEED_DEMO=1` in production.
+redeploy. Use `TD_SEED_DEMO=1` only for a demo deployment; a real customer
+instance should use `TD_SEED_DEMO=0` so the published demo accounts are not
+created.
+
+### OCR upload fails or the service restarts
+
+The combined image runs Next.js, FastAPI and the DB worker in one container.
+RapidOCR needs roughly 250-300 MB of peak headroom, so on the 512 MB Free plan
+the upload path enforces `TD_OCR_MIN_FREE_MB` (default 280). If there is not
+enough free memory, the document is stored and stays `pending` with an honest
+reason instead of OOM-killing the service. Check the admin integration payload:
+
+```text
+GET /api/v1/health/integrations  ->  memory, ocrHeadroom
+```
+
+Mitigations, in order:
+
+1. Keep `TD_WORKER_MODE=inline` so the worker shares the FastAPI process.
+2. Keep `TD_OCR_MAX_IMAGE_SIDE` at `1024` or lower for large phone photos.
+3. Move to a larger Render instance (Starter has 2 GB) for reliable OCR of
+   photos. PDFs with a real text layer do not load the OCR engine.
+4. Retry the extraction when the service is idle; the document is not lost.
 
 ### Data disappeared
 

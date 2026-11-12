@@ -1375,8 +1375,9 @@ function ensureDamageGeometry(conn: DatabaseSync) {
 // Fail-closed production configuration validation (Phase 2).
 //
 // Runs once at DB bootstrap. In production (TD_ENV=production) it:
-//   1. Forces TD_SEED_DEMO=0 so the published demo accounts/vehicles are NEVER
-//      silently recreated (demo seeding is an opt-in local convenience).
+//   1. Leaves demo seeding to the explicit TD_SEED_DEMO setting: "1" seeds the
+//      labelled synthetic demo dataset, "0" bootstraps only the custom admin.
+//      Nothing is seeded unless the operator opted in.
 //   2. Refuses to boot if any required signing secret is missing, too short, or
 //      still the .env.example placeholder.
 //   3. Refuses to boot if the data directory is not writable (ephemeral /tmp
@@ -1526,8 +1527,8 @@ export function getDb(): DatabaseSync {
   ensureEntityAliases(conn);
   ensureAnchorTables(conn);
   seed(conn);
-  // Demo photos/vehicles are local-only: never seed them in production
-  // (validateProductionConfig already forces TD_SEED_DEMO=0, this is defence in depth).
+  // Demo photos/vehicles are seeded unless the operator explicitly disables
+  // them with TD_SEED_DEMO=0. Every seeded row stays labelled Demo.
   if (process.env.TD_SEED_DEMO !== "0") {
     seedDemoPhotos(conn);
   }

@@ -25,6 +25,11 @@ from pydantic import BaseModel, Field
 from .logging import emit
 
 MAX_FILE_BYTES = 25 * 1024 * 1024
+# Cap the decoded image before OCR. A modern phone photo is 12-48 MP; keeping
+# the full array in memory while ONNX also holds its resized copy is what
+# pushes a 512 MB container over the limit. 1024 px keeps ordinary document
+# text readable while bounding the transient decode + detection buffers.
+MAX_OCR_IMAGE_SIDE = int(os.getenv("TD_OCR_MAX_IMAGE_SIDE", "1024"))
 ALLOWED_EXTENSIONS = {".pdf", ".png", ".jpg", ".jpeg", ".webp", ".tif", ".tiff"}
 MAGIC = {
     b"%PDF": "application/pdf",
@@ -176,9 +181,23 @@ def _analyze_and_prepare_image(path: Path) -> tuple[Any, dict]:
         import cv2  # type: ignore
         import numpy as np  # type: ignore
 
+        # OCR is CPU-bound; Render's small instances expose more cores than the
+        # CPU quota can use, and each OpenCV worker thread costs stack/arena
+        # memory. One thread is faster in practice on 0.15-0.5 CPU quotas.
+        cv2.setNumThreads(1)
         img = cv2.imread(str(path), cv2.IMREAD_COLOR)
         if img is None:
             return str(path), {"decode_failed": True}
+        source_h, source_w = img.shape[:2]
+        downscaled = False
+        if max(source_h, source_w) > MAX_OCR_IMAGE_SIDE:
+            scale = MAX_OCR_IMAGE_SIDE / float(max(source_h, source_w))
+            img = cv2.resize(
+                img,
+                (max(1, int(round(source_w * scale))), max(1, int(round(source_h * scale)))),
+                interpolation=cv2.INTER_AREA,
+            )
+            downscaled = True
         h, w = img.shape[:2]
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         lap_var = round(float(cv2.Laplacian(gray, cv2.CV_64F).var()), 2)
@@ -234,6 +253,10 @@ def _analyze_and_prepare_image(path: Path) -> tuple[Any, dict]:
         meta = {
             "width": int(w),
             "height": int(h),
+            "source_width": int(source_w),
+            "source_height": int(source_h),
+            "downscaled": downscaled,
+            "max_side": int(MAX_OCR_IMAGE_SIDE),
             "blur_variance": lap_var,
             "mean_brightness": mean_luma,
             "contrast_std": std_luma,
@@ -260,7 +283,11 @@ class RapidOcrBackend:
         try:
             from rapidocr_onnxruntime import RapidOCR  # type: ignore
             ocr_input, quality_meta = _analyze_and_prepare_image(path)
-            engine = RapidOCR()
+            # Cap ONNX Runtime threads for the same reason as OpenCV: the
+            # container CPU quota is far below the visible core count, and each
+            # extra arena/thread adds memory to the OCR peak.
+            engine = RapidOCR(intra_op_num_threads=1, inter_op_num_threads=1,
+                              max_side_len=MAX_OCR_IMAGE_SIDE)
             output = engine(ocr_input)
             result = output[0] if isinstance(output, tuple) else output
             lines: list[str] = []

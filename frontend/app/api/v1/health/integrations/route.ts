@@ -2,6 +2,7 @@ import { requireRole, ok } from "@/lib/server/http";
 import { storageHealth } from "@/lib/server/files";
 import { getScannerStatus } from "@/lib/server/scan";
 import { getMailerStatus, getSmsStatus } from "@/lib/server/mailer";
+import { checkOcrHeadroom, memorySnapshot } from "@/lib/server/memory";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -31,6 +32,10 @@ export async function GET(req: Request) {
       configured: Boolean(process.env.TD_INTELLIGENCE_URL),
       endpoint: process.env.TD_INTELLIGENCE_URL ?? null,
     },
+    // Memory/OCR headroom is operational telemetry (no secrets). It explains
+    // why a document may stay pending on a small instance.
+    memory: memorySnapshot(),
+    ocrHeadroom: checkOcrHeadroom(),
     checkedAt: new Date().toISOString(),
   });
 }

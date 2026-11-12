@@ -154,12 +154,12 @@ jobs:
         run: |
           python -m pip install --quiet pip-audit
           pip-audit -r backend/requirements-render.txt --strict || echo "pip-audit reported findings (non-blocking)"
-      - name: Production config guard (demo seeding must be impossible)
+      - name: Production config guard (secrets + explicit demo mode)
         run: |
           node -e "
           const fs=require('fs');
           const src=fs.readFileSync('frontend/lib/server/db.ts','utf8');
-          for (const needle of ['TD_SEED_DEMO = \"0\"','QR_SIGNING_SECRET','TD_SHARE_SECRET','Refusing to start in production']) {
+          for (const needle of ['process.env.TD_SEED_DEMO === \"0\"','QR_SIGNING_SECRET','TD_SHARE_SECRET','Refusing to start in production']) {
             if (!src.includes(needle)) { console.error('missing production guard: '+needle); process.exit(1); }
           }
           console.log('production guard checks OK');

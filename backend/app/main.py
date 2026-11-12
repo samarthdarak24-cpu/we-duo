@@ -50,6 +50,19 @@ async def lifespan(app: FastAPI):
         # Background, so /health stays reachable while the weights load.
         warm_task = asyncio.create_task(asyncio.to_thread(llm.warm))
         app.state.llm_warm_task = warm_task
+    app.state.worker_thread = None
+    if settings.worker_mode == "inline":
+        # One shared interpreter instead of a third Python process. The worker
+        # loop is daemonised so shutdown is not blocked by its poll sleep.
+        import threading
+
+        thread = threading.Thread(
+            target=worker.run_forever, name="trustdrive-worker", daemon=True
+        )
+        thread.start()
+        app.state.worker_thread = thread
+        emit("worker.inline_started", version=worker.WORKER_VERSION,
+             poll_seconds=settings.poll_interval_seconds)
     emit("service.started", version=SERVICE_VERSION, environment=settings.environment,
          db=db.health(), llm=llm.describe().get("active"), worker=worker.describe().get("backend"))
     yield

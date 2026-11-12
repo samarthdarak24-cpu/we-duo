@@ -126,7 +126,9 @@ def _empty(engine: str, version: str, reason: str, method: str = "none") -> dict
 def _rapidocr(p: Path) -> dict:
     from rapidocr_onnxruntime import RapidOCR  # type: ignore
 
-    engine = RapidOCR()
+    # Keep the ONNX peak bounded on small containers: one thread, one image cap.
+    engine = RapidOCR(intra_op_num_threads=1, inter_op_num_threads=1,
+                      max_side_len=int(os.getenv("TD_OCR_MAX_IMAGE_SIDE", "1024")))
     output = engine(str(p))
     result = output[0] if isinstance(output, tuple) else output
     lines: list[dict[str, Any]] = []

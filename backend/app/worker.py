@@ -252,6 +252,7 @@ def describe() -> dict:
     return {
         "version": WORKER_VERSION,
         "backend": "celery" if settings.broker_url else "db-backed",
+        "mode": settings.worker_mode,
         "broker": settings.broker_url or "none (shared background_jobs table)",
         "max_attempts": MAX_ATTEMPTS,
         "timeout_seconds": JOB_TIMEOUT,

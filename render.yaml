@@ -12,11 +12,13 @@
 # under project/infra/docker/ and still COPY frontend/, backend/ and services/.
 #
 # First deploy: set ADMIN_EMAIL and ADMIN_PASSWORD in the Render dashboard.
-# TD_SEED_DEMO=0 means the published demo accounts are never created. The app
-# also force-disables demo seeding at startup when TD_ENV=production, so it is
-# impossible to boot a production instance with demo accounts present.
+# TD_SEED_DEMO controls the built-in synthetic demo dataset:
+#   "1"  seed the labelled demo accounts/vehicles (this blueprint's default);
+#   "0"  bootstrap only the custom admin from ADMIN_EMAIL/ADMIN_PASSWORD.
+# Demo rows are always labelled Demo. Set "0" for a real customer instance.
 # Attach a persistent disk mounted at /data (see the disk: block below) so the
-# database and uploads survive restarts. /tmp is rejected at startup.
+# database and uploads survive restarts. The Free plan has no disk; point the
+# data paths at /tmp and accept that everything resets on restart.
 # ---------------------------------------------------------------------------
 services:
   - type: web
@@ -57,6 +59,17 @@ services:
         value: http://127.0.0.1:8000
       - key: TD_SEED_DEMO
         value: "1"
+      # Run the DB worker inside FastAPI instead of a third Python process.
+      # On a 512 MB instance this saves ~70-90 MB and leaves room for OCR.
+      - key: TD_WORKER_MODE
+        value: inline
+      # Bound OCR memory: cap the decoded image and refuse OCR below 280 MB
+      # free instead of letting the kernel kill the service. Raise both values
+      # if the service moves to a larger instance.
+      - key: TD_OCR_MAX_IMAGE_SIDE
+        value: "1024"
+      - key: TD_OCR_MIN_FREE_MB
+        value: "280"
       - key: TD_LLM_PROVIDER
         value: none
       # Generated once by Render and kept across deploys.

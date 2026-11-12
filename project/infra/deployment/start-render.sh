@@ -26,17 +26,28 @@ echo "[start] fastapi on 127.0.0.1:8000"
 ) &
 API_PID=$!
 
-echo "[start] worker"
-(
-  cd /app/backend
-  exec python -m app.worker
-) &
-WORKER_PID=$!
+WORKER_PID=""
+if [ "${TD_WORKER_MODE:-process}" = "inline" ]; then
+  # FastAPI starts the same DB-backed loop as a daemon thread. This saves a
+  # whole Python interpreter, which matters on a 512 MB single-container host.
+  echo "[start] worker inline in FastAPI"
+else
+  echo "[start] worker"
+  (
+    cd /app/backend
+    exec python -m app.worker
+  ) &
+  WORKER_PID=$!
+fi
 
 cleanup() {
-  kill "${WEB_PID}" "${API_PID}" "${WORKER_PID}" 2>/dev/null || true
+  kill "${WEB_PID}" "${API_PID}" ${WORKER_PID:+"${WORKER_PID}"} 2>/dev/null || true
 }
 trap cleanup TERM INT EXIT
 
 # Exit if any process dies so Render can restart the service.
-wait -n "${WEB_PID}" "${API_PID}" "${WORKER_PID}"
+if [ -n "${WORKER_PID}" ]; then
+  wait -n "${WEB_PID}" "${API_PID}" "${WORKER_PID}"
+else
+  wait -n "${WEB_PID}" "${API_PID}"
+fi
