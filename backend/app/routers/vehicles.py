@@ -576,6 +576,7 @@ def detect_damage_on_photo(vehicle_id: str, photo_id: str,
             "zone_id": label,
             "status": "detected_candidate",
             "provenance": "detected_visible_damage",
+            "position_source": "detected_visible_damage",
             "damage_type": label,
             "description": f"Auto-detected: {label} (confidence {conf})",
             "severity": "unassessed",
@@ -618,6 +619,8 @@ def review_damage(vehicle_id: str, damage_id: str, req: DamageReview,
         data["severity"] = req.severity
     if req.repair_status is not None:
         data["repair_status"] = req.repair_status
+    if req.status == "verified" and damage.get("provenance") == "detected_visible_damage" and not damage.get("position_source"):
+        data["position_source"] = "detected_visible_damage"
     updated = repository.update_row("damage_records", damage_id, data)
     repository.audit(str(user["id"]), "damage.reviewed", "damage_record", damage_id,
                      {"status": req.status})

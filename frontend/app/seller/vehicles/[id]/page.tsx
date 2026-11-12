@@ -168,7 +168,11 @@ export default function SellerVehicleDetailPage({ params }: { params: { id: stri
 
       {photos.length > 0 && (
         <div>
-          <DamageAiAnalyzer vehicleId={v.id} photos={photos} />
+          <DamageAiAnalyzer
+            vehicleId={v.id}
+            photos={photos}
+            zones={hotspots.filter((h) => h.available).map((h) => ({ id: h.id, label: h.label }))}
+          />
         </div>
       )}
 

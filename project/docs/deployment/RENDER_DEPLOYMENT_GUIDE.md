@@ -19,8 +19,8 @@ One Render Docker Web Service
 The repository already contains the required files:
 
 - `render.yaml` — Render Blueprint
-- `Dockerfile.render` — combined production image
-- `infrastructure/scripts/start-render.sh` — starts Next.js, FastAPI, and worker
+- `project/infra/docker/Dockerfile.render` — combined production image
+- `project/infra/deployment/start-render.sh` — starts Next.js, FastAPI, and worker
 
 The Blueprint uses a persistent `/data` disk so both runtimes use the same
 database. Splitting the frontend and backend into separate Render services is
@@ -33,10 +33,11 @@ not supported while the Next.js data layer uses SQLite.
 
    ```text
    render.yaml
-   Dockerfile.render
-   infrastructure/scripts/start-render.sh
+   project/infra/docker/Dockerfile.render
+   project/infra/deployment/start-render.sh
    frontend/
    backend/
+   services/
    ```
 
 3. Make sure `render.yaml` is on the branch you will deploy, normally `master`.
@@ -66,9 +67,9 @@ not supported while the Next.js data layer uses SQLite.
    | Service name | `trustdrive` |
    | Type | Web Service |
    | Runtime | Docker |
-   | Dockerfile | `./Dockerfile.render` |
+   | Dockerfile | `./project/infra/docker/Dockerfile.render` |
    | Region | Singapore |
-   | Plan | Standard |
+   | Plan | Starter (supports persistent disk) |
    | Port | `10000` |
    | Health check | `/api/v1/health/ready` |
    | Persistent disk | `trustdrive-data` mounted at `/data` |
@@ -91,6 +92,8 @@ them across deploys:
 | `JWT_SECRET` | Signs login sessions |
 | `TD_SERVICE_TOKEN` | Authenticates internal Next.js ↔ FastAPI requests |
 | `DOWNLOAD_SIGNING_SECRET` | Signs private document download links |
+| `QR_SIGNING_SECRET` | Signs vehicle QR verification tokens |
+| `TD_SHARE_SECRET` | Signs temporary report share tokens |
 
 ### Required on first boot
 
@@ -114,17 +117,26 @@ deployment architecture changes:
 NODE_ENV=production
 TD_ENV=production
 PORT=10000
-TD_DATA_DIR=/data
-TD_DB_FILE=/data/trustdrive.db
-TD_DB_URL=sqlite+pysqlite:////data/trustdrive.db
-TD_UPLOAD_DIR=/data/uploads
+TD_DATA_DIR=/data/trustdrive
+TD_DB_FILE=/data/trustdrive/trustdrive.db
+TD_DB_URL=sqlite+pysqlite:////data/trustdrive/trustdrive.db
+TD_UPLOAD_DIR=/data/trustdrive/uploads
+TD_QUARANTINE_DIR=/data/trustdrive/quarantine
+TD_CHECKPOINT_DB=/data/trustdrive/langgraph-checkpoints.db
+TD_MODEL_DIR=/app/services/ai/shared/models
 TD_INTELLIGENCE_URL=http://127.0.0.1:8000
 TD_SEED_DEMO=0
 TD_LLM_PROVIDER=none
 ```
 
 `TD_INTELLIGENCE_URL` uses `127.0.0.1` because Next.js and FastAPI run inside
-the same Render container. Do not use `localhost:3000` for this variable.
+the same Render container. Do not use `localhost:3000` for this variable. Also set
+`NEXT_PUBLIC_APP_URL` to your `https://<service>.onrender.com` URL (or leave it
+unset to fall back to Render's `RENDER_EXTERNAL_URL`). On Render's `$0` Free
+plan without a persistent disk, point `TD_DATA_DIR`, `TD_DB_FILE`, `TD_DB_URL`,
+`TD_UPLOAD_DIR`, `TD_QUARANTINE_DIR`, and `TD_CHECKPOINT_DB` under
+`/tmp/trustdrive` (accepting that SQLite and uploads reset on every deploy or
+spin-down).
 
 ### Optional external LLM variables
 
@@ -191,10 +203,12 @@ file. Do not change `TD_DB_FILE`, `TD_DB_URL`, or the disk mount path casually.
 The `/data` disk contains:
 
 ```text
-/data/trustdrive.db
-/data/trustdrive.db-wal
-/data/trustdrive.db-shm
-/data/uploads/
+/data/trustdrive/trustdrive.db
+/data/trustdrive/trustdrive.db-wal
+/data/trustdrive/trustdrive.db-shm
+/data/trustdrive/uploads/
+/data/trustdrive/quarantine/
+/data/trustdrive/langgraph-checkpoints.db
 ```
 
 The disk persists across normal deploys, but it is not a substitute for
@@ -221,8 +235,9 @@ project, not the current deployment path.
 ### Build fails
 
 Check the Render build logs and confirm the service is using the repository
-root, not `frontend/` as the root directory. `Dockerfile.render` needs both
-`frontend/` and `backend/`.
+root, not `frontend/` as the root directory.
+`project/infra/docker/Dockerfile.render` needs `frontend/`, `backend/`, and
+`services/`.
 
 ### Health check fails
 
@@ -250,8 +265,8 @@ Check that the persistent disk is mounted at `/data` and that these variables
 still point there:
 
 ```env
-TD_DATA_DIR=/data
-TD_DB_FILE=/data/trustdrive.db
-TD_DB_URL=sqlite+pysqlite:////data/trustdrive.db
-TD_UPLOAD_DIR=/data/uploads
+TD_DATA_DIR=/data/trustdrive
+TD_DB_FILE=/data/trustdrive/trustdrive.db
+TD_DB_URL=sqlite+pysqlite:////data/trustdrive/trustdrive.db
+TD_UPLOAD_DIR=/data/trustdrive/uploads
 ```

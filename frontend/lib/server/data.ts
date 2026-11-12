@@ -764,6 +764,7 @@ export function hotspotsFor(vehicleId: string) {
   const aliases = interactionsAvailable;
   return defs.map((comp) => {
     const records = damage.filter((d) => {
+      if (d.status === "detected_candidate" || d.status === "rejected") return false;
       if (d.component_id === comp.id || d.zone_id === comp.id) return true;
       return aliases && mapZoneToComponentId(d.zone_id) === comp.id;
     });

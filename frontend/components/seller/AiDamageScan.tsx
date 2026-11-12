@@ -3,6 +3,22 @@
 import { useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { InlineAlert } from "@/components/shared/InlineAlert";
+import { getAvailableComponents } from "@/lib/vehicle-registry";
+
+const SEVERITIES = ["Minor", "Moderate", "Major"] as const;
+
+function extractApiError(data: unknown, fallback: string): string {
+  if (!data || typeof data !== "object") return fallback;
+  const obj = data as { reason?: unknown; error?: unknown; detail?: unknown };
+  if (typeof obj.reason === "string" && obj.reason) return obj.reason;
+  if (typeof obj.error === "string" && obj.error) return obj.error;
+  if (obj.error && typeof obj.error === "object" && "message" in obj.error) {
+    const msg = (obj.error as { message?: unknown }).message;
+    if (typeof msg === "string" && msg) return msg;
+  }
+  if (typeof obj.detail === "string" && obj.detail) return obj.detail;
+  return fallback;
+}
 
 export interface DamageDetection {
   label: string;
@@ -34,18 +50,25 @@ export interface ReviewResponse {
 export function AiDamageScan({
   vehicleId,
   photoId,
+  zones,
   onReviewed,
 }: {
   vehicleId: string;
   photoId: string;
+  zones?: { id: string; label: string }[];
   onReviewed?: () => void;
 }) {
+  const zoneOptions = zones?.length
+    ? zones
+    : getAvailableComponents().map((c) => ({ id: c.id, label: c.label }));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [unavailable, setUnavailable] = useState<string | null>(null);
   const [model, setModel] = useState<string | null>(null);
   const [rows, setRows] = useState<{ detection: DamageDetection; damageId: string }[]>([]);
   const [decisions, setDecisions] = useState<Record<string, "verified" | "rejected">>({});
+  const [componentChoices, setComponentChoices] = useState<Record<string, string>>({});
+  const [severityChoices, setSeverityChoices] = useState<Record<string, (typeof SEVERITIES)[number]>>({});
 
   async function runScan() {
     setBusy(true);
@@ -54,6 +77,8 @@ export function AiDamageScan({
     setRows([]);
     setModel(null);
     setDecisions({});
+    setComponentChoices({});
+    setSeverityChoices({});
     try {
       const res = await fetch(`/api/v1/vehicles/${vehicleId}/photos/${photoId}/detect`, { method: "POST" });
       const data = (await res.json().catch(() => null)) as DetectResponse | null;
@@ -62,7 +87,7 @@ export function AiDamageScan({
         return;
       }
       if (!res.ok || !data) {
-        setError(data?.reason ?? (data as { error?: string })?.error ?? `Detection failed (HTTP ${res.status}).`);
+        setError(extractApiError(data, `Detection failed (HTTP ${res.status}).`));
         return;
       }
       setModel(data.modelVersion ?? null);
@@ -84,15 +109,25 @@ export function AiDamageScan({
   async function review(damageId: string, status: "verified" | "rejected") {
     setBusy(true);
     setError(null);
+    const chosenComponent = componentChoices[damageId];
+    const chosenSeverity = severityChoices[damageId] ?? "Minor";
+    const payload =
+      status === "verified"
+        ? {
+            status,
+            ...(chosenComponent ? { component_id: chosenComponent } : {}),
+            severity: chosenSeverity,
+          }
+        : { status };
     try {
       const res = await fetch(`/api/v1/vehicles/${vehicleId}/damage/${damageId}/review`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify(payload),
       });
-      const data = (await res.json().catch(() => null)) as ReviewResponse | { error?: string } | null;
+      const data = (await res.json().catch(() => null)) as ReviewResponse | { error?: unknown; detail?: unknown } | null;
       if (!res.ok || !data || !("damage" in (data ?? {}))) {
-        setError((data as { error?: string } | null)?.error ?? "Could not record the review.");
+        setError(extractApiError(data, "Could not record the review."));
         return;
       }
       setDecisions((prev) => ({ ...prev, [damageId]: status }));
@@ -150,7 +185,7 @@ export function AiDamageScan({
                   <span className="text-[12.5px] font-semibold text-ink">{detection.label}</span>
                   <span className="td-chip">{Math.round(detection.confidence * 100)}% confidence</span>
                 </div>
-                <div className="mt-2 flex items-center gap-1.5">
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
                   {decision ? (
                     <span
                       className={
@@ -165,6 +200,40 @@ export function AiDamageScan({
                     </span>
                   ) : (
                     <>
+                      <select
+                        aria-label="Damaged 3D component"
+                        value={componentChoices[damageId] ?? ""}
+                        onChange={(e) =>
+                          setComponentChoices((prev) => ({ ...prev, [damageId]: e.target.value }))
+                        }
+                        disabled={busy}
+                        className="td-input td-select h-8 py-0 text-[11.5px]"
+                      >
+                        <option value="">Map 3D panel (optional)</option>
+                        {zoneOptions.map((z) => (
+                          <option key={z.id} value={z.id}>
+                            {z.label}
+                          </option>
+                        ))}
+                      </select>
+                      <select
+                        aria-label="Damage severity"
+                        value={severityChoices[damageId] ?? "Minor"}
+                        onChange={(e) =>
+                          setSeverityChoices((prev) => ({
+                            ...prev,
+                            [damageId]: e.target.value as (typeof SEVERITIES)[number],
+                          }))
+                        }
+                        disabled={busy}
+                        className="td-input td-select h-8 py-0 text-[11.5px]"
+                      >
+                        {SEVERITIES.map((s) => (
+                          <option key={s} value={s}>
+                            {s}
+                          </option>
+                        ))}
+                      </select>
                       <button
                         onClick={() => review(damageId, "verified")}
                         disabled={busy}

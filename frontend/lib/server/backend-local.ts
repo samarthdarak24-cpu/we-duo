@@ -144,6 +144,10 @@ function reviewDamage(vehicleId: string, damageId: string, body: unknown,
       params.push(String(input[key]));
     }
   }
+  if (status === "verified" && damage.provenance === "detected_visible_damage" && !damage.position_source) {
+    sets.push("position_source = ?");
+    params.push("detected_visible_damage");
+  }
   run(`UPDATE damage_records SET ${sets.join(", ")} WHERE id = ?`, ...params, damageId);
   try {
     run("INSERT INTO audit_logs (id, actor_id, action, entity_type, entity_id, after, at) VALUES (?,?,?,?,?,?,?)",

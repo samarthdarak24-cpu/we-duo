@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { SectionCard } from "@/components/shared/SectionCard";
 import { InlineAlert } from "@/components/shared/InlineAlert";
 import { Icon } from "@/components/ui/Icon";
+import { getAvailableComponents } from "@/lib/vehicle-registry";
+
+const SEVERITIES = ["Minor", "Moderate", "Major"] as const;
 
 function extractApiError(data: unknown, fallback: string): string {
   if (!data || typeof data !== "object") return fallback;
@@ -42,14 +45,21 @@ interface AiResult {
 export function DamageAiAnalyzer({
   vehicleId,
   photos,
+  zones,
 }: {
   vehicleId: string;
   photos: PhotoItem[];
+  zones?: { id: string; label: string }[];
 }) {
   const router = useRouter();
+  const zoneOptions = zones?.length
+    ? zones
+    : getAvailableComponents().map((c) => ({ id: c.id, label: c.label }));
   const [analyzing, setAnalyzing] = useState<string | null>(null);
   const [reviewBusy, setReviewBusy] = useState<string | null>(null);
   const [reviewed, setReviewed] = useState<Record<string, "verified" | "rejected">>({});
+  const [componentChoices, setComponentChoices] = useState<Record<string, string>>({});
+  const [severityChoices, setSeverityChoices] = useState<Record<string, (typeof SEVERITIES)[number]>>({});
   const [result, setResult] = useState<AiResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -59,6 +69,8 @@ export function DamageAiAnalyzer({
     setError(null);
     setInfo(null);
     setResult(null);
+    setComponentChoices({});
+    setSeverityChoices({});
 
     try {
       const res = await fetch(`/api/v1/vehicles/${vehicleId}/photos/${photoId}/detect`, {
@@ -112,11 +124,21 @@ export function DamageAiAnalyzer({
   async function submitReview(damageId: string, nextStatus: "verified" | "rejected") {
     setReviewBusy(damageId);
     setError(null);
+    const chosenComponent = componentChoices[damageId];
+    const chosenSeverity = severityChoices[damageId] ?? "Minor";
+    const payload =
+      nextStatus === "verified"
+        ? {
+            status: nextStatus,
+            ...(chosenComponent ? { component_id: chosenComponent } : {}),
+            severity: chosenSeverity,
+          }
+        : { status: nextStatus };
     try {
       const res = await fetch(`/api/v1/vehicles/${vehicleId}/damage/${damageId}/review`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: nextStatus }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
@@ -214,43 +236,83 @@ export function DamageAiAnalyzer({
           ) : (
             <>
               <ul className="space-y-2 mt-2">
-                {result!.detections.map((det, i) => (
-                  <li key={i} className="flex flex-wrap items-center justify-between gap-2 rounded-[8px] bg-surface-tint p-2">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="td-chip">{det.label}</span>
-                      <span className="text-[10.5px] font-mono text-muted">{Math.round((det.confidence ?? 0) * 100)}%</span>
-                      {det.box && <span className="text-[10.5px] font-mono text-muted">[{det.box.join(", ")}]</span>}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {result!.candidateDamageIds[i] && (
-                        reviewed[result!.candidateDamageIds![i]] ? (
-                          <span className="td-chip">
-                            {reviewed[result!.candidateDamageIds![i]] === "verified" ? "Confirmed" : "Rejected"}
-                          </span>
-                        ) : (
-                          <>
-                            <button
-                              type="button"
-                              disabled={reviewBusy === result!.candidateDamageIds![i]}
-                              onClick={() => submitReview(result!.candidateDamageIds![i], "verified")}
-                              className="td-btn td-btn-success td-btn-sm"
-                            >
-                              <Icon name="Check" size={12} /> Confirm
-                            </button>
-                            <button
-                              type="button"
-                              disabled={reviewBusy === result!.candidateDamageIds![i]}
-                              onClick={() => submitReview(result!.candidateDamageIds![i], "rejected")}
-                              className="td-btn td-btn-secondary td-btn-sm"
-                            >
-                              <Icon name="X" size={12} /> Reject
-                            </button>
-                          </>
-                        )
-                      )}
-                    </div>
-                  </li>
-                ))}
+                {result!.detections.map((det, i) => {
+                  const damageId = result!.candidateDamageIds[i];
+                  const decision = damageId ? reviewed[damageId] : undefined;
+                  return (
+                    <li key={damageId ?? i} className="rounded-[8px] bg-surface-tint p-2.5">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="td-chip">{det.label}</span>
+                          <span className="text-[10.5px] font-mono text-muted">{Math.round((det.confidence ?? 0) * 100)}%</span>
+                          {det.box && <span className="text-[10.5px] font-mono text-muted">[{det.box.join(", ")}]</span>}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {damageId && (
+                            decision ? (
+                              <span className="td-chip">
+                                {decision === "verified" ? "Confirmed" : "Rejected"}
+                              </span>
+                            ) : (
+                              <>
+                                <select
+                                  aria-label="Damaged 3D component"
+                                  value={componentChoices[damageId] ?? ""}
+                                  onChange={(e) =>
+                                    setComponentChoices((prev) => ({ ...prev, [damageId]: e.target.value }))
+                                  }
+                                  disabled={reviewBusy === damageId}
+                                  className="td-input td-select h-8 py-0 text-[11.5px]"
+                                >
+                                  <option value="">Map 3D panel (optional)</option>
+                                  {zoneOptions.map((z) => (
+                                    <option key={z.id} value={z.id}>
+                                      {z.label}
+                                    </option>
+                                  ))}
+                                </select>
+                                <select
+                                  aria-label="Damage severity"
+                                  value={severityChoices[damageId] ?? "Minor"}
+                                  onChange={(e) =>
+                                    setSeverityChoices((prev) => ({
+                                      ...prev,
+                                      [damageId]: e.target.value as (typeof SEVERITIES)[number],
+                                    }))
+                                  }
+                                  disabled={reviewBusy === damageId}
+                                  className="td-input td-select h-8 py-0 text-[11.5px]"
+                                >
+                                  {SEVERITIES.map((s) => (
+                                    <option key={s} value={s}>
+                                      {s}
+                                    </option>
+                                  ))}
+                                </select>
+                                <button
+                                  type="button"
+                                  disabled={reviewBusy === damageId}
+                                  onClick={() => submitReview(damageId, "verified")}
+                                  className="td-btn td-btn-success td-btn-sm"
+                                >
+                                  <Icon name="Check" size={12} /> Confirm
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={reviewBusy === damageId}
+                                  onClick={() => submitReview(damageId, "rejected")}
+                                  className="td-btn td-btn-secondary td-btn-sm"
+                                >
+                                  <Icon name="X" size={12} /> Reject
+                                </button>
+                              </>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
               <p className="mt-1 text-[10.5px] text-muted">
                 Confirming saves the detection as a verified damage record with position_source = "detected_visible_damage". Rejecting discards it.
