@@ -301,6 +301,11 @@ Mitigations, in order:
    real text layer never load an OCR engine.
 4. Retry the extraction when the service is idle; the document is not lost.
 
+Verified on commit `f14853e` (12 Nov 2026): a PNG upload returned 201 in 8.5 s
+with `engine=tesseract`, `method=tesseract-cli-lstm-5.3.0`, confidence 0.659 and
+5 stored fields, while `/api/v1/health/integrations` reported 160 MB required
+headroom and ~352-367 MB free. No new `Instance failed` event was recorded.
+
 ### Data disappeared
 
 Check that the persistent disk is mounted at `/data` and that these variables
