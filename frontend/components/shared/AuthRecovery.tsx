@@ -129,8 +129,8 @@ export function ResetPasswordForm({ token }: { token: string }) {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (password.length < 8 || !/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
-      setError("Use at least 8 characters with at least one letter and one number.");
+    if (password.length < 10 || !/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
+      setError("Use at least 10 characters with at least one letter and one number.");
       return;
     }
     if (password !== confirm) {
@@ -173,7 +173,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
   return (
     <form onSubmit={submit} className="space-y-4 text-left">
       {error && <Notice tone="danger">{error}</Notice>}
-      <Field label="New password" hint="At least 8 characters, one letter and one number.">
+      <Field label="New password" hint="At least 10 characters, one letter and one number.">
         <div className="relative">
           <input
             type={show ? "text" : "password"}

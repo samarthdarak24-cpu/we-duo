@@ -51,7 +51,7 @@ export async function POST(req: Request) {
     expiresIn: 7 * 24 * 60 * 60,
     sessionId: session.id,
     user: { id: fresh.id, name: fresh.name, role: fresh.role, initials: fresh.initials, emailVerified: !!fresh.email_verified },
-    ...(isProd() ? {} : { demoPassword: fresh.email.endsWith("@trustdrive.dev") ? "demo1234" : undefined }),
+    ...(isProd() ? {} : { demoPassword: fresh.email.endsWith("@trustdrive.dev") ? "demo123456" : undefined }),
   });
   withSessionCookie(res, { id: fresh.id, role: fresh.role as Role, name: fresh.name }, session.id);
   return withRefreshCookie(res, refresh);

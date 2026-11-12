@@ -24,7 +24,7 @@ let verifyToken: typeof import("../lib/server/auth").verifyToken;
 let requireRole: typeof import("../lib/server/http").requireRole;
 let getAuth: typeof import("../lib/server/http").getAuth;
 
-const DEMO_PASSWORD = "demo1234";
+const DEMO_PASSWORD = "demo123456";
 
 beforeAll(async () => {
   const db = await import("../lib/server/db");

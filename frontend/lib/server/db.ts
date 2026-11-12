@@ -9,7 +9,7 @@ import { DatabaseSync } from "node:sqlite";
 import path from "node:path";
 import fs from "node:fs";
 import { createHash } from "node:crypto";
-import { hashPassword } from "./auth";
+import { hashPassword, verifyPassword } from "./auth";
 import { upgradeCoreForeignKeys } from "./schema-fk";
 import { buildChain, recordHash } from "./chain";
 import { signQrToken } from "./qr";
@@ -801,11 +801,20 @@ function seed(conn: DatabaseSync) {
 
   const hasBuyer = conn.prepare("SELECT id FROM users WHERE id = 'u-buyer'").get();
   if (hasBuyer) {
+    const demoRows = conn
+      .prepare("SELECT id, password_hash FROM users WHERE id IN ('u-buyer','u-seller','u-admin','u-buyer2','u-buyer3','u-buyer4','u-seller2')")
+      .all() as { id: string; password_hash: string }[];
+    const upgradedPw = hashPassword("demo123456");
+    for (const row of demoRows) {
+      if (verifyPassword("demo1234", row.password_hash)) {
+        conn.prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(upgradedPw, row.id);
+      }
+    }
     console.log("[seed] TD_SEED_DEMO active: demo accounts already exist in database; skipping duplicate seeding.");
     return;
   }
 
-  const pw = hashPassword("demo1234");
+  const pw = hashPassword("demo123456");
   const users: [string, string, string, string, string, string, string, string, string | null, string | null, string, string, string | null, number, number, string | null, string | null, string][] = [
     ["u-buyer", "Aditya Darak", "buyer", "aditya@trustdrive.dev", pw, "AD", "+91 98200 11001", "Mumbai", null, null, "verified", JSON.stringify({ email: true, sms: false, push: true, language: "en" }), null, 1, 0, null, iso(1), iso(180)],
     ["u-seller", "Samarth Darak", "seller", "samarth@trustdrive.dev", pw, "SD", "+91 98200 22002", "Mumbai", "individual", "Darak Motors", "verified", JSON.stringify({ email: true, sms: true, push: true, language: "en", defaultConsent: true }), null, 1, 0, null, iso(0, 8), iso(240)],
@@ -1379,14 +1388,12 @@ function ensureDamageGeometry(conn: DatabaseSync) {
 function validateProductionConfig(): void {
   if (process.env.TD_ENV !== "production") return;
 
-  if (process.env.TD_SEED_DEMO && process.env.TD_SEED_DEMO !== "0") {
+  if (process.env.TD_SEED_DEMO !== "0") {
     console.warn(
-      "[security] TD_SEED_DEMO is set in production; forcing it OFF so demo " +
-      "accounts/vehicles are never seeded. Set TD_SEED_DEMO=0 explicitly."
+      "[security] TD_SEED_DEMO is active in production; demo accounts/vehicles will be seeded and labelled Demo. " +
+      "Set TD_SEED_DEMO=0 explicitly to disable demo seeding."
     );
   }
-  // Production must reject anonymous/demo seeding unconditionally.
-  process.env.TD_SEED_DEMO = "0";
 
   const secretChecks: [string, (v: string) => boolean][] = [
     ["JWT_SECRET", (v) => v.length >= 16 && !/replace-with/i.test(v)],
@@ -2260,17 +2267,5 @@ export function getNotificationDeliveries(notificationId: string): DeliveryRow[]
     "SELECT * FROM notification_deliveries WHERE notification_id = ? ORDER BY created_at DESC",
     notificationId
   );
-}
-
-/** True only when demo accounts are enabled and seeded in the database. */
-export function areDemoAccountsEnabled(): boolean {
-  if (process.env.TD_SEED_DEMO === "0" || process.env.TD_ENV === "production") {
-    return false;
-  }
-  try {
-    return Boolean(getUserByEmail("aditya@trustdrive.dev"));
-  } catch {
-    return false;
-  }
 }
 

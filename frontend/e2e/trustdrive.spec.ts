@@ -4,8 +4,8 @@ import { test, expect } from "@playwright/test";
  *  Demo accounts come from `npm run seed:reset` (see docs/TESTING.md).
  *  Run: `npm run test:e2e -- --project=chromium-1920`.
  */
-const SELLER = { email: "samarth@trustdrive.dev", password: "demo1234" };
-const BUYER = { email: "rohan@trustdrive.dev", password: "demo1234" };
+const SELLER = { email: "samarth@trustdrive.dev", password: "demo123456" };
+const BUYER = { email: "rohan@trustdrive.dev", password: "demo123456" };
 
 async function login(page: import("@playwright/test").Page, role: "seller" | "buyer") {
   const account = role === "seller" ? SELLER : BUYER;

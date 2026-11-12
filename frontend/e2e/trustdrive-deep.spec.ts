@@ -10,8 +10,8 @@ import path from "node:path";
  * wizard submits, so the OCR comparison is a genuine match rather than a
  * pre-baked document that only looks right.
  */
-const SELLER = { email: "samarth@trustdrive.dev", password: "demo1234" };
-const BUYER = { email: "rohan@trustdrive.dev", password: "demo1234" };
+const SELLER = { email: "samarth@trustdrive.dev", password: "demo123456" };
+const BUYER = { email: "rohan@trustdrive.dev", password: "demo123456" };
 const STAMP = String(Date.now()).slice(-4);
 const REG = `MH14TD${STAMP}`;
 const VIN = `WBA5R1C50KAK9${STAMP}`;

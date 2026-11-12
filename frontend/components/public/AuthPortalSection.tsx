@@ -22,7 +22,7 @@ export function AuthPortalSection() {
 
   function fillDemo(acc: (typeof demoAccounts)[0]) {
     setEmail(acc.email);
-    setPassword("demo1234");
+    setPassword("demo123456");
     setError(null);
   }
 
@@ -173,7 +173,7 @@ export function AuthPortalSection() {
               <div className="p-4 rounded-2xl bg-[#111315] border border-[#23262A] space-y-2.5">
                 <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wider text-[#7A8089]">
                   <span>Instant 1-Click Demo Login</span>
-                  <span className="text-[#C5A46D]">Password: demo1234</span>
+                  <span className="normal-case text-[#C5A46D]">Password: demo123456</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   {demoAccounts.map((acc) => (
