@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
-  const guard = requireRole(req, "buyer", "seller");
+  const guard = requireRole(req, "buyer", "seller", "admin");
   if (!guard.ok) return guard.response;
   const v = getVehicle(params.id);
   if (!v) return fail(404, "NOT_FOUND", "Vehicle not found");

@@ -1122,7 +1122,7 @@ export function getSavedVehicles(userId = "u-buyer") {
     .filter((x): x is NonNullable<typeof x> => !!x);
 }
 
-export function getCompareVehicles(ids: string[], userId = "u-buyer") {
+export function getCompareVehicles(ids: string[], userId?: string) {
   const rows = ids
     .map((id) => {
       const direct = getVehicle(id);
@@ -1151,7 +1151,7 @@ export function getCompareVehicles(ids: string[], userId = "u-buyer") {
         damage: getDamage(v.id).length,
         serviceComplete: docs.some((d) => d.type === "service" && d.status === "verified"),
         accident: getDamage(v.id).some((d) => d.severity !== "Minor"),
-        saved: !!(getListingByVehicle(v.id) && getSavedRow(userId, getListingByVehicle(v.id)!.id)),
+        saved: !!(userId && getListingByVehicle(v.id) && getSavedRow(userId, getListingByVehicle(v.id)!.id)),
       };
     });
   const diffs = keyDifferences(
@@ -3034,7 +3034,9 @@ export function reportSuspiciousListing(actorId: string, listingId: string, reas
       created_at: now,
     });
   }
-  return { ok: true as const };
+  // The audit row is the durable moderation record: return its id and status so
+  // the caller can reference the actual review item instead of a bare `ok`.
+  return { ok: true as const, id, status: "open" as const, listingId };
 }
 
 export function updateProfile(userId: string, input: { name?: string; phone?: string; city?: string; sellerType?: string; businessName?: string; preferences?: Record<string, unknown> }) {

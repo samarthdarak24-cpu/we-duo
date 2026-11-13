@@ -11,7 +11,7 @@ function statusFor(sev: string, code: string) {
 }
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
-  const guard = requireRole(req, "buyer", "seller");
+  const guard = requireRole(req, "buyer", "seller", "admin");
   if (!guard.ok) return guard.response;
   if (!getVehicle(params.id)) return fail(404, "NOT_FOUND", "Vehicle not found");
   const alerts = getFindings(params.id).map((f) => ({

@@ -133,21 +133,13 @@ export function categoryDocWeights(categoryId?: string | null): Record<string, n
 }
 
 export function computeCompleteness(docs: DocInput[], categoryId?: string | null): number {
-  const legacy = !categoryId || categoryId === "passenger_car";
   const weights = categoryDocWeights(categoryId);
   const total = Object.values(weights).reduce((s, w) => s + w, 0); // 100 for legacy
   if (!total) return 0;
-  if (legacy) {
-    // Byte-for-byte the original car implementation (QA22 baseline).
-    let got = 0;
-    for (const d of docs) {
-      const w = DOC_WEIGHTS[d.type];
-      if (w && d.status === "verified") got += w;
-    }
-    return Math.round((got / total) * 100);
-  }
   // Duplicate document types count once; a verified version supersedes an
-  // unverified one rather than inflating coverage.
+  // unverified one rather than inflating coverage. This applies to the legacy
+  // car set too: re-uploading the same verified document used to add its
+  // weight again and report coverage above 100% (e.g. 120%).
   const byType = new Map<string, string>();
   for (const d of docs) {
     const prev = byType.get(d.type);
@@ -157,7 +149,9 @@ export function computeCompleteness(docs: DocInput[], categoryId?: string | null
   for (const [type, status] of byType) {
     if (status === "verified" && weights[type]) got += weights[type];
   }
-  return Math.round((got / total) * 100);
+  // Coverage is a share of the required set and can never exceed it, even if
+  // the category weights were rounded when normalised to 100.
+  return Math.min(100, Math.round((got / total) * 100));
 }
 
 // ---- Mileage analysis (§9.2) ----------------------------------------------

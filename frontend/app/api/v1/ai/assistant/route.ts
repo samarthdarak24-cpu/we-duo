@@ -115,8 +115,13 @@ export async function POST(req: Request) {
             answer: fallbackAnswer,
             model: "rules-v1",
             provider: "deterministic",
-            grounded: false,
+            // The LLM narrative was rejected, but this fallback is the
+            // deterministic evidence-only answer assembled from stored rows:
+            // it remains grounded and cited. `llmRejected` reports the LLM
+            // failure without mislabelling the returned answer as ungrounded.
+            grounded: json.grounded !== false,
             llmRejected: true,
+            llmRejectReason: json.reason ?? null,
           });
         }
       }

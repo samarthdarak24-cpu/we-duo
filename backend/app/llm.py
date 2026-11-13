@@ -66,11 +66,18 @@ def policy_violations(text: str) -> list[str]:
 
 def contradiction_violations(text: str, facts: dict) -> list[str]:
     """Reject output that denies findings which are present in the facts."""
-    findings = facts.get("mileage_findings") or facts.get("findings") or []
-    if not findings:
-        return []
     lowered = (text or "").lower()
-    return [pattern for pattern in CONTRADICTIONS if re.search(pattern, lowered)]
+    out: list[str] = []
+    findings = facts.get("mileage_findings") or facts.get("findings") or []
+    if findings:
+        out += [pattern for pattern in CONTRADICTIONS if re.search(pattern, lowered)]
+    if str(facts.get("vehicle_identity_status") or "") == "verified" and re.search(
+        r"\b(identity|registration|vin|chassis)\b[^.]{0,40}"
+        r"\b(unavailable|missing|not (?:available|verified|found))\b",
+        lowered,
+    ):
+        out.append("identity_marked_unavailable")
+    return out
 
 
 def missing_citations(text: str, facts: dict) -> list[str]:
@@ -88,17 +95,25 @@ def missing_citations(text: str, facts: dict) -> list[str]:
 
 
 def is_coherent(text: str) -> bool:
-    """Reject fragments/garbled output from very small models."""
+    """Reject fragments/garbled output from very small models.
+
+    Evidence-dense answers legitimately contain bracketed citation IDs and a
+    trailing source list (e.g. ``[f-1793869680352]``). Those characters are not
+    prose, so they are stripped before the letter-ratio test; otherwise a
+    perfectly readable answer with six citations was rejected as "incoherent".
+    """
     t = (text or "").strip()
     if len(t) < 20:
         return False
-    words = re.findall(r"[A-Za-z]{2,}", t)
+    if t.startswith(("{", "[", "'")):
+        return False
+    prose = re.sub(r"\[[^\]\n]{1,200}\]", " ", t)
+    prose = re.sub(r"(?im)^\s*sources?\s*:.*$", " ", prose)
+    words = re.findall(r"[A-Za-z]{2,}", prose)
     if len(words) < 6:
         return False
-    letters = sum(ch.isalpha() for ch in t)
-    if letters / max(1, len(t)) < 0.5:
-        return False
-    if t.startswith(("{", "[", "'")) or t.count("'") > 6:
+    letters = sum(ch.isalpha() for ch in prose)
+    if letters / max(1, len(prose)) < 0.5:
         return False
     return True
 
@@ -180,6 +195,24 @@ def warm() -> dict:
     return {"warmed": True, "provider": "local-transformers", "model": settings.llm_model, "ms": ms}
 
 
+def _finding_label(finding: object) -> str:
+    """Render one mileage finding without assuming it is a dict.
+
+    ``RiskExplanationNode`` passes already-filled explanation strings while
+    detector payloads are dicts. Both are valid; a bare string used to crash
+    ``_draft`` with ``'str' object has no attribute 'get'`` and turned the whole
+    LangGraph investigation into an HTTP 500.
+    """
+    if isinstance(finding, dict):
+        return str(
+            finding.get("anomaly_type")
+            or finding.get("code")
+            or finding.get("title")
+            or "finding"
+        )
+    return str(finding)
+
+
 def _draft(facts: dict) -> str:
     """A compact, evidence-only draft the model is asked to rewrite."""
     v = facts.get("vehicle") or {}
@@ -188,17 +221,22 @@ def _draft(facts: dict) -> str:
     findings = facts.get("mileage_findings") or []
     missing = facts.get("missing_records") or []
     sources = facts.get("sources") or []
-    kms = [r.get("km") for r in readings if isinstance(r.get("km"), (int, float))]
+    kms = [
+        r.get("km")
+        for r in readings
+        if isinstance(r, dict) and isinstance(r.get("km"), (int, float))
+    ]
     parts = [
         f"Vehicle: {v.get('make', '')} {v.get('model', '')} {v.get('year', '')}, "
         f"registration {v.get('reg_no', 'unavailable')}.",
+        f"Identity record: {facts.get('vehicle_identity_status', 'unknown')}.",
         f"Trust score: {trust.get('score', 'unavailable')}/100 "
         f"({trust.get('band_label', trust.get('band', 'unverified'))}).",
         f"Mileage readings: {len(readings)}"
         + (f", range {min(kms):,}-{max(kms):,} km." if kms else "."),
         f"Mileage findings: {len(findings)}"
-        + (f" ({', '.join(str(f.get('anomaly_type')) for f in findings[:3])})." if findings else "."),
-        f"Missing records: {', '.join(missing) if missing else 'none'}.",
+        + (f" ({', '.join(_finding_label(f) for f in findings[:3])})." if findings else "."),
+        f"Missing records: {', '.join(str(m) for m in missing) if missing else 'none'}.",
         f"Sources: {', '.join(str(s) for s in sources[:8]) if sources else 'none'}.",
     ]
     return " ".join(parts)

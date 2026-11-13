@@ -517,7 +517,35 @@ def _chat_facts(vehicle_id: str | None) -> dict:
             "note": "No vehicle was selected; answer only in general terms.",
         }
     vehicle = repository.get_row("vehicles", vehicle_id)
-    trust = explain.compute(vehicle_id)
+    trust = explain.compute(vehicle_id).model_dump()
+    # The Next.js engine is the system of record for the canonical trust score
+    # and persists every computed value. Prefer that latest snapshot so the AI
+    # narrative can never quote a different score from the one shown on the
+    # vehicle page (e.g. 75/100 in chat while the report says 0/100).
+    snapshots = db.read(
+        "trust_scores",
+        where="vehicle_id = :v",
+        params={"v": vehicle_id},
+        limit=200,
+    )
+    if snapshots:
+        # `db.read` is intentionally minimal (no ORDER BY); pick the newest
+        # snapshot in Python so both SQLite and Postgres behave identically.
+        row = max(snapshots, key=lambda r: str(r.get("computed_at") or ""))
+        band = str(row.get("band") or "")
+        labels = {
+            "strong": "High trust",
+            "moderate": "Moderate trust",
+            "caution": "Limited evidence",
+            "high_risk": "High risk",
+        }
+        trust.update({
+            "score": int(row.get("score") or 0),
+            "band": band or trust.get("band"),
+            "band_label": labels.get(band, band or trust.get("band_label")),
+            "snapshot_id": row.get("id"),
+            "snapshot_version": row.get("version"),
+        })
     documents = [d for d in db.read("documents", where="vehicle_id = :v",
                                     params={"v": vehicle_id}, limit=50)
                  if not d.get("deleted_at")]
@@ -535,7 +563,7 @@ def _chat_facts(vehicle_id: str | None) -> dict:
         "vehicle": {k: vehicle.get(k) for k in
                     ("id", "make", "model", "year", "reg_no", "vin", "trustdrive_id", "km_claimed")},
         "vehicle_identity_status": "verified" if vehicle.get("vin") and vehicle.get("reg_no") else "unverified",
-        "trust": trust.model_dump(),
+        "trust": trust,
         "documents": [{"id": d["id"], "type": d.get("type"), "status": d.get("status")} for d in documents],
         "document_findings": [{"id": f["id"], "code": f.get("code"), "severity": f.get("severity"),
                                "title": f.get("title")} for f in findings],

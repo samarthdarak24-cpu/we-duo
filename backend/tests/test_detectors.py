@@ -74,6 +74,27 @@ def test_llm_guardrails_reject_contradictions_and_missing_citations():
     )
 
 
+def test_coherence_accepts_evidence_dense_narratives_with_citation_ids():
+    """Citation IDs are not prose and must not trip the letter-ratio guard.
+
+    Regression: a grounded Groq answer containing six bracketed finding ids and
+    a ``Sources:`` line was marked incoherent (letters < 50% of the string), so
+    the chat API silently discarded a valid narrative.
+    """
+    text = (
+        "TrustDrive has the following records on file for BMW 3 Series 2021 "
+        "(MH01AB1234). Trust score: 75/100 (Moderate). Critical odometer "
+        "rollback detected [f-1793869680352]. High-severity mileage chronology "
+        "inconsistencies [f-e6faf291-d6e, f-7beaf155-2a2, f-24e78127-16c, "
+        "f-5b5d489c-399]. Duplicate document files [f-cbe46b55-a91, "
+        "f-c58c11d4-510].\n\nSources: v-bmw, f-1793869680352, f-e6faf291-d6e, "
+        "f-7beaf155-2a2, f-24e78127-16c, f-5b5d489c-399, f-cbe46b55-a91, "
+        "f-c58c11d4-510"
+    )
+    assert llm.is_coherent(text)
+    assert not llm.is_coherent("'unavailable'")
+
+
 def test_grounding_validation_rejects_unsupported_numbers():
     grounded, unsupported = llm.validate_grounding(
         "The car did 999999 km and 1234567 owners.", {"facts": [58000, 25000]}
@@ -99,6 +120,36 @@ def test_grounding_rejects_wrong_trust_score_and_unknown_id():
     assert grounded is False
     assert "95/100" in unsupported
     assert "f-xyz" in unsupported
+
+
+def test_llm_draft_accepts_string_findings_and_malformed_readings():
+    """RiskExplanationNode passes explanation strings, not detector dicts.
+
+    Regression: _draft called ``f.get('anomaly_type')`` on those strings, so
+    every /api/intelligence/investigate request with mileage findings failed
+    with ``'str' object has no attribute 'get'`` (HTTP 500).
+    """
+    facts = {
+        "vehicle": {"make": "BMW", "model": "3 Series", "year": 2021, "reg_no": "MH01AB1234"},
+        "trust": {"score": 0, "band": "high_risk"},
+        "mileage_readings": [
+            {"id": "m1", "km": 58000, "date": "2023-01-01"},
+            "not-a-reading",
+            {"id": "m2", "km": None},
+        ],
+        "mileage_findings": [
+            "Odometer decreased from 58,000 km to 25,000 km.",
+            {"anomaly_type": "mileage_decrease"},
+            "Second reading conflict.",
+        ],
+        "missing_records": ["insurance"],
+        "sources": ["f-bmw"],
+    }
+    draft = llm._draft(facts)
+    assert "BMW 3 Series 2021" in draft
+    assert "Odometer decreased" in draft
+    assert "mileage_decrease" in draft
+    assert "58,000-58,000 km" in draft
 
 
 def test_llm_describe_is_false_by_default():

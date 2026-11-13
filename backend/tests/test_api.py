@@ -202,6 +202,36 @@ def test_chat_falls_back_when_llm_rejects(monkeypatch):
     assert "Sources:" in body["answer"]
 
 
+def test_chat_facts_prefer_latest_canonical_trust_snapshot():
+    """The AI narrative must quote the same score as the Next.js vehicle page.
+
+    Regression: Python recomputed its own score (75/100) while the persisted
+    Next.js snapshot said 0/100, so chat contradicted the report. `_chat_facts`
+    now reads the newest `trust_scores` row, and returns a plain dict (the
+    previous `.model_dump()` double-call raised AttributeError).
+    """
+    from app import db
+    from app.main import _chat_facts
+
+    for row in (
+        {"id": "ts-old", "vehicle_id": "v-test", "score": 88, "band": "strong",
+         "version": "trust-v2-multicategory", "computed_at": "2025-01-01T00:00:00Z"},
+        {"id": "ts-new", "vehicle_id": "v-test", "score": 7, "band": "high_risk",
+         "version": "trust-v2-multicategory", "computed_at": "2026-01-01T00:00:00Z"},
+    ):
+        written, reason = db.insert("trust_scores", row)
+        assert written, reason
+
+    facts = _chat_facts("v-test")
+    assert isinstance(facts["trust"], dict)
+    assert facts["trust"]["score"] == 7
+    assert facts["trust"]["band"] == "high_risk"
+    assert facts["trust"]["band_label"] == "High risk"
+    assert facts["trust"]["snapshot_id"] == "ts-new"
+    assert facts["trust"]["snapshot_version"] == "trust-v2-multicategory"
+    assert facts["vehicle_identity_status"] == "verified"
+
+
 def test_blockchain_adapter_is_honest_and_not_claimed():
     body = client.get("/api/intelligence/blockchain/status").json()
     assert body["anchoring_claimed"] is False

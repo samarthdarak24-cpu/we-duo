@@ -67,6 +67,30 @@ describe("computeCompleteness (§9.1 weights)", () => {
     }));
     expect(computeCompleteness(docs)).toBe(92);
   });
+
+  it("counts a duplicated document type once and never exceeds 100", () => {
+    const docs = [
+      ...["rc", "insurance", "puc", "service", "ownership", "inspection"].map((type) => ({
+        type,
+        status: "verified",
+      })),
+      { type: "rc", status: "verified" },
+      { type: "puc", status: "verified" },
+    ];
+    expect(computeCompleteness(docs)).toBe(100);
+  });
+
+  it("a pending duplicate never overrides a verified version", () => {
+    const docs = [
+      { type: "rc", status: "pending" },
+      { type: "rc", status: "verified" },
+      ...["insurance", "puc", "service", "ownership", "inspection"].map((type) => ({
+        type,
+        status: "verified",
+      })),
+    ];
+    expect(computeCompleteness(docs)).toBe(100);
+  });
 });
 
 describe("analyzeMileage (§9.2)", () => {
