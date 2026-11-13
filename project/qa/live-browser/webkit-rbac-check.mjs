@@ -14,7 +14,7 @@ await page.goto(BASE + "/login", { waitUntil: "commit", timeout: 60000 });
 await page.waitForLoadState("domcontentloaded", { timeout: 20000 }).catch(() => {});
 await page.waitForTimeout(1200);
 await page.getByLabel(/email/i).fill("rohan@trustdrive.dev");
-await page.getByLabel(/password/i).fill("demo1234");
+await page.getByLabel(/password/i).fill("demo123456");
 await page.locator('form button[type="submit"]').click();
 await page.waitForURL(/\/buyer/, { timeout: 30000 }).catch(() => {});
 log.push(`after buyer login: ${page.url()}`);

@@ -21,8 +21,8 @@ async function runLiveAuthTests() {
   }
 
   // 1. Buyer Demo Login
-  console.log("1. Testing Buyer Demo Login (aditya@trustdrive.dev / demo1234)...");
-  const buyerRes = await postLogin("aditya@trustdrive.dev", "demo1234");
+  console.log("1. Testing Buyer Demo Login (aditya@trustdrive.dev / demo123456)...");
+  const buyerRes = await postLogin("aditya@trustdrive.dev", "demo123456");
   console.log(`   Status: ${buyerRes.status}`);
   if (buyerRes.status === 200) {
     console.log(`   User: ${buyerRes.data.data.user.name} (${buyerRes.data.data.user.role})`);
@@ -34,8 +34,8 @@ async function runLiveAuthTests() {
   }
 
   // 2. Seller Demo Login
-  console.log("\n2. Testing Seller Demo Login (samarth@trustdrive.dev / demo1234)...");
-  const sellerRes = await postLogin("samarth@trustdrive.dev", "demo1234");
+  console.log("\n2. Testing Seller Demo Login (samarth@trustdrive.dev / demo123456)...");
+  const sellerRes = await postLogin("samarth@trustdrive.dev", "demo123456");
   console.log(`   Status: ${sellerRes.status}`);
   if (sellerRes.status === 200) {
     console.log(`   User: ${sellerRes.data.data.user.name} (${sellerRes.data.data.user.role})`);
@@ -44,8 +44,8 @@ async function runLiveAuthTests() {
   }
 
   // 3. Admin Demo Login
-  console.log("\n3. Testing Admin Demo Login (admin@trustdrive.dev / demo1234)...");
-  const adminRes = await postLogin("admin@trustdrive.dev", "demo1234");
+  console.log("\n3. Testing Admin Demo Login (admin@trustdrive.dev / demo123456)...");
+  const adminRes = await postLogin("admin@trustdrive.dev", "demo123456");
   console.log(`   Status: ${adminRes.status}`);
   if (adminRes.status === 200) {
     console.log(`   User: ${adminRes.data.data.user.name} (${adminRes.data.data.user.role})`);

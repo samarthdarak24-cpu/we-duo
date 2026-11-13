@@ -131,7 +131,7 @@ try {
   const sellerCtx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const s = await sellerCtx.newPage();
   await attachDiagnostics(s);
-  const sellerOk = await login(s, "samarth@trustdrive.dev", "demo1234", "seller");
+  const sellerOk = await login(s, "samarth@trustdrive.dev", "demo123456", "seller");
   if (sellerOk) {
     for (const [route, name, markers] of [
       ["/seller", "05-seller-dashboard", ["Overview"]],
@@ -181,7 +181,7 @@ try {
   const buyerCtx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const b = await buyerCtx.newPage();
   await attachDiagnostics(b);
-  const buyerOk = await login(b, "rohan@trustdrive.dev", "demo1234", "buyer");
+  const buyerOk = await login(b, "rohan@trustdrive.dev", "demo123456", "buyer");
   if (buyerOk) {
     for (const [route, name, markers] of [
       ["/buyer", "16-buyer-dashboard", []],

@@ -21,7 +21,7 @@ def req(method, path, token=None, body=None):
 
 
 print("== login ==")
-s, b = req("POST", "/api/v1/auth/login", body={"email": "samarth@trustdrive.dev", "password": "demo1234"})
+s, b = req("POST", "/api/v1/auth/login", body={"email": "samarth@trustdrive.dev", "password": "demo123456"})
 assert s == 200, (s, b)
 tok = json.loads(b)["access_token"]
 print("login 200 OK; token len", len(tok))

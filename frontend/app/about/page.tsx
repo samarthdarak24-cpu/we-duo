@@ -6,6 +6,9 @@ import { Icon } from "@/components/ui/Icon";
 import Image from "next/image";
 import Link from "next/link";
 
+// AboutSection renders live database counters; never prerender a stale snapshot.
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "About TrustDrive — Automotive Truth & Verification",
   description:

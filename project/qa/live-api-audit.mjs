@@ -49,14 +49,42 @@ async function login(email, password) {
 
 const results = [];
 
+// A GET against a POST-only route correctly returns 405; a seller hitting a
+// buyer-only route correctly returns 403; a missing record is an honest 404.
+// Declaring these keeps the audit from reporting working endpoints as failures.
+// `status` may be a number or an array of acceptable statuses (some endpoints
+// legitimately return 200 when a record exists and an honest 404 when it does not).
+const EXPECTED = new Map([
+  // POST-only routes (this harness probes reads with GET on purpose)
+  ["SELLER vehicle:ai/explain", { status: 405, why: "POST-only route" }],
+  ["SELLER vehicle:verify", { status: 405, why: "POST-only route" }],
+  ["SELLER vehicle:save", { status: 405, why: "POST/DELETE-only route" }],
+  ["SELLER listing:stats", { status: 405, why: "POST-only route" }],
+  ["SELLER listing:share", { status: 405, why: "POST/DELETE-only route" }],
+  ["SELLER alerts:evaluate", { status: 405, why: "POST-only route" }],
+  ["SELLER compare", { status: 405, why: "POST-only route" }],
+  ["SELLER verification:lookup", { status: 405, why: "POST-only route" }],
+  ["BUYER reports:vehicle", { status: 405, why: "POST-only route" }],
+  // Correct role isolation
+  ["SELLER saved", { status: 403, why: "buyer-only endpoint" }],
+  ["SELLER saved-searches", { status: 403, why: "buyer-only endpoint" }],
+  // 200 when a record exists, honest 404 when none is recorded — both valid.
+  ["BUYER vehicle:theft", { status: [200, 404], why: "theft check may be absent" }],
+  ["SELLER vehicle:theft", { status: [200, 404], why: "theft check may be absent" }],
+  ["SELLER vehicle:verification", { status: [200, 404], why: "verification run may be absent" }],
+  // Disputes live in the admin queue's Disputes tab; the page redirects there.
+  ["ADMIN admin:disputes", { status: 404, why: "by design: /admin/queue#disputes" }],
+]);
+
 async function probe(email, label, path, method = "GET", body) {
   const cookie = jars[email] || "";
   const token = tokenFrom(cookie);
+  const expected = EXPECTED.get(label);
   let r;
   try {
     r = await raw(path, { method, body, cookie, token });
   } catch (e) {
-    results.push({ label, path, method, status: "ERR", note: String(e).slice(0, 120) });
+    results.push({ label, path, method, status: "ERR", note: String(e).slice(0, 120), ok: false });
     return;
   }
   const d = r.json?.data;
@@ -67,26 +95,30 @@ async function probe(email, label, path, method = "GET", body) {
   else if (d && typeof d === "object") shape = "obj{" + Object.keys(d).slice(0, 6).join(",") + "}";
   else if (typeof d === "number") shape = "number:" + d;
   else if (d === null) shape = "null";
+  const want = expected?.status ?? 200;
+  const acceptable = Array.isArray(want) ? want : [want];
   results.push({
     label,
     path,
     method,
     status: r.status,
     shape,
-    note: err ? String(err.message || "").slice(0, 90) : (d === null || (Array.isArray(d) && !d.length) || d === undefined ? "EMPTY/NULL" : ""),
+    expected: want,
+    ok: acceptable.includes(r.status),
+    note: expected?.why || (err ? String(err.message || "").slice(0, 90) : (d === null || (Array.isArray(d) && !d.length) || d === undefined ? "EMPTY/NULL" : "")),
   });
 }
 
 (async () => {
   let seller = "", buyer = "", admin = "", sellerVehicle = "", sellerListing = "", buyerSaved = "";
   try {
-    seller = (await login("samarth@trustdrive.dev", "demo1234")).data?.user?.id || "samarth@trustdrive.dev";
+    seller = (await login("samarth@trustdrive.dev", "demo123456")).data?.user?.id || "samarth@trustdrive.dev";
   } catch (e) { console.log("SELLER LOGIN FAILED:", String(e)); }
   try {
-    buyer = (await login("rohan@trustdrive.dev", "demo1234")).data?.user?.id || "rohan@trustdrive.dev";
+    buyer = (await login("rohan@trustdrive.dev", "demo123456")).data?.user?.id || "rohan@trustdrive.dev";
   } catch (e) { console.log("BUYER LOGIN FAILED:", String(e)); }
   try {
-    admin = (await login("admin@trustdrive.dev", "demo1234")).data?.user?.id || "admin@trustdrive.dev";
+    admin = (await login("admin@trustdrive.dev", "demo123456")).data?.user?.id || "admin@trustdrive.dev";
   } catch (e) { console.log("ADMIN LOGIN FAILED:", String(e)); }
 
   const S = "samarth@trustdrive.dev", B = "rohan@trustdrive.dev", A = "admin@trustdrive.dev";
@@ -97,7 +129,8 @@ async function probe(email, label, path, method = "GET", body) {
   if (Array.isArray(vlist) && vlist.length) sellerVehicle = vlist[0].id || vlist[0].vehicleId || "";
   const ls = await raw("/api/v1/seller/listings", { cookie: jars[S] });
   const llist = ls.json?.data?.items || ls.json?.data || [];
-  if (Array.isArray(llist) && llist.length) sellerListing = llist[0].id || "";
+  // Each item is { vehicle, listing, ... } — the id lives on the nested listing.
+  if (Array.isArray(llist) && llist.length) sellerListing = llist[0].listing?.id || llist[0].id || "";
   console.log("seller vehicle:", sellerVehicle, "seller listing:", sellerListing, "\n");
 
   // public
@@ -123,7 +156,6 @@ async function probe(email, label, path, method = "GET", body) {
     ["vehicle:components", `/api/v1/vehicles/${sellerVehicle}/components`],
     ["vehicle:3d-model", `/api/v1/vehicles/${sellerVehicle}/3d-model`],
     ["vehicle:trust", `/api/v1/vehicles/${sellerVehicle}/trust`],
-    ["vehicle:trust-score", `/api/v1/vehicles/${sellerVehicle}/trust-score`],
     ["vehicle:risk", `/api/v1/vehicles/${sellerVehicle}/risk`],
     ["vehicle:pricing", `/api/v1/vehicles/${sellerVehicle}/pricing`],
     ["vehicle:theft", `/api/v1/vehicles/${sellerVehicle}/theft`],
@@ -200,5 +232,10 @@ async function probe(email, label, path, method = "GET", body) {
     await probe(A, "ADMIN " + label, p);
   }
 
+  const failed = results.filter((r) => !r.ok);
+  console.log(`\n=== SUMMARY: ${results.length - failed.length}/${results.length} expected responses ===`);
+  for (const r of failed) {
+    console.log(`  UNEXPECTED ${r.method} ${r.label}: got ${r.status}, expected ${r.expected} ${r.note || ""}`);
+  }
   console.log(JSON.stringify(results, null, 1));
 })();

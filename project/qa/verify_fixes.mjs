@@ -70,9 +70,9 @@ globalThis.fetch = (url, opts = {}) =>
   _origFetch(url, { ...opts, signal: opts.signal || AbortSignal.timeout(25000) });
 
 (async () => {
-  const sellerTok = await login("samarth@trustdrive.dev", "demo1234");
-  const buyerTok = await login("rohan@trustdrive.dev", "demo1234");
-  const seller2Tok = await login("weduo@trustdrive.dev", "demo1234");
+  const sellerTok = await login("samarth@trustdrive.dev", "demo123456");
+  const buyerTok = await login("rohan@trustdrive.dev", "demo123456");
+  const seller2Tok = await login("weduo@trustdrive.dev", "demo123456");
   check("Auth — seller/seller2/buyer tokens issued", !!sellerTok && !!buyerTok && !!seller2Tok,
     `seller=${!!sellerTok} buyer=${!!buyerTok} seller2=${!!seller2Tok}`);
   if (!sellerTok) { finish(); return; }

@@ -24,7 +24,7 @@ def call(method, path, body=None, extra=None):
         return e.code, e.read().decode()
 
 # 1) login seller -> td_token cookie
-s, b = call("POST", "/api/v1/auth/login", {"email": "samarth@trustdrive.dev", "password": "demo1234"})
+s, b = call("POST", "/api/v1/auth/login", {"email": "samarth@trustdrive.dev", "password": "demo123456"})
 print("login", s)
 td_token = next((c.value for c in jar if c.name == "td_token"), None)
 assert td_token, "no td_token cookie"

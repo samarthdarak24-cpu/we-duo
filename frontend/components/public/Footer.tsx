@@ -24,16 +24,32 @@ export function Footer() {
             <div className="text-[11px] leading-relaxed text-[#7A8089]/80 border-l border-[#C5A46D]/40 pl-3 italic">
               Every Car Has a Story. Discover the Truth.
             </div>
+            {/* Real destinations only — no decorative buttons that do nothing. */}
             <div className="pt-2 flex items-center gap-3 text-[#7A8089]">
-              <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#111315] border border-[#23262A] hover:text-[#C5A46D] transition-colors cursor-pointer">
+              <Link
+                href="/contact"
+                aria-label="Contact support"
+                title="Contact support"
+                className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#111315] border border-[#23262A] hover:text-[#C5A46D] hover:border-[#C5A46D]/50 transition-colors"
+              >
                 <Icon name="Share2" size={14} />
-              </span>
-              <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#111315] border border-[#23262A] hover:text-[#C5A46D] transition-colors cursor-pointer">
+              </Link>
+              <Link
+                href="/technology"
+                aria-label="Platform technology"
+                title="Platform technology"
+                className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#111315] border border-[#23262A] hover:text-[#C5A46D] hover:border-[#C5A46D]/50 transition-colors"
+              >
                 <Icon name="Activity" size={14} />
-              </span>
-              <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#111315] border border-[#23262A] hover:text-[#C5A46D] transition-colors cursor-pointer">
+              </Link>
+              <Link
+                href="/about"
+                aria-label="About TrustDrive"
+                title="About TrustDrive"
+                className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#111315] border border-[#23262A] hover:text-[#C5A46D] hover:border-[#C5A46D]/50 transition-colors"
+              >
                 <Icon name="Building2" size={14} />
-              </span>
+              </Link>
             </div>
           </div>
 
@@ -129,13 +145,24 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <span className="text-[#7A8089]">Deterministic Trust Engine</span>
+                <Link href="/privacy" className="hover:text-[#C5A46D] transition-colors">
+                  Privacy Policy
+                </Link>
               </li>
               <li>
-                <span className="text-[#7A8089]">SHA-256 Hash Auditing</span>
+                <Link href="/terms" className="hover:text-[#C5A46D] transition-colors">
+                  Terms of Use
+                </Link>
               </li>
               <li>
-                <span className="text-[#7A8089]">Privacy & Consent Controls</span>
+                <Link href="/technology" className="hover:text-[#C5A46D] transition-colors">
+                  Deterministic Trust Engine
+                </Link>
+              </li>
+              <li>
+                <Link href="/faq" className="hover:text-[#C5A46D] transition-colors">
+                  SHA-256 Hash Auditing
+                </Link>
               </li>
             </ul>
           </div>
@@ -146,9 +173,17 @@ export function Footer() {
           <p className="max-w-2xl leading-relaxed">
             <strong className="text-[#BFC3C8]">Platform Integrity Notice:</strong> TrustDrive computes trust scores via a deterministic rules engine. SHA-256 cryptographic hashes ensure document tamper-evidence; they do not independently certify physical authenticity. Unchecked records are explicitly reported as &ldquo;no record found in supported sources&rdquo;.
           </p>
-          <div className="flex items-center gap-4 text-[#7A8089] whitespace-nowrap">
+          <div className="flex flex-wrap items-center gap-4 text-[#7A8089]">
             <span>&copy; {new Date().getFullYear()} TrustDrive Inc.</span>
-            <span>All rights reserved.</span>
+            <Link href="/privacy" className="hover:text-[#C5A46D] transition-colors">
+              Privacy
+            </Link>
+            <Link href="/terms" className="hover:text-[#C5A46D] transition-colors">
+              Terms
+            </Link>
+            <Link href="/contact" className="hover:text-[#C5A46D] transition-colors">
+              Contact
+            </Link>
           </div>
         </div>
       </div>

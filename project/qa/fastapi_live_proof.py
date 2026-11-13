@@ -13,8 +13,8 @@ import urllib.error
 
 BASE = "http://127.0.0.1:8000"
 DB = r"C:\Users\darak\Downloads\finall caranimation\.data\trustdrive.db"
-SELLER = ("samarth@trustdrive.dev", "demo1234")
-BUYER = ("rohan@trustdrive.dev", "demo1234")
+SELLER = ("samarth@trustdrive.dev", "demo123456")
+BUYER = ("rohan@trustdrive.dev", "demo123456")
 
 
 def req(method, path, token=None, body=None):

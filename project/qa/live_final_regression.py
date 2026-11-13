@@ -57,7 +57,7 @@ record("Next.js public homepage", s == 200, f"status={s}")
 
 # 2) Login (cookie-based) — use opener to capture Set-Cookie
 opener, jar = make_opener()
-s, b = call("POST", "/api/v1/auth/login", opener=opener, body={"email": SELLER, "password": "demo1234"})
+s, b = call("POST", "/api/v1/auth/login", opener=opener, body={"email": SELLER, "password": "demo123456"})
 token = td_token_from(jar)
 record("Seller login (cookie auth)", s == 200 and bool(token), f"status={s} token={'yes' if token else 'no'}")
 record("td_token cookie issued", bool(token), "cookie present" if token else "MISSING")

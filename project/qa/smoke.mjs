@@ -74,7 +74,7 @@ async function apiLogin(context, email, password) {
       await page.screenshot({ path: `${EVIDENCE_DIR}/smoke_seller_dashboard.png` });
     } else {
       // fallback: API login then goto dashboard
-      const ok = await apiLogin(ctx, 'samarth@trustdrive.dev', 'demo1234');
+      const ok = await apiLogin(ctx, 'samarth@trustdrive.dev', 'demo123456');
       console.log('[smoke] seller API login ok:', ok);
       await page.goto(`${BASE_URL}/seller`, { waitUntil: 'domcontentloaded' });
       await page.waitForTimeout(1500);
@@ -89,7 +89,7 @@ async function apiLogin(context, email, password) {
     if (buyerUi.ok) {
       await bpage.screenshot({ path: `${EVIDENCE_DIR}/smoke_buyer_dashboard.png` });
     } else {
-      const ok = await apiLogin(bctx, 'aditya@trustdrive.dev', 'demo1234');
+      const ok = await apiLogin(bctx, 'aditya@trustdrive.dev', 'demo123456');
       console.log('[smoke] buyer API login ok:', ok);
       await bpage.goto(`${BASE_URL}/buyer`, { waitUntil: 'domcontentloaded' });
       await bpage.waitForTimeout(1500);

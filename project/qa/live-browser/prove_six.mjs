@@ -23,8 +23,8 @@ import {
 } from "../live/harness.mjs";
 
 const ACCOUNTS = {
-  seller: { email: "samarth@trustdrive.dev", password: "demo1234", home: /\/seller/ },
-  buyer: { email: "rohan@trustdrive.dev", password: "demo1234", home: /\/buyer/ },
+  seller: { email: "samarth@trustdrive.dev", password: "demo123456", home: /\/seller/ },
+  buyer: { email: "rohan@trustdrive.dev", password: "demo123456", home: /\/buyer/ },
 };
 
 async function loginViaUI(page, role) {

@@ -95,14 +95,14 @@ export default function ArticleDetailPage({ params }: { params: { slug: string }
               How Algorithmic Cross-Correlation Detects Discrepancies
             </h2>
             <p>
-              TrustDrive’s deterministic engine evaluates vehicle progression mathematically. Rather than accepting a solitary odometer number, the platform builds a monotonic timeline incorporating statutory roadworthiness tests, periodic maintenance invoices, and RTO registration dates. When a service entry from 2024 reports 62,000 km while a 2026 listing claims 42,000 km, the system raises an immediate irreversible fraud anomaly.
+              TrustDrive’s deterministic engine evaluates vehicle progression mathematically. Rather than accepting a solitary odometer number, the platform builds a chronological timeline from the records a seller supplies — service invoices, inspection readings and registration documents. When a service entry from 2024 reports 62,000 km while a 2026 listing claims 42,000 km, the platform raises a finding for human review. It is a flag backed by cited readings, not a concluded fraud determination, and missing readings remain unverified coverage.
             </p>
 
             <h2 className="font-display font-bold text-2xl text-white pt-4">
               Cryptographic Integrity and Tamper-Evidence
             </h2>
             <p>
-              By anchoring every recorded reading inside an append-only SHA-256 hash chain, TrustDrive guarantees that historical records cannot be retroactively modified. Any alteration to an earlier block breaks the hash linkage of subsequent blocks, alerting buyers instantly.
+              Each stored document carries a SHA-256 hash, and corrections are written as new audited entries rather than silently overwriting verified history. A matching hash is evidence that a stored file has not changed; it proves file integrity, not document authenticity, and no blockchain anchoring is claimed. Any gap in the record is reported as unverified coverage, never as proof of a clean history.
             </p>
           </div>
 

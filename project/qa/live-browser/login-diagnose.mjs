@@ -30,7 +30,7 @@ log.push(`initial url=${page.url()}`);
 log.push(`forms=${await page.locator("form").count()} emailInputs=${await page.locator('form input[type="email"]').count()} passInputs=${await page.locator('form input[type="password"]').count()} submits=${await page.locator('form button[type="submit"]').count()}`);
 
 await page.locator('form input[type="email"]').first().fill("samarth@trustdrive.dev");
-await page.locator('form input[type="password"]').first().fill("demo1234");
+await page.locator('form input[type="password"]').first().fill("demo123456");
 const t0 = Date.now();
 await page.locator('form button[type="submit"]').first().click();
 await page.waitForURL(/\/seller/, { timeout: 90000 }).catch((e) => log.push(`waitForURL: ${String(e).slice(0, 120)}`));

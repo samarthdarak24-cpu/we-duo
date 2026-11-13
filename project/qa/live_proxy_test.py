@@ -23,7 +23,7 @@ jar = http.cookiejar.CookieJar()
 opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
 
 # 1) frontend login on localhost -> sets td_token cookie
-s, b = call("POST", "/api/v1/auth/login", jar, {"email": "samarth@trustdrive.dev", "password": "demo1234"})
+s, b = call("POST", "/api/v1/auth/login", jar, {"email": "samarth@trustdrive.dev", "password": "demo123456"})
 print("frontend login", s)
 cookies = [c.name for c in jar]
 print("cookies after login:", cookies)

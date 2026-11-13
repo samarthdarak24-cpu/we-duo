@@ -71,10 +71,10 @@ const FE_VEHICLE_GETS = [
 ];
 
 (async () => {
-  const seller = await login("samarth@trustdrive.dev", "demo1234");
-  const buyer = await login("rohan@trustdrive.dev", "demo1234");
-  const admin = await login("admin@trustdrive.dev", "demo1234");
-  const seller2 = await login("weduo@trustdrive.dev", "demo1234");
+  const seller = await login("samarth@trustdrive.dev", "demo123456");
+  const buyer = await login("rohan@trustdrive.dev", "demo123456");
+  const admin = await login("admin@trustdrive.dev", "demo123456");
+  const seller2 = await login("weduo@trustdrive.dev", "demo123456");
   ok("auth — all role tokens issued", !!seller && !!buyer && !!admin && !!seller2,
     `seller=${!!seller} buyer=${!!buyer} admin=${!!admin} seller2=${!!seller2}`);
   if (!seller) { finish(); return; }
@@ -212,7 +212,7 @@ const FE_VEHICLE_GETS = [
   ok("BE /api/v1/marketplace/listings not 5xx", bem.status < 500, `status=${bem.status}`);
   // backend auth: anon token endpoint behavior
   const beAuth = await be("POST", "/api/v1/auth/login", null,
-    { email: "samarth@trustdrive.dev", password: "demo1234" });
+    { email: "samarth@trustdrive.dev", password: "demo123456" });
   ok("BE auth login works", beAuth.status === 200, `status=${beAuth.status}`);
 
   finish();

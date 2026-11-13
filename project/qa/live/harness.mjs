@@ -38,13 +38,13 @@ export const RESULTS = path.join(__dirname, "results");
 for (const d of [SHOTS, RESULTS]) fs.mkdirSync(d, { recursive: true });
 
 export const ACCOUNTS = {
-  seller: { email: "samarth@trustdrive.dev", password: "demo1234", home: /\/seller/ },
+  seller: { email: "samarth@trustdrive.dev", password: "demo123456", home: /\/seller/ },
   // u-seller2 — the seeded dealer account. aditya@ is a buyer, so it can never
   // stand in for a second seller in a same-role/different-owner probe.
-  seller2: { email: "weduo@trustdrive.dev", password: "demo1234", home: /\/seller/ },
-  buyer: { email: "rohan@trustdrive.dev", password: "demo1234", home: /\/buyer/ },
-  buyer2: { email: "priya@trustdrive.dev", password: "demo1234", home: /\/buyer/ },
-  admin: { email: "admin@trustdrive.dev", password: "demo1234", home: /\/admin/ },
+  seller2: { email: "weduo@trustdrive.dev", password: "demo123456", home: /\/seller/ },
+  buyer: { email: "rohan@trustdrive.dev", password: "demo123456", home: /\/buyer/ },
+  buyer2: { email: "priya@trustdrive.dev", password: "demo123456", home: /\/buyer/ },
+  admin: { email: "admin@trustdrive.dev", password: "demo123456", home: /\/admin/ },
 };
 
 /** Read-only SQL against the SAME database the Next.js runtime writes to. */

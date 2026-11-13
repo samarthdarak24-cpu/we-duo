@@ -88,7 +88,7 @@ const admin = [
   "/api/v1/admin/disputes",
 ];
 
-const pw = "demo1234";
+const pw = "demo123456";
 try {
   const [s, b, a] = await Promise.all([
     login("samarth@trustdrive.dev", pw),

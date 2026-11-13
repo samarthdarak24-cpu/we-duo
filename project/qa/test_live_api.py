@@ -82,7 +82,7 @@ class TestAuth:
     def test_refresh_rotates_the_session(self):
         with mkclient(NEXT_URL) as c:
             login = c.post("/api/v1/auth/login",
-                           json={"email": "samarth@trustdrive.dev", "password": "demo1234"})
+                           json={"email": "samarth@trustdrive.dev", "password": "demo123456"})
             assert login.status_code == 200
             refresh = c.cookies.get("td_refresh")
             assert refresh
@@ -92,7 +92,7 @@ class TestAuth:
     def test_logout_revokes_the_session(self):
         with mkclient(NEXT_URL) as c:
             c.post("/api/v1/auth/login",
-                   json={"email": "samarth@trustdrive.dev", "password": "demo1234"})
+                   json={"email": "samarth@trustdrive.dev", "password": "demo123456"})
             assert c.post("/api/v1/auth/logout").status_code == 200
             assert c.get("/api/v1/me").status_code == 401
 
@@ -466,7 +466,7 @@ class TestVerificationAndAI:
 def _intel_token() -> str:
     """Fresh buyer token for a standalone FastAPI intelligence call."""
     with mkclient(INTEL_URL) as c:
-        r = c.post("/api/v1/auth/login", json={"email": "rohan@trustdrive.dev", "password": "demo1234"})
+        r = c.post("/api/v1/auth/login", json={"email": "rohan@trustdrive.dev", "password": "demo123456"})
         return r.json()["access_token"]
 
 

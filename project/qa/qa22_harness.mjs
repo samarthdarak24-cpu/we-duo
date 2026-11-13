@@ -63,7 +63,7 @@ async function intel(method, url, data, timeout = 90000) {
 async function getFastToken() {
   const r = await fetch(FAST + '/api/v1/auth/login', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: 'samarth@trustdrive.dev', password: 'demo1234' }),
+    body: JSON.stringify({ email: 'samarth@trustdrive.dev', password: 'demo123456' }),
   });
   const j = await r.json();
   fastToken = j?.data?.token || j?.data?.accessToken || j?.token || j?.access_token || '';
@@ -91,7 +91,7 @@ async function uiLogin(page, role) {
       const demo = page.locator(`button:has-text("${demoLabel}")`).first();
       if (await demo.count()) await demo.click().catch(() => {});
       await page.locator('#login-email').fill(role === 'seller' ? 'samarth@trustdrive.dev' : 'aditya@trustdrive.dev');
-      await page.locator('#login-password').fill('demo1234');
+      await page.locator('#login-password').fill('demo123456');
       await page.locator('button[type="submit"]').first().click();
       if (String(page.url()).includes('/login?')) throw new Error('native GET submit — React not hydrated');
       await page.waitForURL(u => String(u).includes(target), { timeout: 30000 });

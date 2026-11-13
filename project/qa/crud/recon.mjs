@@ -21,8 +21,8 @@ const { chromium } = pw.chromium ? pw : pw.default;
 const BASE = (process.argv[2] || process.env.CRUD_BASE_URL || 'http://127.0.0.1:3000').replace(/\/$/, '');
 const OUT = path.join(ROOT, 'qa', 'crud', 'recon.json');
 
-const SELLER = { email: 'samarth@trustdrive.dev', password: 'demo1234' };
-const BUYER = { email: 'rohan@trustdrive.dev', password: 'demo1234' };
+const SELLER = { email: 'samarth@trustdrive.dev', password: 'demo123456' };
+const BUYER = { email: 'rohan@trustdrive.dev', password: 'demo123456' };
 
 const SELLER_PAGES = [
   ['/seller', 'seller-overview'],

@@ -111,11 +111,11 @@ async function login(page, email, password, home) {
 }
 
 const ACCOUNTS = {
-  seller: { email: "samarth@trustdrive.dev", password: "demo1234", home: /\/seller/ },
-  seller2: { email: "weduo@trustdrive.dev", password: "demo1234", home: /\/seller/ },  // u-seller2, a real second seller
-  buyer: { email: "rohan@trustdrive.dev", password: "demo1234", home: /\/buyer/ },
-  buyer2: { email: "priya@trustdrive.dev", password: "demo1234", home: /\/buyer/ },
-  admin: { email: "admin@trustdrive.dev", password: "demo1234", home: /\/admin/ },
+  seller: { email: "samarth@trustdrive.dev", password: "demo123456", home: /\/seller/ },
+  seller2: { email: "weduo@trustdrive.dev", password: "demo123456", home: /\/seller/ },  // u-seller2, a real second seller
+  buyer: { email: "rohan@trustdrive.dev", password: "demo123456", home: /\/buyer/ },
+  buyer2: { email: "priya@trustdrive.dev", password: "demo123456", home: /\/buyer/ },
+  admin: { email: "admin@trustdrive.dev", password: "demo123456", home: /\/admin/ },
 };
 
 // ---------------------------------------------------------------- PHASE: health

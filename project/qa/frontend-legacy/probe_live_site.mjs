@@ -11,7 +11,7 @@ async function loginAs(email) {
   await page.goto(`${BASE}/login?${SC}`, { waitUntil: "networkidle", timeout: 45000 });
   await page.waitForTimeout(1800);
   await page.locator("#login-email").fill(email);
-  await page.locator("#login-password").fill("demo1234");
+  await page.locator("#login-password").fill("demo123456");
   await page.locator('form button[type="submit"]').first().click();
   await page.waitForURL((u) => !u.pathname.includes("/login"), { timeout: 20000 });
   return { ctx, page };

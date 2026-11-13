@@ -12,7 +12,7 @@ for (let attempt = 1; attempt <= 3 && status !== 200; attempt += 1) {
   await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" }).catch(() => {});
   await waitForHydration(page, "#login-email");
   await page.locator("#login-email").fill("samarth@trustdrive.dev");
-  await page.locator("#login-password").fill("demo1234");
+  await page.locator("#login-password").fill("demo123456");
   const rp = page
     .waitForResponse((r) => r.url().includes("/api/v1/auth/login") && r.request().method() === "POST", { timeout: 45000 })
     .catch(() => null);

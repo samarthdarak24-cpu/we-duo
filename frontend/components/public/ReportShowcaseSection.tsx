@@ -152,7 +152,7 @@ export function ReportShowcaseSection() {
                         Ownership
                       </span>
                       <div className="font-bold text-base text-white mt-1">Single Owner</div>
-                      <div className="text-[11px] text-[#36B982] mt-0.5">RTO Verified</div>
+                      <div className="text-[11px] text-[#C5A46D] mt-0.5">Seller-declared</div>
                     </div>
                     <div className="p-4 rounded-xl bg-[#17191C] border border-[#23262A]">
                       <span className="text-[10px] uppercase font-mono tracking-wider text-[#7A8089]">
@@ -177,7 +177,7 @@ export function ReportShowcaseSection() {
                       <span>Deterministic Intelligence Assessment</span>
                     </div>
                     <p className="text-[13px] leading-relaxed text-[#BFC3C8]">
-                      All statutory documents (RC, Comprehensive Insurance, Emission Certificate) have valid expiry dates. Odometer progression from 2021 (0 km) to 2026 (42,000 km) aligns with standard annual utilization curves (8,400 km/yr). No duplicate invoice checksums detected in the national vehicle hash database.
+                      This illustrative example shows how an assessment reads: uploaded documents are checked for expiry dates, odometer readings are ordered chronologically, and document hashes are compared for duplicates within this platform's own stored records. No external or government database is queried unless a provider is configured; unconfigured checks are reported as unavailable, never as a clean result.
                     </p>
                     <div className="pt-2 flex items-center gap-4 text-[11px] text-[#7A8089]">
                       <span>Engine: Deterministic v2.4</span>
@@ -257,7 +257,7 @@ export function ReportShowcaseSection() {
                     file: "v-bmw-rc.pdf",
                     status: "Verified",
                     hash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-                    extracted: "VIN & Owner Name Matched RTO Database",
+                    extracted: "VIN & owner fields checked against stored vehicle record",
                   },
                   {
                     type: "Comprehensive Insurance",
@@ -333,7 +333,7 @@ export function ReportShowcaseSection() {
 
           {/* Bottom Footnote on Honesty */}
           <div className="p-4 bg-[#0D0F11] border-t border-[#23262A] text-center text-[11px] text-[#7A8089]">
-            Sample report illustrative of actual TrustDrive inspection outputs. Real reports are generated on-demand via the platform verification pipeline.
+            Illustrative sample only — values are not live results. No government or national vehicle registry is connected by default. Real reports are generated on demand from stored records and state their sources, limitations and verification status.
           </div>
         </div>
       </div>

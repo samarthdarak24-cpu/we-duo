@@ -5,7 +5,7 @@ page.on("console", m => { if (m.type() === "error" && /hydrat|Extra attributes/i
 await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });
 await waitForHydration(page, "#login-email");
 await page.locator("#login-email").fill("rohan@trustdrive.dev");
-await page.locator("#login-password").fill("demo1234");
+await page.locator("#login-password").fill("demo123456");
 await page.locator('form button[type="submit"]').evaluate(el => el.click());
 await page.waitForURL(/\/buyer/, { timeout: 45000 }).catch(() => {});
 await page.waitForTimeout(1500);

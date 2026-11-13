@@ -95,7 +95,7 @@ export default function TechnologyPage() {
                   Multi-Factor OCR & Cross-Registration Verification
                 </h3>
                 <p className="text-[14px] text-[#7A8089] leading-relaxed">
-                  Our optical character recognition pipeline handles skewed cell phone snapshots, faded thermal receipts, and multi-page insurance declarations. Extracted parameters (Chassis VIN, Engine Number, Emission Standard, Registration Authority) are validated against national transport databases and checked for duplicate usage across other registered vehicles.
+                  Our optical character recognition pipeline handles skewed cell phone snapshots, faded thermal receipts, and multi-page insurance declarations. Extracted parameters (Chassis VIN, Engine Number, Emission Standard, Registration Authority) are checked against the vehicle record stored on this platform and scanned for duplicate document hashes. No external or government transport database is queried unless an operator explicitly configures a provider; unconfigured checks are reported as unavailable, never as a clean result.
                 </p>
                 <div className="pt-2 text-[12px] font-mono text-[#36B982] flex items-center gap-1.5">
                   <Icon name="Check" size={14} />

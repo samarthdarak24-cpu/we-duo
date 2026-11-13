@@ -24,7 +24,7 @@ async function loginAs(context, page, roleName) {
   const targetPath = roleName === 'Seller' ? '/seller' : '/buyer';
 
   const loginRes = await context.request.post(`${BASE_URL}/api/v1/auth/login`, {
-    data: { email, password: 'demo1234' }
+    data: { email, password: 'demo123456' }
   });
   if (!loginRes.ok()) {
     throw new Error(`Failed to log in as ${roleName}: ${loginRes.status()}`);

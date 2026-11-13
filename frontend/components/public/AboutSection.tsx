@@ -1,13 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
+import { getPublicPlatformStats } from "@/lib/server/public-stats";
 
 export function AboutSection() {
+  // Every figure below is read from the shared database at render time
+  // (design.md §0.3). No marketing constant is presented as a live statistic.
+  const counts = getPublicPlatformStats();
   const stats = [
-    { value: "9+", label: "Vehicles Live Cataloged", sub: "100% Database Seeded" },
-    { value: "100%", label: "SHA-256 Hash Audited", sub: "Tamper-Evident Chain" },
-    { value: "Zero", label: "Undisclosed Accidents", sub: "Strict Policy Rule" },
-    { value: "3", label: "Dedicated Portals", sub: "Buyer / Seller / Admin" },
+    { value: counts.vehicles.toLocaleString("en-IN"), label: "Vehicles Registered", sub: "Live database count" },
+    { value: counts.publishedListings.toLocaleString("en-IN"), label: "Published Listings", sub: "Public marketplace" },
+    { value: counts.hashedDocuments.toLocaleString("en-IN"), label: "Documents Hash-Audited", sub: "SHA-256 integrity only" },
+    { value: counts.verificationRuns.toLocaleString("en-IN"), label: "Verification Runs", sub: "Recorded on this platform" },
   ];
 
   return (
@@ -67,7 +71,7 @@ export function AboutSection() {
           </div>
         </div>
 
-        {/* Real Statistics Grid */}
+        {/* Database-derived statistics — never hardcoded marketing numbers */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-10 border-t border-[#23262A]">
           {stats.map((s) => (
             <div key={s.label} className="p-5 rounded-2xl bg-[#111315] border border-[#23262A] text-center">

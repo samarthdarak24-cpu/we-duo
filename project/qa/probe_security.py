@@ -37,10 +37,10 @@ def tokens() -> dict[str, dict[str, str]]:
     out: dict[str, dict[str, str]] = {}
     for name, (email, _uid) in ACCOUNTS.items():
         with cli(NEXT) as c:
-            r = c.post("/api/v1/auth/login", json={"email": email, "password": "demo1234"})
+            r = c.post("/api/v1/auth/login", json={"email": email, "password": "demo123456"})
             out.setdefault(name, {})["next"] = c.cookies.get("td_token") or ""
         with cli(INTEL) as c:
-            r = c.post("/api/v1/auth/login", json={"email": email, "password": "demo1234"})
+            r = c.post("/api/v1/auth/login", json={"email": email, "password": "demo123456"})
             body = r.json()
             tok = body.get("access_token") or body.get("data", {}).get("access_token")
             out[name]["intel"] = tok or ""

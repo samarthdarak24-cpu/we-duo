@@ -73,8 +73,8 @@ export function ProblemSection() {
         "https://images.unsplash.com/photo-1450133064473-71024230f91b?auto=format&fit=crop&w=800&q=80",
       description:
         "Forged registration cards, doctored insurance renewal dates, and duplicate workshop invoices routinely bypass standard human scrutiny.",
-      countermeasure: "Computer-vision OCR font validation & state RTO registry cross-referencing.",
-      detectionTelemetry: "FONT KERNING MISMATCH // RTO REGISTRY HASH INVALID",
+      countermeasure: "OCR field extraction & consistency checks against the stored vehicle record.",
+      detectionTelemetry: "FIELD MISMATCH // DOCUMENT HASH DUPLICATE FOUND",
     },
     {
       number: "05",
@@ -90,7 +90,7 @@ export function ProblemSection() {
         "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=800&q=80",
       description:
         "Undisclosed commercial rental fleet usage and rapid sequential ownership flips degrade vehicle reliability and market resale value.",
-      countermeasure: "Immutable ownership timeline tracking from date of original RTO issuance.",
+      countermeasure: "Audited ownership timeline built from the earliest supplied record.",
       detectionTelemetry: "TRANSFER VELOCITY: 3 OWNERS IN 14 MONTHS // FLEET FLAG",
     },
   ];

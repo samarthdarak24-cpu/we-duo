@@ -47,7 +47,7 @@ async function login() {
     const res = await fetch(BASE + "/api/v1/auth/login", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ email, password: "demo1234" }),
+      body: JSON.stringify({ email, password: "demo123456" }),
       signal: AbortSignal.timeout(20000),
     });
     const c = cookieOf(res);

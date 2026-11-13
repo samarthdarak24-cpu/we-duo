@@ -27,8 +27,8 @@ const OUT = path.join(ROOT, 'qa', 'crud', 'crud-results.json');
 const DB_FILE = path.join(ROOT, '.data', 'trustdrive.db');
 
 const TAG = `CRUDQ${Date.now().toString().slice(-6)}`;
-const SELLER = { email: 'samarth@trustdrive.dev', password: 'demo1234', id: 'u-seller' };
-const BUYER = { email: 'rohan@trustdrive.dev', password: 'demo1234', id: 'u-buyer2' };
+const SELLER = { email: 'samarth@trustdrive.dev', password: 'demo123456', id: 'u-seller' };
+const BUYER = { email: 'rohan@trustdrive.dev', password: 'demo123456', id: 'u-buyer2' };
 
 fs.mkdirSync(SHOTS, { recursive: true });
 

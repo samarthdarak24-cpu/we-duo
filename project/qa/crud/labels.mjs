@@ -17,8 +17,8 @@ const BASE = process.argv[2].replace(/\/$/, '');
 const ROLE = process.argv[3];
 const PATHS = process.argv.slice(4);
 const CREDS = ROLE === 'buyer'
-  ? { email: 'rohan@trustdrive.dev', password: 'demo1234' }
-  : { email: 'samarth@trustdrive.dev', password: 'demo1234' };
+  ? { email: 'rohan@trustdrive.dev', password: 'demo123456' }
+  : { email: 'samarth@trustdrive.dev', password: 'demo123456' };
 
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1440, height: 950 } });

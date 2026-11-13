@@ -17,11 +17,11 @@ NEXT = "http://127.0.0.1:3000"
 INTEL = "http://127.0.0.1:8000"
 
 ACCOUNTS = {
-    "seller_a": ("samarth@trustdrive.dev", "demo1234"),
-    "seller_b": ("aditya@trustdrive.dev", "demo1234"),
-    "buyer": ("rohan@trustdrive.dev", "demo1234"),
-    "buyer_b": ("priya@trustdrive.dev", "demo1234"),
-    "admin": ("admin@trustdrive.dev", "demo1234"),
+    "seller_a": ("samarth@trustdrive.dev", "demo123456"),
+    "seller_b": ("aditya@trustdrive.dev", "demo123456"),
+    "buyer": ("rohan@trustdrive.dev", "demo123456"),
+    "buyer_b": ("priya@trustdrive.dev", "demo123456"),
+    "admin": ("admin@trustdrive.dev", "demo123456"),
 }
 
 

@@ -148,7 +148,7 @@ try {
   await page.goto(`${base}/login`, { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(1200);
   await page.locator("#login-email").fill("aditya@trustdrive.dev");
-  await page.locator("#login-password").fill("demo1234");
+  await page.locator("#login-password").fill("demo123456");
   await page.locator("form button[type=submit]").click();
   await page.waitForURL(/\/buyer$/, { timeout: 15000 });
   report.login = { ok: true, finalUrl: page.url() };

@@ -20,7 +20,7 @@ await page.waitForTimeout(1500);
 const emailLocator = page.getByLabel(/email/i);
 log.push(`email matches=${await emailLocator.count()} formEmailInputs=${await page.locator('form input[type="email"]').count()}`);
 await emailLocator.fill("samarth@trustdrive.dev");
-await page.getByLabel(/password/i).fill("demo1234");
+await page.getByLabel(/password/i).fill("demo123456");
 log.push(`values after fill: email="${await page.locator('form input[type="email"]').first().inputValue()}" password="${await page.locator('form input[type="password"]').first().inputValue()}"`);
 await page.locator('form button[type="submit"]').click();
 await page.waitForTimeout(8000);

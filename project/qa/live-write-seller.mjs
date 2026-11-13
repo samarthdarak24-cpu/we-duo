@@ -36,7 +36,7 @@ function rec(name, r, extra = "") {
 }
 
 (async () => {
-  await call("/api/v1/auth/login", { method: "POST", body: { email: "samarth@trustdrive.dev", password: "demo1234" } });
+  await call("/api/v1/auth/login", { method: "POST", body: { email: "samarth@trustdrive.dev", password: "demo123456" } });
 
   // ---- 3.2/3.3 ADD VEHICLE (the endpoint the UI stepper actually calls)
   const AL = "ABCDEFGHJKLMNPRSTUVWXYZ0123456789"; // VIN charset: no I, O, Q

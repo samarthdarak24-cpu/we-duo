@@ -49,8 +49,8 @@ const SERVICE_TOKEN = (() => {
 })();
 
 const ACCOUNTS = {
-  seller: { email: "samarth@trustdrive.dev", password: "demo1234", home: /\/seller/ },
-  buyer: { email: "rohan@trustdrive.dev", password: "demo1234", home: /\/buyer/ },
+  seller: { email: "samarth@trustdrive.dev", password: "demo123456", home: /\/seller/ },
+  buyer: { email: "rohan@trustdrive.dev", password: "demo123456", home: /\/buyer/ },
 };
 
 // Login through the REAL form. Local copy of the proven prove_six.mjs helper:

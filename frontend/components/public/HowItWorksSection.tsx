@@ -228,8 +228,8 @@ export function HowItWorksSection() {
                       <span className="text-white font-bold">2021</span>
                     </div>
                     <div className="p-2.5 rounded-lg bg-[#111315] border border-[#23262A]">
-                      <span className="text-[#7A8089] block text-[9px]">RTO STATUS</span>
-                      <span className="text-[#36B982] font-bold">Active Title</span>
+                      <span className="text-[#7A8089] block text-[9px]">TITLE SOURCE</span>
+                      <span className="text-[#C5A46D] font-bold">Seller-declared</span>
                     </div>
                   </div>
                 </div>
@@ -281,8 +281,8 @@ export function HowItWorksSection() {
                       <div className="w-1/5 bg-[#36B982] h-[95%] rounded-t" title="Verified: 42,000 km" />
                     </div>
                     <div className="flex items-center justify-between text-[10px] font-mono text-[#7A8089]">
-                      <span>2021 (RTO)</span>
-                      <span>2024 (Verified Monotonic)</span>
+                      <span>2021 (stored record)</span>
+                      <span>2024 (Monotonic check)</span>
                     </div>
                   </div>
                 </div>

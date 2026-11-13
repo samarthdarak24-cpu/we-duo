@@ -23,9 +23,9 @@ PYBASE = "http://127.0.0.1:8000"
 OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 CREDS = {
-    "seller": ("samarth@trustdrive.dev", "demo1234"),
-    "buyer": ("aditya@trustdrive.dev", "demo1234"),
-    "admin": ("admin@trustdrive.dev", "demo1234"),
+    "seller": ("samarth@trustdrive.dev", "demo123456"),
+    "buyer": ("aditya@trustdrive.dev", "demo123456"),
+    "admin": ("admin@trustdrive.dev", "demo123456"),
 }
 
 

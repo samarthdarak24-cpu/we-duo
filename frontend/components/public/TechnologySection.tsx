@@ -13,38 +13,38 @@ export function TechnologySection() {
       subtitle: "Mathematical Rule-Based Scoring",
       tag: "Pure Rules Logic",
       icon: "Scale",
-      status: "100% Rule-Based",
-      highlights: ["Zero LLM hallucinations in score generation", "Fixed penalties for documented anomalies", "Auditable 0 to 100 deterministic scale"],
+      status: "Rule-Based",
+      highlights: ["No language model sets the score", "Fixed penalties for documented anomalies", "Auditable 0 to 100 additive scale"],
       visualType: "formula",
     },
     {
       id: "ocr",
       title: "OCR & Document Vision",
       subtitle: "Automotive Document Ingestion",
-      tag: "Computer Vision",
+      tag: "Document Extraction",
       icon: "ScanSearch",
-      status: "99.2% Accuracy",
-      highlights: ["Sub-millimeter bounding box character extraction", "Cross-checks RC, Insurance & Workshop logs", "Detects font kerning tampering & doctored seals"],
+      status: "Engine-Dependent",
+      highlights: ["Extracts fields with an evidence reference", "Checks fields against the stored vehicle record", "Unavailable engine returns an honest error"],
       visualType: "ocr",
     },
     {
       id: "blockchain",
-      title: "Cryptographic SHA-256 Chains",
-      subtitle: "Immutable File Fingerprints",
+      title: "SHA-256 File Integrity",
+      subtitle: "Tamper-Evident Fingerprints",
       tag: "Tamper-Evident",
       icon: "ShieldCheck",
-      status: "256-Bit Ledger",
-      highlights: ["Cryptographic hash generated upon document arrival", "Append-only chain prevents retroactive tampering", "Permits verifiable independent auditing"],
+      status: "SHA-256 Hashes",
+      highlights: ["A hash is stored for each uploaded document", "A matching hash proves file integrity only", "No blockchain anchoring is claimed"],
       visualType: "chain",
     },
     {
       id: "audit",
-      title: "Zero-Knowledge Audit Trail",
+      title: "Audited Change Trail",
       subtitle: "Timestamped State Progression",
-      tag: "Immutable Ledger",
+      tag: "Audit Records",
       icon: "FileClock",
-      status: "Real-Time Feed",
-      highlights: ["Every status change permanently logged", "Admin reviews and seller appeals tracked", "Complete provenance preserved for life of vehicle"],
+      status: "Server-Written",
+      highlights: ["Material changes are logged with actor and time", "Admin reviews and seller appeals are tracked", "Corrections supersede rather than silently overwrite"],
       visualType: "feed",
     },
     {
@@ -53,18 +53,18 @@ export function TechnologySection() {
       subtitle: "Admin Verification Queue",
       tag: "Human Oversight",
       icon: "Users",
-      status: "Admin Queue Live",
-      highlights: ["AI flags inconsistencies without accusing fraud", "Sellers can upload corrective evidence and receipts", "Human inspectors review disputed records"],
+      status: "Review Queue",
+      highlights: ["Findings are suggestions, not accusations of fraud", "Sellers can submit corrective evidence", "Human reviewers resolve disputed records"],
       visualType: "arbitration",
     },
     {
       id: "privacy",
       title: "Privacy & Consent Safeguards",
-      subtitle: "Granular Document Masking",
+      subtitle: "Granular Document Access",
       tag: "Privacy First",
       icon: "Lock",
-      status: "Granular Consent",
-      highlights: ["Owner names & contact masked on public browsing", "Sellers grant explicit access to verified buyers", "Protected under Indian DPDP privacy standards"],
+      status: "Consent-Gated",
+      highlights: ["Private documents are not publicly addressable", "Sellers grant explicit access to a buyer", "Role checks are enforced on the server"],
       visualType: "privacy",
     },
   ];
@@ -82,7 +82,7 @@ export function TechnologySection() {
             Designed for Transparency.
           </h2>
           <p className="mt-4 text-[15px] text-[#BFC3C8] leading-relaxed">
-            We reject marketing hype. Every claim made on TrustDrive is backed by cryptographic hash chains, computer vision, and transparent deterministic rules.
+            We avoid unverifiable claims. Findings cite stored evidence and the rule or model version that produced them; a SHA-256 hash proves file integrity, not document authenticity, and no external registry is queried unless explicitly configured. The diagrams below are illustrative.
           </p>
         </div>
 
@@ -149,8 +149,8 @@ export function TechnologySection() {
                     {pillar.visualType === "ocr" && (
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between text-[#7A8089] text-[10px]">
-                          <span>OCR CONFIDENCE</span>
-                          <span className="text-[#36B982]">99.2% MATCH</span>
+                          <span>OCR PREVIEW</span>
+                          <span className="text-[#C5A46D]">ILLUSTRATIVE</span>
                         </div>
                         <div className="space-y-1">
                           <div className="flex justify-between text-[10px] p-1 rounded bg-[#111315]">
@@ -159,7 +159,7 @@ export function TechnologySection() {
                           </div>
                           <div className="flex justify-between text-[10px] p-1 rounded bg-[#111315]">
                             <span className="text-[#7A8089]">SEAL:</span>
-                            <span className="text-[#36B982]">AUTHENTIC RTO</span>
+                            <span className="text-[#C5A46D]">TEXT DETECTED (UNVERIFIED)</span>
                           </div>
                         </div>
                       </div>
@@ -175,9 +175,9 @@ export function TechnologySection() {
                         <div className="p-1.5 rounded bg-[#111315] text-[10px] text-[#BFC3C8] truncate">
                           #block-28: 9f8a4e21c33b0c44...
                         </div>
-                        <div className="flex items-center gap-1.5 text-[10px] text-[#36B982]">
+                        <div className="flex items-center gap-1.5 text-[10px] text-[#C5A46D]">
                           <Icon name="ShieldCheck" size={12} />
-                          <span>Tamper-evident append-only chain</span>
+                          <span>Integrity only — not authenticity</span>
                         </div>
                       </div>
                     )}
@@ -186,14 +186,14 @@ export function TechnologySection() {
                     {pillar.visualType === "feed" && (
                       <div className="space-y-1 text-[10px]">
                         <div className="flex items-center justify-between text-[#7A8089]">
-                          <span>LIVE AUDIT STREAM</span>
-                          <span className="text-[#36B982] animate-pulse">RECORDING</span>
+                          <span>CHANGE LOG EXAMPLE</span>
+                          <span className="text-[#C5A46D]">ILLUSTRATIVE</span>
                         </div>
                         <div className="p-1 rounded bg-[#111315] text-[#BFC3C8] truncate">
                           [14:20:05] Document Ingested (RC)
                         </div>
-                        <div className="p-1 rounded bg-[#111315] text-[#36B982] truncate">
-                          [14:20:07] Cryptographic Hash Anchored
+                        <div className="p-1 rounded bg-[#111315] text-[#C5A46D] truncate">
+                          [14:20:07] SHA-256 Hash Stored
                         </div>
                       </div>
                     )}
@@ -210,7 +210,7 @@ export function TechnologySection() {
                           <span className="p-1 rounded bg-[#111315] text-[#36B982]">Human Arbitrates</span>
                         </div>
                         <div className="text-[10px] text-[#7A8089] text-center">
-                          Zero false accusations &bull; Appealable findings
+                          Suggestions only &bull; Appealable findings
                         </div>
                       </div>
                     )}
@@ -244,10 +244,10 @@ export function TechnologySection() {
                   </div>
                 </div>
 
-                {/* Bottom Active Implementation Footer */}
-                <div className="mt-5 pt-3 border-t border-[#23262A]/60 flex items-center gap-1.5 text-[11px] font-mono text-[#36B982]">
-                  <Icon name="CheckCircle2" size={13} />
-                  <span>Production Implementation Active</span>
+                {/* Bottom capability footnote — no unearned "production active" claim. */}
+                <div className="mt-5 pt-3 border-t border-[#23262A]/60 flex items-center gap-1.5 text-[11px] font-mono text-[#7A8089]">
+                  <Icon name="Info" size={13} />
+                  <span>Capability overview &bull; diagrams illustrative</span>
                 </div>
               </div>
             );

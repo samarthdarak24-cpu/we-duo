@@ -13,7 +13,7 @@ console.log("URL", page.url());
 console.log("email inputs", await page.locator("input").count());
 console.log("submit buttons", await page.locator('form button[type="submit"]').count());
 await page.locator("#login-email").fill("samarth@trustdrive.dev");
-await page.locator("#login-password").fill("demo1234");
+await page.locator("#login-password").fill("demo123456");
 await page.locator('form button[type="submit"]').click();
 await page.waitForTimeout(6000);
 console.log("AFTER URL", page.url());

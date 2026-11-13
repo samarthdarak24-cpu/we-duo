@@ -13,7 +13,7 @@ page.on("pageerror", (e) => console.log("PAGEERROR", String(e).slice(0, 200)));
 await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });
 await waitForHydration(page, "#login-email");
 await page.locator("#login-email").fill("rohan@trustdrive.dev");
-await page.locator("#login-password").fill("demo1234");
+await page.locator("#login-password").fill("demo123456");
 await page.locator('form button[type="submit"]').click();
 await page.waitForURL(/\/buyer/, { timeout: 30000 }).catch(() => {});
 console.log("logged in at", page.url());

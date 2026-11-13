@@ -4,16 +4,18 @@ import json
 import urllib.error
 import urllib.request
 
-BASE = "http://127.0.0.1:3000"
+import os
+BASE = os.environ.get("TD_BASE", "http://127.0.0.1:3000").rstrip("/")
 OP = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 CREDS = {
-    "seller": ("samarth@trustdrive.dev", "demo1234"),
-    "buyer": ("aditya@trustdrive.dev", "demo1234"),
-    "admin": ("admin@trustdrive.dev", "demo1234"),
+    "seller": ("samarth@trustdrive.dev", "demo123456"),
+    "buyer": ("aditya@trustdrive.dev", "demo123456"),
+    "admin": ("admin@trustdrive.dev", "demo123456"),
 }
 PAGES = {
     "public": ["/", "/marketplace", "/login", "/register", "/contact", "/faq",
-               "/technology", "/resources", "/verify/TD-7H2P4R1S", "/vehicle/v-seller"],
+               "/technology", "/resources", "/about", "/inspection",
+               "/privacy", "/terms", "/verify/TD-7H2P4R1S", "/vehicle/v-seller"],
     "seller": ["/seller", "/seller/vehicles", "/seller/vehicles/v-seller", "/seller/add-vehicle",
                "/seller/listings", "/seller/listings/l-seller", "/seller/documents",
                "/seller/history", "/seller/fraud", "/seller/inquiries", "/seller/inquiries/q1",

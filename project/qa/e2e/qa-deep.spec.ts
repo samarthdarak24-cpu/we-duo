@@ -10,8 +10,8 @@ import path from "node:path";
  */
 const BASE = process.env.QA_BASE_URL || "http://127.0.0.1:3301";
 const SHOTS = path.resolve(__dirname, "..", "screenshots");
-const SELLER = { email: "samarth@trustdrive.dev", password: "demo1234" };
-const BUYER = { email: "rohan@trustdrive.dev", password: "demo1234" };
+const SELLER = { email: "samarth@trustdrive.dev", password: "demo123456" };
+const BUYER = { email: "rohan@trustdrive.dev", password: "demo123456" };
 
 let SELLER_TOKEN = "";
 let BUYER_TOKEN = "";
@@ -31,7 +31,7 @@ test.beforeAll(async ({ playwright }) => {
   const api = await playwright.request.newContext({ baseURL: BASE });
   SELLER_TOKEN = await loginApi(api, SELLER.email, SELLER.password);
   BUYER_TOKEN = await loginApi(api, BUYER.email, BUYER.password);
-  ADMIN_TOKEN = await loginApi(api, "admin@trustdrive.dev", "demo1234");
+  ADMIN_TOKEN = await loginApi(api, "admin@trustdrive.dev", "demo123456");
   await api.dispose();
 });
 

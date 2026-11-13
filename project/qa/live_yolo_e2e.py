@@ -22,7 +22,7 @@ def req(method, path, token=None, body=None):
 
 
 # 1) login
-s, b = req("POST", "/api/v1/auth/login", body={"email": "samarth@trustdrive.dev", "password": "demo1234"})
+s, b = req("POST", "/api/v1/auth/login", body={"email": "samarth@trustdrive.dev", "password": "demo123456"})
 tok = json.loads(b)["access_token"]
 
 # 2) place a real car image on disk + register a photo row
