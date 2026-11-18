@@ -33,7 +33,10 @@ REG_LABEL_RE = re.compile(
 )
 REG_RE = re.compile(r"(?<![A-Z0-9-])([A-Z]{2}[-\s]?\d{1,2}[-\s]?[A-Z]{1,3}[-\s]?\d{1,4})\b")
 VIN_RE = re.compile(r"\b([A-HJ-NPR-Z0-9]{17})\b", re.I)
-POLICY_RE = re.compile(r"\b(?:policy|policy\s*no\.?|policy\s*number)\s*[:#\uff1a]?\s*([A-Z0-9/-]{6,24})\b", re.I)
+POLICY_RE = re.compile(
+    r"\b(?:policy(?:\s*(?:no\.?|number))?)\s*[:#\uff1a]?\s*\n?\s*(?!number\b)([A-Z0-9/-]{6,30})\b",
+    re.I,
+)
 INVOICE_NO_RE = re.compile(
     r"\b(?:invoice\s*(?:no\.?|number|#)|report\s*(?:no\.?|number|#)|bill\s*(?:no\.?|number|#)|receipt\s*(?:no\.?|number|#))"
     r"\s*[:#\uff1a]?\s*([A-Z0-9][A-Z0-9/-]{3,30})\b",

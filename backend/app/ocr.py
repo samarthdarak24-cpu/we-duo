@@ -318,7 +318,66 @@ class RapidOcrBackend:
 
     def run(self, path: Path) -> OcrResult:
         if path.suffix.lower() == ".pdf":
-            return OcrResult(engine=self.name, method="not-applicable")
+            # If the PDF has an embedded digital text layer, PyMuPDF (PdfTextBackend)
+            # handles it cleanly and accurately. Only rasterize and OCR if there is no text layer.
+            try:
+                import fitz  # type: ignore
+                doc = fitz.open(str(path))
+                text_layer = "\n".join(page.get_text() for page in doc).strip()
+                if len(text_layer) >= 20:
+                    doc.close()
+                    return OcrResult(engine=self.name, method="not-applicable")
+
+                # Image-based / scanned PDF: rasterize pages to images and run RapidOCR
+                from rapidocr_onnxruntime import RapidOCR  # type: ignore
+                import numpy as np  # type: ignore
+                import cv2  # type: ignore
+
+                engine = RapidOCR()
+                lines: list[str] = []
+                scores: list[float] = []
+                pages_count = len(doc)
+                for page_idx in range(min(pages_count, 10)):
+                    page = doc[page_idx]
+                    pix = page.get_pixmap(dpi=150)
+                    img = np.frombuffer(pix.samples, dtype=np.uint8).reshape((pix.height, pix.width, pix.n))
+                    if pix.n == 4:
+                        img = cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
+                    res, _ = engine(img)
+                    for item in res or []:
+                        if isinstance(item, (list, tuple)) and len(item) >= 3:
+                            lines.append(str(item[1]))
+                            try:
+                                scores.append(float(item[2]))
+                            except (TypeError, ValueError):
+                                pass
+                        elif isinstance(item, dict):
+                            lines.append(str(item.get("text", "")))
+                            try:
+                                scores.append(float(item.get("score", 0)))
+                            except (TypeError, ValueError):
+                                pass
+                doc.close()
+                text = "\n".join(line for line in lines if line.strip())
+                return OcrResult(
+                    text=text,
+                    engine=self.name,
+                    method="rapidocr-pdf-raster",
+                    pages=pages_count,
+                    confidence=round(sum(scores) / len(scores), 3) if scores else None,
+                    warnings=[] if text else ["RapidOCR found no text across PDF pages."],
+                    preprocessing={"pdf_pages_rasterized": min(pages_count, 10)},
+                    sha256=sha256_file(path),
+                    is_ocr=True,
+                )
+            except Exception as exc:
+                return OcrResult(
+                    engine=self.name,
+                    method="rapidocr-pdf-error",
+                    is_ocr=True,
+                    warnings=[f"RapidOCR PDF extraction failed: {type(exc).__name__}: {exc}"],
+                    sha256=sha256_file(path),
+                )
         try:
             from rapidocr_onnxruntime import RapidOCR  # type: ignore
             ocr_input, quality_meta = _analyze_and_prepare_image(path)

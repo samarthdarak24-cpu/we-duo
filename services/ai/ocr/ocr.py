@@ -227,6 +227,45 @@ def _pdf_text_layer(p: Path) -> dict:
                          if not text.strip() else [])}
 
 
+def _rapidocr_pdf(p: Path) -> dict:
+    """Rasterize pages of a scanned/image PDF and extract text via RapidOCR."""
+    import fitz  # type: ignore
+    import numpy as np  # type: ignore
+    import cv2  # type: ignore
+    from rapidocr_onnxruntime import RapidOCR  # type: ignore
+
+    doc = fitz.open(str(p))
+    engine = RapidOCR()
+    lines: list[dict] = []
+    scores: list[float] = []
+    for page_idx in range(min(len(doc), 10)):
+        page = doc[page_idx]
+        pix = page.get_pixmap(dpi=150)
+        img = np.frombuffer(pix.samples, dtype=np.uint8).reshape((pix.height, pix.width, pix.n))
+        if pix.n == 4:
+            img = cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
+        res, _ = engine(img)
+        for item in res or []:
+            if isinstance(item, (list, tuple)) and len(item) >= 3:
+                txt = str(item[1])
+                score = float(item[2])
+                lines.append({"text": txt, "confidence": round(score, 3)})
+                scores.append(score)
+    doc.close()
+    text = "\n".join(l["text"] for l in lines if l["text"].strip())
+    return {
+        "available": True,
+        "engine": "rapidocr",
+        "version": _ENGINES["rapidocr"]["version"],
+        "method": "rapidocr-pdf-raster",
+        "is_ocr": True,
+        "text": text,
+        "lines": lines,
+        "confidence": round(sum(scores) / len(scores), 3) if scores else None,
+        "warnings": [] if text else ["RapidOCR found no text across PDF pages."],
+    }
+
+
 def ocr_image(path: str | Path) -> dict:
     """Run one real extraction engine and name it in the result.
 
@@ -243,7 +282,13 @@ def ocr_image(path: str | Path) -> dict:
             return _empty("pymupdf-text-layer", _PDF_ENGINE["version"],
                           "PyMuPDF is not installed; this PDF has no text-layer reader.")
         try:
-            return _pdf_text_layer(p)
+            res = _pdf_text_layer(p)
+            if res.get("text", "").strip():
+                return res
+            # PDF has no digital text layer; rasterize and run OCR if RapidOCR is available
+            if active_engine() == "rapidocr":
+                return _rapidocr_pdf(p)
+            return res
         except Exception as exc:
             return _empty("pymupdf-text-layer", _PDF_ENGINE["version"],
                           f"PyMuPDF failed: {type(exc).__name__}: {exc}",
