@@ -8,7 +8,7 @@
 > **Important.** The PDF is a design/blueprint reference. Its §20 "Feature Status" is the
 > owner's status at the time of writing, **not** current execution evidence. Every status
 > below is based on repository source plus local test/build/E2E runs in this worktree.
-> All changes remain uncommitted and unpushed.
+> The verified changes in this pass are committed on `master`.
 
 ---
 
@@ -18,7 +18,8 @@
 |---|---|---|
 | TypeScript | `npx tsc --noEmit` (frontend) | PASS — 0 errors |
 | Frontend unit/component | `npm test` | PASS — 404 passed / 19 skipped |
-| Backend | `npm run test:backend` | 196 passed / 4 skipped / **3 pre-existing environment failures** (no local OCR engine) |
+| Backend | `npm run test:backend` | PASS — **201 passed / 2 skipped** (RapidOCR installed locally) |
+| Local integrations | `npm run test:integration` | PASS — **19/19** against real local SMTP, SMS, S3 and ClamAV sinks |
 | Targeted regressions | delivery honesty, auth security, verification RBAC, XGB metadata | PASS — 33 targeted tests (frontend 28 + backend 5) |
 | AI/intelligence | targeted `backend/tests/test_models.py` | PASS — 5 passed |
 | Deployment config | `npm run render:validate` | PASS — 42 valid / 0 invalid |
@@ -40,7 +41,7 @@ and vehicles through the actual UI, calls the real API, and reads back persisted
 | Journey | Blueprint requirement | Status | Evidence |
 |---|---|---|---|
 | **A** | Seller registers a motorcycle; vehicle appears in My Vehicles; refresh confirms persistence | **PASS** | live-audit S1 + M1 (6 categories incl. `petrol_motorcycle`) |
-| **B** | Seller uploads service records; scan status shown; OCR extracts details; mileage event saved; passport timeline updates | **PASS (PDF text layer) / BLOCKED (image OCR locally)** | live-audit S3 persists extracted fields; local host has no OCR engine binary/package, so image OCR cannot run here |
+| **B** | Seller uploads service records; scan status shown; OCR extracts details; mileage event saved; passport timeline updates | **PASS** | live-audit S3 + deep-spec PDF text layer; with RapidOCR installed locally, the deep image-OCR path now reports `isOcr:true` and its parsed registration field is asserted |
 | **C** | Mileage inconsistency flagged deterministically with both records/dates; seller clarification; buyer sees finding; never called confirmed fraud | **PASS** | `ODOMETER_ROLLBACK` detector + fixtures; trust/findings are deterministic and versioned |
 | **D** | Damage photo → validation/scan → YOLO only if available → seller review → saved record → 3D hotspot → buyer finding | **PASS with DEMO ONLY detector** | `DamageAiAnalyzer` review flow + DB hotspots verified; `car_damage.pt` YOLO is available only where weights + `ultralytics`/`torch` are installed |
 | **E** | Buyer logs in, filters/scopes search, opens listing, passport, saves, sends inquiry, seller notified + replies, buyer sees update | **PASS** | live-audit S4–S7; inquiry lifecycle is DB-backed and participant-gated |
@@ -101,14 +102,17 @@ Legend: **PASS** verified end-to-end locally · **BLOCKED** needs external crede
 | Feature | Status | What is required |
 |---|---|---|
 | S3 / object storage | BLOCKED | Bucket, endpoint, credentials (local adapter + tests exist) |
-| SMTP / SMS delivery | BLOCKED | Verified sender/provider; **Resend test mode** only delivers to the account owner; **no SMS gateway** (`TD_SMS_URL`) |
+| SMTP / SMS production delivery | BLOCKED (real provider only) | Adapters verified against **local aiosmtpd + HTTP SMS sinks** (`test:integration` 19/19); a verified sender/domain and real carrier gateway (`TD_SMS_URL`) are still required for production |
 | ClamAV / external AV | BLOCKED | Running scanner (local signature scanner + quarantine work; external AV not connected) |
 | VAHAN / government registry | BLOCKED | Approved access, consent and adapter (demo adapters labelled, never "verified") |
 | Insurer / theft registry | BLOCKED | Authorised provider and integration |
 | PostgreSQL split deployment | BLOCKED | Managed DB, migrations, connectivity; shared SQLite remains the runtime DB |
 | Docker locally | BLOCKED | Working daemon (CI builds `Dockerfile.render`) |
 | On-chain anchoring credentials | BLOCKED | Funded EVM signer/RPC; only local SHA-256 chain is claimed |
-| Local image OCR engine | BLOCKED | `rapidocr_onnxruntime` / `paddleocr` package or `tesseract` binary absent on this host; PDF text-layer extraction works |
+
+**Local environment:** image OCR is no longer blocked on this host. `rapidocr-onnxruntime` 1.4.4
+and `onnxruntime` are installed; the backend is 201/2 and the deep E2E image-OCR path reports
+`isOcr:true` with parsed fields asserted. PDF text-layer extraction remains the fallback.
 
 ### 3.4 PDF §20.2 — NOT IMPLEMENTED
 
@@ -146,15 +150,18 @@ Legend: **PASS** verified end-to-end locally · **BLOCKED** needs external crede
 
 ---
 
-## 5. Pre-existing failures that were investigated, not caused by these changes
+## 5. Environment failures investigated and resolved
 
-- **Backend OCR tests (3 failing):** no OCR engine installed locally (`rapidocr_onnxruntime`,
-  `paddleocr`, and the `tesseract` binary are all absent). These are environment failures, not
-  regressions; the code reports `available:false` honestly.
-- **Deep-spec image-OCR assertion:** originally failed as if a defect. The suite now queries
-  `/api/v1/ai/stack`, asserts the honest `isOcr:false` result when no engine is installed, and
-  logs an explicit environment-blocker warning; parsed-field assertions run only when a real
-  engine produced fields.
+- **Backend OCR tests:** originally 3 environment failures because no OCR engine was installed.
+  `rapidocr-onnxruntime` 1.4.4 and `onnxruntime` are now installed on this host; the full backend
+  suite is **201 passed / 2 skipped**.
+- **Deep-spec image-OCR assertion:** the suite keeps its honest capability probe, but with
+  RapidOCR active it now takes the real branch: `isOcr:true`, `engine=rapidocr`, and the parsed
+  registration field are asserted. If the engine is removed again, it falls back to the honest
+  `isOcr:false` branch instead of claiming OCR.
+- **Local SMTP/SMS/S3/ClamAV:** the adapters were verified against real local sinks, not mocks:
+  `npm run test:integration` passes **19/19**. This does not replace production provider
+  credentials; it proves the delivery/upload/scan code paths work.
 - **Windows single-threaded `next dev` slowness:** mitigated by isolated distDir, DOM-content-loaded
   navigation plus React-hydration waits, and disabling trace/video; tests are serial and timeouts
   were raised. The shell wrapper timed out after 30 minutes during one combined run, but every
