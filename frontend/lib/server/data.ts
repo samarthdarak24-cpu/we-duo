@@ -796,6 +796,7 @@ export function hotspotsFor(vehicleId: string) {
           }
         })(),
         repairInvoiceDocId: d.repair_invoice_doc_id,
+        positionSource: d.position_source,
       })),
     };
   });

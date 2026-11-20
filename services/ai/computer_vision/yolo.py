@@ -21,7 +21,7 @@ DEFAULT_CLASSES = ["damage"]
 LIMITATIONS = [
     "A single photograph cannot establish accident severity or hidden structural damage.",
     "Detections require human inspector validation before any claim is shown.",
-    "No licensed damage weights are bundled; the adapter activates only when provided.",
+    "Damage weights are assistive only; availability depends on the weights and runtime packages installed in this deployment.",
 ]
 
 
@@ -61,12 +61,21 @@ def status() -> dict:
     if pt and _has("ultralytics"):
         return {"available": True, "engine": "ultralytics", "weights": pt.name,
                 "classes": _classes(), "version": MODEL_VERSION, "reason": "Ready."}
-    reason = (
-        "Inactive: no licensed damage weights in models/ "
-        "(expected car_damage.onnx with onnxruntime, or car_damage.pt with ultralytics). "
-        "Fetch/register weights with scripts/fetch_models.py. OpenCV signals remain active."
-    )
-    return {"available": False, "engine": "none", "weights": None,
+    present = next((p.name for p in (onnx, pt) if p), None)
+    if present:
+        runtime = "onnxruntime and opencv-python" if onnx else "ultralytics (torch)"
+        reason = (
+            f"Inactive: damage weights are present ({present}) but {runtime} is not installed "
+            "in this deployment. Install the runtime or supply an ONNX export; "
+            "OpenCV signals remain active."
+        )
+    else:
+        reason = (
+            "Inactive: no damage weights found in models/ "
+            "(expected car_damage.onnx with onnxruntime, or car_damage.pt with ultralytics). "
+            "Fetch/register licensed weights with scripts/fetch_models.py. OpenCV signals remain active."
+        )
+    return {"available": False, "engine": "none", "weights": present,
             "classes": _classes(), "version": MODEL_VERSION, "reason": reason}
 
 

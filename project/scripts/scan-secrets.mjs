@@ -17,6 +17,7 @@
 // Exit codes: 0 = clean, 1 = findings, 2 = scanner error.
 // ---------------------------------------------------------------------------
 import fs from "node:fs";
+import { existsSync } from "node:fs";
 import path from "node:path";
 
 const args = process.argv.slice(2);
@@ -30,12 +31,13 @@ const APP_DIRS = [
   "frontend/components",
   "frontend/scripts",
   "backend/app",
-  "scripts",
-  "infrastructure",
-  "deploy",
+  "project/scripts",
+  "project/infra",
 ];
+/** Root-level deployment config that can carry credential defaults. */
+const APP_FILES = ["render.yaml", "docker-compose.yml"];
 /** Test / QA fixtures: only HIGH findings fail the build here. */
-const FIXTURE_DIRS = ["frontend/tests", "frontend/qa", "backend/tests", "backend/scripts", "qa"];
+const FIXTURE_DIRS = ["frontend/tests", "frontend/qa", "backend/tests", "backend/scripts", "project/qa"];
 
 const SCAN_EXT = new Set([".ts", ".tsx", ".js", ".mjs", ".cjs", ".py", ".json", ".yml", ".yaml", ".sh", ".sol"]);
 const SKIP_DIR = new Set(["node_modules", ".next", ".git", "playwright-report", "test-results", "public", ".data"]);
@@ -84,6 +86,9 @@ function walk(dir, out = []) {
 
 const appFiles = [];
 for (const d of APP_DIRS) walk(path.join(ROOT, d), appFiles);
+for (const f of APP_FILES) {
+  if (existsSync(path.join(ROOT, f))) appFiles.push(path.join(ROOT, f));
+}
 const fixtureFiles = [];
 for (const d of FIXTURE_DIRS) walk(path.join(ROOT, d), fixtureFiles);
 

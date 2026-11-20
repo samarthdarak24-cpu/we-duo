@@ -1,4 +1,5 @@
-import { getRun, getResults } from "@/lib/server/db";
+import { getResults, getRun, getVehicle } from "@/lib/server/db";
+import { fail, requireRole } from "@/lib/server/http";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -8,13 +9,16 @@ export const dynamic = "force-dynamic";
  * The demo pipeline is deterministic and completes synchronously, so this emits
  * the current snapshot and closes. A production worker would keep the stream open.
  */
-export async function GET(_req: Request, { params }: { params: { runId: string } }) {
+export async function GET(req: Request, { params }: { params: { runId: string } }) {
+  const guard = requireRole(req, "seller", "buyer", "admin");
+  if (!guard.ok) return guard.response;
   const run = getRun(params.runId);
-  if (!run) {
-    return new Response(JSON.stringify({ error: { code: "NOT_FOUND", message: "Run not found" } }), {
-      status: 404,
-      headers: { "Content-Type": "application/json" },
-    });
+  if (!run) return fail(404, "NOT_FOUND", "Run not found");
+  // The stream carries the same check results as the role-gated verification
+  // endpoint, so enforce the same owner/admin visibility here.
+  const ownerId = getVehicle(run.vehicle_id)?.owner_id;
+  if (ownerId !== guard.user.sub && guard.user.role !== "admin") {
+    return fail(403, "FORBIDDEN", "This run belongs to another account.");
   }
   const results = getResults(run.id);
   const encoder = new TextEncoder();

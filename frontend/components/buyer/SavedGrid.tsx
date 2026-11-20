@@ -12,6 +12,7 @@ export interface SavedItem {
   listingId: string;
   make: string;
   model: string;
+  regNo: string;
   year: number;
   km: number;
   price: number;
@@ -103,7 +104,7 @@ export function SavedGrid({ items }: { items: SavedItem[] }) {
                       {v.make} {v.model}
                     </h3>
                     <p className="text-[12px] text-muted">
-                      {v.year} · {formatKm(v.km)}
+                      {v.year} · {formatKm(v.km)} · {v.regNo}
                     </p>
                   </div>
                   <span className="shrink-0 text-[14px] font-bold text-ink">{formatINR(v.price)}</span>

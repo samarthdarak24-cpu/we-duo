@@ -4,9 +4,9 @@ import { Icon } from "@/components/ui/Icon";
 
 export function AboutSection() {
   const stats = [
-    { value: "9+", label: "Vehicles Live Cataloged", sub: "100% Database Seeded" },
-    { value: "100%", label: "SHA-256 Hash Audited", sub: "Tamper-Evident Chain" },
-    { value: "Zero", label: "Undisclosed Accidents", sub: "Strict Policy Rule" },
+    { value: "Demo", label: "Sample Catalog", sub: "Labelled demo records" },
+    { value: "SHA-256", label: "File Hash Chains", sub: "Tamper-evident fingerprints" },
+    { value: "Flagged", label: "Discrepancies Reported", sub: "Findings, not fraud claims" },
     { value: "3", label: "Dedicated Portals", sub: "Buyer / Seller / Admin" },
   ];
 
@@ -67,7 +67,7 @@ export function AboutSection() {
           </div>
         </div>
 
-        {/* Real Statistics Grid */}
+        {/* Platform capability summary */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-10 border-t border-[#23262A]">
           {stats.map((s) => (
             <div key={s.label} className="p-5 rounded-2xl bg-[#111315] border border-[#23262A] text-center">

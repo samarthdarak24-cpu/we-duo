@@ -25,6 +25,7 @@ import { signToken } from "../lib/server/auth";
 import {
   isAllowedDocumentFileName,
   isAllowedImageFileName,
+  isWellFormedPdf,
   sanitizeFileName,
   sniffUpload,
 } from "../lib/server/files";
@@ -71,6 +72,25 @@ describe("TrustDrive fixture verification: file security (H01-H07)", () => {
     expect(isAllowedDocumentFileName("malware.exe.pdf")).toBe(false);
     expect(isAllowedImageFileName("photo.jpg")).toBe(true);
     expect(isAllowedImageFileName("doc.pdf")).toBe(false);
+  });
+
+  it("rejects truncated/corrupt PDFs that only carry a valid magic header", async () => {
+    expect(isWellFormedPdf(Buffer.from("%PDF-1.4\n1 0 obj<<>>endobj\n%%EOF"))).toBe(true);
+    expect(isWellFormedPdf(Buffer.from("%PDF-1.4\nthis is not a valid pdf body\n????"))).toBe(false);
+    expect(isWellFormedPdf(Buffer.from("plain text"))).toBe(false);
+
+    const uploadFile = async (name: string, bytes: Buffer) => {
+      const fd = new FormData();
+      fd.append("type", "service_2w");
+      fd.append("consent", "true");
+      fd.append("file", new File([new Uint8Array(bytes)], name, { type: "application/pdf" }));
+      return uploadDocumentRoute(
+        sellerRequest(`http://localhost/api/v1/vehicles/${vehicleId}/documents`, { method: "POST", body: fd }),
+        { params: { id: vehicleId } }
+      );
+    };
+    const corrupt = await uploadFile("corrupt.pdf", Buffer.from("%PDF-1.4\nthis is not a valid pdf body\n????"));
+    expect(corrupt.status).toBe(422);
   });
 
   it("rejects empty, text-disguised-as-pdf, exe, double-extension, and safely handles traversal via upload route", async () => {

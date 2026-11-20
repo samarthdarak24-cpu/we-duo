@@ -172,6 +172,19 @@ export function sniffUpload(data: Buffer): { mime: string; ext: string } | null 
   return sig ? { mime: sig.mime, ext: sig.ext } : null;
 }
 
+/**
+ * A PDF must end with an `%%EOF` marker (within the final 1 KB). Magic-byte
+ * sniffing alone accepts garbage such as `%PDF-1.4\nnot a real document`,
+ * which then reaches OCR and wastes work on an unreadable file. This is a
+ * structural sanity check, not a full parser — it rejects truncated/forged
+ * files while accepting every conforming PDF.
+ */
+export function isWellFormedPdf(data: Buffer): boolean {
+  if (data.subarray(0, 5).toString("latin1") !== "%PDF-") return false;
+  const tail = data.subarray(Math.max(0, data.length - 1024)).toString("latin1");
+  return tail.includes("%%EOF");
+}
+
 /** Local-only absolute path. Returns null when S3 storage is active. */
 export function absoluteUploadPath(key: string): string | null {
   if (storageProvider() !== "local") return null;

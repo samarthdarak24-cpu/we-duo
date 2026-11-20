@@ -5,6 +5,7 @@ import { paginate } from "@/lib/server/pagination";
 import {
   MAX_DOC_BYTES,
   isAllowedDocumentFileName,
+  isWellFormedPdf,
   sanitizeFileName,
   sniffUpload,
 } from "@/lib/server/files";
@@ -79,6 +80,9 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     const bytes = Buffer.from(await file.arrayBuffer());
     const sniffed = sniffUpload(bytes);
     if (!sniffed) return fail(415, "UNSUPPORTED_FILE_TYPE", "The file content is not a valid PDF, PNG, JPEG or WebP.");
+    if (sniffed.mime === "application/pdf" && !isWellFormedPdf(bytes)) {
+      return fail(422, "INVALID_PDF", "The PDF is truncated or corrupt and cannot be read.");
+    }
     // Scan + store as one gate. Infected files are quarantined and never enter
     // the upload root; an unavailable configured scanner fails closed (503).
     const guarded = await guardedSaveUpload({

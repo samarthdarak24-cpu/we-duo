@@ -29,6 +29,7 @@ export interface DamageRecordItem {
   status: string;
   photoKeys?: string[];
   repairInvoiceDocId?: string | null;
+  positionSource?: string | null;
 }
 
 export interface HotspotItem {
@@ -703,7 +704,11 @@ export function VehicleViewer3D({
   // For every other category the backend returns assetUrl: null and the viewer
   // must render the labelled schematic with all 3D interactions disabled.
   const assetUnavailable = meta.assetStatus === "unavailable";
-  const interactionsAvailable = meta.interactionsAvailable === true;
+  // A category may advertise interactions in its manifest metadata, but if the
+  // GLB failed to load/parse in this session there is no geometry to operate on.
+  // Gate every model-dependent control on the actual load state as well.
+  const interactionsAvailable =
+    meta.interactionsAvailable === true && !modelFailed && !assetUnavailable;
 
   // Extract set of component IDs that have recorded damage
   const damagedComponentIds = useMemo(() => {
@@ -1264,12 +1269,12 @@ export function VehicleViewer3D({
                         "rounded-full px-2.5 py-0.5 text-[10.5px] font-bold uppercase tracking-wider",
                         (activeHotspot?.damage?.length ?? 0) > 0
                           ? "bg-[#F59E0B]/20 text-[#F59E0B] border border-[#F59E0B]/40"
-                          : "bg-[#10B981]/20 text-[#10B981] border border-[#10B981]/40"
+                          : "bg-white/5 text-muted border border-white/10"
                       )}
                     >
                       {(activeHotspot?.damage?.length ?? 0) > 0
                         ? `${activeHotspot!.damage!.length} Damage Item(s)`
-                        : "OEM Factory Verified Clear"}
+                        : "No damage recorded"}
                     </span>
                   </div>
                 ) : (
@@ -1317,6 +1322,11 @@ export function VehicleViewer3D({
                           <p className="text-white leading-snug font-medium pt-0.5">
                             {d.description}
                           </p>
+                          {d.positionSource === "seller_submitted" && (
+                            <p className="text-[10px] italic text-amber-300/90">
+                              Approximate position — reported by the seller, not measured from the 3D mesh.
+                            </p>
+                          )}
                           <div className="flex flex-col gap-1 border-t border-[#23262A] pt-1.5 text-[10.5px] text-[#9299A2]">
                             <div className="flex items-center justify-between">
                               <span>Repair Status:</span>
@@ -1349,12 +1359,12 @@ export function VehicleViewer3D({
                   </div>
                 ) : (
                   <div className="rounded-xl border border-[#23262A] bg-[#141619] p-3 text-[11px] text-muted space-y-1.5">
-                    <div className="flex items-center gap-1.5 text-[#10B981] font-semibold text-[11.5px]">
-                      <Icon name="CheckCircle2" size={14} />
-                      <span>OEM Specification Passed</span>
+                    <div className="flex items-center gap-1.5 text-muted font-semibold text-[11.5px]">
+                      <Icon name="Info" size={14} />
+                      <span>No damage records submitted</span>
                     </div>
                     <p className="text-[10.5px] leading-relaxed text-[#7A8089]">
-                      Factory paint depth of 118 µm, zero panel alignment deviation, and intact clearcoat. No accident damage or repaints recorded.
+                      No damage has been recorded for this component. This is unverified coverage, not confirmation that the panel is undamaged or factory-original.
                     </p>
                   </div>
                 )}

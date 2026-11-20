@@ -81,7 +81,7 @@ export function DamageAiAnalyzer({
       const data = (await res.json().catch(() => null)) as Partial<AiResult> | null;
 
       if (res.status === 409 || (data && data.available === false)) {
-        const reason = data?.reason ?? "No licensed damage weights configured.";
+        const reason = data?.reason ?? "Damage detection is unavailable in this deployment.";
         setResult({
           available: false,
           detections: [],
@@ -108,7 +108,7 @@ export function DamageAiAnalyzer({
       setResult(normalized);
 
       if (!normalized.available) {
-        setInfo(`AI analysis unavailable: ${normalized.reason ?? "No licensed damage weights configured."}`);
+        setInfo(`AI analysis unavailable: ${normalized.reason ?? "Damage detection is unavailable in this deployment."}`);
       } else if (normalized.detections.length === 0) {
         setInfo("AI analysis complete. No damage detections above the confidence threshold.");
       } else {
@@ -324,7 +324,7 @@ export function DamageAiAnalyzer({
 
       {hasResult && !result.available && (
         <p className="mt-4 text-[11px] text-muted">
-          {result.reason ?? "No licensed damage weights configured. Install car_damage.onnx/.pt and restart the intelligence service."}
+          {result.reason ?? "Damage detection is unavailable in this deployment. Install compatible weights and runtime packages, then restart the intelligence service."}
         </p>
       )}
 

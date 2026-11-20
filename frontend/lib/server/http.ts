@@ -1,7 +1,7 @@
 // Standard response + error shape (design.md §34) and RBAC guard (§21).
 import { NextResponse } from "next/server";
 import { signToken, verifyToken, type JwtPayload, type Role } from "./auth";
-import { getUserById } from "./db";
+import { getSession, getUserById } from "./db";
 
 export function ok<T>(data: T, init?: ResponseInit) {
   return NextResponse.json({ data }, { status: 200, ...init });
@@ -45,6 +45,13 @@ export function getAuth(req: Request): JwtPayload | null {
     if (user.role !== payload.role) continue;
     // Service tokens are for the Next.js -> Python hop only, never for user APIs.
     if ((payload as JwtPayload & { svc?: string }).svc) continue;
+    // Session-bound tokens must die when the session is revoked (logout,
+    // "revoke all sessions", password reset). Without this check a copied
+    // bearer token stays valid for its full 7-day TTL after the victim signs out.
+    if (payload.sid) {
+      const session = getSession(payload.sid);
+      if (!session || session.revoked_at) continue;
+    }
     return payload;
   }
   return null;

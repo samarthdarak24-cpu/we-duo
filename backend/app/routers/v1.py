@@ -14,7 +14,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from pydantic import BaseModel, Field
 
-from .. import agent, db, repository, worker
+from .. import agent, db, llm, repository, worker
 from ..config import settings
 from ..ratelimit import enforce_auth_limit
 from ..security import current_user, optional_user, require_role
@@ -72,7 +72,15 @@ def health_ready() -> dict:
     if h.get("database") != "connected":
         raise HTTPException(status_code=503, detail="Database is not reachable.")
     return {"status": "ready", "database": h,
-            "llm": {"configured": bool(settings.llm_api_key)},
+            "llm": {
+                # `configured` keeps its original meaning (an API key is set).
+                # `available` also covers a local model with no API key, so a
+                # working local LLM is never reported as unavailable.
+                "configured": bool(settings.llm_api_key),
+                "available": llm.available(),
+                "provider": settings.llm_provider,
+                "model": settings.llm_model or None,
+            },
             "worker": "db-backed"}
 
 

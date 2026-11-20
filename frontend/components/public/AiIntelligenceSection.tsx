@@ -14,17 +14,17 @@ export function AiIntelligenceSection() {
       tagline: "OCR extraction & registration verification",
       imageUrl: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1200&q=80",
       description:
-        "Extracts VIN, chassis numbers, engine codes, registration dates, and ownership records from PDFs and scans across cars and motorcycles. Cross-correlates extracted identifiers against national transport registries.",
+        "Extracts VIN, chassis numbers, engine codes, registration dates, and ownership records from PDFs and scans across cars and motorcycles. Extracted identifiers are stored for review; no external transport-registry lookup is performed.",
       metrics: [
-        { label: "Extraction Accuracy", value: "99.2%" },
+        { label: "Extraction Accuracy", value: "Engine-dependent" },
         { label: "Supported Formats", value: "PDF / JPEG / PNG" },
-        { label: "Processing Latency", value: "< 1.4s" },
+        { label: "Processing Latency", value: "Variable" },
       ],
       sampleOutput: {
         vin: "WBA5R1C50KAK12345",
         regNo: "MH01AB1234",
-        status: "Verified Authenticated Match",
-        issuer: "Ministry of Road Transport & Highways",
+        status: "Sample extraction result",
+        issuer: "Example document issuer",
       },
     },
     {
@@ -35,7 +35,7 @@ export function AiIntelligenceSection() {
       description:
         "Analyzes reported service dates and odometer readings against historical vehicle age. Detects reverse odometer rollbacks, abnormal freezes, and rapid usage spikes across digital instrument clusters.",
       metrics: [
-        { label: "Anomaly Detection Rate", value: "98.6%" },
+        { label: "Anomaly Detection Rate", value: "Deterministic rules" },
         { label: "Rollback Detection", value: "Deterministic Flag" },
         { label: "Tolerance Threshold", value: "Zero Rollback Allowed" },
       ],
@@ -74,7 +74,7 @@ export function AiIntelligenceSection() {
       metrics: [
         { label: "Rule Set", value: "Deterministic Matrix" },
         { label: "Human Review Queue", value: "Admin Dashboard Live" },
-        { label: "False Positive Rate", value: "< 0.4%" },
+        { label: "False Positive Rate", value: "Not measured" },
       ],
       sampleOutput: {
         riskCategory: "Low Risk Profile",
@@ -116,7 +116,7 @@ export function AiIntelligenceSection() {
             Intelligence That Looks Deeper.
           </h2>
           <p className="mt-4 text-[15px] text-[#BFC3C8] leading-relaxed">
-            Five specialized intelligence layers evaluate every car and motorcycle against verified physical records and national transport registries.
+            Five specialized intelligence layers evaluate every car and motorcycle against recorded documents and deterministic rules.
           </p>
         </div>
 
@@ -174,12 +174,9 @@ export function AiIntelligenceSection() {
               <div className="absolute inset-0 bg-gradient-to-t from-[#111315] via-transparent to-transparent" />
               <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-[11px] font-mono">
                 <span className="text-white font-semibold">
-                  ACTIVE SCAN // {current.name.toUpperCase()}
+                  ILLUSTRATIVE SCAN // {current.name.toUpperCase()}
                 </span>
-                <span className="text-[#36B982] flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#36B982] animate-ping" />
-                  ANALYZING
-                </span>
+                <span className="text-amber-300/90">SAMPLE</span>
               </div>
             </div>
 
@@ -202,10 +199,7 @@ export function AiIntelligenceSection() {
           <div className="lg:col-span-5 p-5 rounded-xl bg-[#08090A] border border-[#23262A] font-mono text-[12px] space-y-3 shadow-inner">
             <div className="flex items-center justify-between pb-2 border-b border-[#23262A] text-[10px] text-[#7A8089]">
               <span>TRUSTDRIVE ENGINE // AUDIT_FEED</span>
-              <span className="text-[#36B982] flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#36B982] animate-ping" />
-                ACTIVE
-              </span>
+              <span className="text-amber-300/90">ILLUSTRATIVE SAMPLE</span>
             </div>
 
             <div className="space-y-2 text-[#BFC3C8]">
@@ -218,7 +212,7 @@ export function AiIntelligenceSection() {
             </div>
 
             <div className="pt-3 border-t border-[#23262A] text-[10px] text-[#7A8089] flex items-center justify-between">
-              <span>Verified against SQLite DB</span>
+              <span>Illustrative output — not live data</span>
               <span className="text-[#C5A46D]">TAMPER_EVIDENT</span>
             </div>
           </div>

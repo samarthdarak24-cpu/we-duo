@@ -31,14 +31,21 @@ def get_model_metadata() -> dict:
     weights_path = settings.model_dir / WEIGHTS_FILE
     meta = _read_json(meta_path) or {}
     weights_exist = weights_path.is_file()
+    # The trainer writes precision/recall/f1 at the top level of the meta file.
+    # Older artefacts may already use a nested "metrics" object; support both so
+    # real hold-out metrics are never silently reported as unavailable.
+    metrics = meta.get("metrics")
+    if not isinstance(metrics, dict):
+        metrics = {k: meta[k] for k in ("precision", "recall", "f1", "roc_auc") if k in meta}
     return {
         "name": MODEL_NAME,
         "version": meta.get("version") or "0.0.0",
         "mode": "experimental",
-        "training_data": "synthetic-demo",
-        "metrics": meta.get("metrics") or None,
+        "training_data": meta.get("dataset_label") or "synthetic-demo",
+        "metrics": metrics or None,
         "features": meta.get("features") or [],
         "available": weights_exist,
         "weights_file": WEIGHTS_FILE if weights_exist else None,
+        "training_note": meta.get("warning") or None,
         "disclaimer": "Not trained on real labelled fraud data; provided for experimentation only.",
     }

@@ -98,12 +98,32 @@ async function fillStable(page: Page, locator: import("@playwright/test").Locato
   await expect(locator).toHaveValue(value);
 }
 
+/**
+ * Navigate and wait for the React tree to hydrate. `domcontentloaded` only means
+ * the HTML arrived — JS chunks can still be loading. Filling a controlled form
+ * before hydration completes is silently wiped when React attaches and resets
+ * state to its server-rendered initial value (empty fields, default role).
+ */
+async function gotoReady(page: Page, url: string, _opts?: unknown) {
+  await page.goto(url, { waitUntil: "domcontentloaded" });
+  await page.waitForFunction(
+    () => {
+      const el = document.querySelector("button") ?? document.body;
+      return Object.keys(el).some(
+        (k) => k.startsWith("__reactFiber$") || k.startsWith("__reactProps$")
+      );
+    },
+    undefined,
+    { timeout: 30_000 }
+  );
+}
+
 /** Register a brand-new account through the REAL registration form. */
 async function registerViaUi(
   page: Page,
   opts: { name: string; email: string; role: "buyer" | "seller" }
 ) {
-  await page.goto("/register", { waitUntil: "domcontentloaded" });
+  await gotoReady(page,"/register", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { name: /Create Your TrustDrive Account/i })).toBeVisible({
     timeout: 30_000,
   });
@@ -122,16 +142,16 @@ async function registerViaUi(
   await page.getByRole("checkbox").first().check();
   await shot(page, `register-${opts.role}-form`);
   await page.getByRole("button", { name: /create account/i }).click();
-  await page.waitForURL(new RegExp(`/${opts.role}`), { timeout: 60_000 });
+  await page.waitForURL(new RegExp(`/${opts.role}`), { waitUntil: "domcontentloaded", timeout: 90_000 });
 }
 
 async function loginViaUi(page: Page, email: string) {
-  await page.goto("/login", { waitUntil: "domcontentloaded" });
+  await gotoReady(page,"/login", { waitUntil: "domcontentloaded" });
   await expect(page.locator("#login-email")).toBeVisible({ timeout: 30_000 });
   await fillStable(page, page.locator("#login-email"), email);
   await fillStable(page, page.locator("#login-password"), PASSWORD);
   await page.locator('form button[type="submit"]').click();
-  await page.waitForURL(/\/(seller|buyer|admin)/, { timeout: 60_000 });
+  await page.waitForURL(/\/(seller|buyer|admin)/, { waitUntil: "domcontentloaded", timeout: 90_000 });
 }
 
 // ---------------------------------------------------------------------------
@@ -332,8 +352,11 @@ async function fillIdentityStep(page: Page, v: VehicleSpec) {
     page.getByLabel(/VIN \(17 characters\)|Chassis \/ frame number/),
     v.identifier
   );
-  await fillStable(page, page.getByLabel("Manufacturer"), v.make);
-  await fillStable(page, page.getByLabel("Model"), v.model);
+  // Anchor on the textbox role: category-specific selects (e.g. "Battery
+  // chemistry" with help text "...stated by manufacturer") also match a
+  // substring label lookup and make getByLabel throw in strict mode.
+  await fillStable(page, page.getByRole("textbox", { name: /^Manufacturer/ }), v.make);
+  await fillStable(page, page.getByRole("textbox", { name: /^Model\b/ }), v.model);
   await fillStable(page, page.getByLabel("Manufacturing year"), v.year);
   await fillStable(page, page.getByLabel("Asking price (INR)"), v.price);
   // "Odometer reading (km)" for combustion, "Total distance reading (km)" for EVs.
@@ -350,8 +373,8 @@ async function fillIdentityStep(page: Page, v: VehicleSpec) {
   await expect(
     page.getByLabel(/VIN \(17 characters\)|Chassis \/ frame number/)
   ).toHaveValue(v.identifier);
-  await expect(page.getByLabel("Manufacturer")).toHaveValue(v.make);
-  await expect(page.getByLabel("Model")).toHaveValue(v.model);
+  await expect(page.getByRole("textbox", { name: /^Manufacturer/ })).toHaveValue(v.make);
+  await expect(page.getByRole("textbox", { name: /^Model\b/ })).toHaveValue(v.model);
   await expect(page.getByLabel("Manufacturing year")).toHaveValue(v.year);
   await expect(page.getByLabel("Asking price (INR)")).toHaveValue(v.price);
 }
@@ -365,7 +388,7 @@ async function createVehicleViaUi(
     docs?: { type: string; file: string }[];
   } = {}
 ): Promise<{ vehicleId: string }> {
-  await page.goto("/seller/add-vehicle", { waitUntil: "domcontentloaded" });
+  await gotoReady(page,"/seller/add-vehicle", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("heading", { name: "Add Vehicle", exact: true })).toBeVisible();
 
   await fillIdentityStep(page, v);
@@ -474,7 +497,7 @@ test.describe.serial("TrustDrive live functional audit", () => {
     expect(found.regNo).toBe(v.regNo);
 
     // survives a reload of the portal
-    await page.goto("/seller/vehicles", { waitUntil: "domcontentloaded" });
+    await gotoReady(page,"/seller/vehicles", { waitUntil: "domcontentloaded" });
     await expect(page.getByText(v.regNo).first()).toBeVisible({ timeout: 45_000 });
     await shot(page, "seller-vehicles-list");
   });
@@ -517,7 +540,7 @@ test.describe.serial("TrustDrive live functional audit", () => {
       `the registration number must be extracted from the uploaded file`
     ).toBeTruthy();
 
-    await page.goto("/seller/documents", { waitUntil: "domcontentloaded" });
+    await gotoReady(page,"/seller/documents", { waitUntil: "domcontentloaded" });
     await expect(page.getByText(/document/i).first()).toBeVisible();
     await page.waitForTimeout(1500);
     await shot(page, "seller-documents-ocr");
@@ -526,7 +549,7 @@ test.describe.serial("TrustDrive live functional audit", () => {
   test("S4. Seller publishes the listing and it becomes visible in the marketplace", async ({ page, context }) => {
     await loginViaUi(page, state.sellerEmail);
 
-    await page.goto("/seller/listings", { waitUntil: "domcontentloaded" });
+    await gotoReady(page,"/seller/listings", { waitUntil: "domcontentloaded" });
     await expect(page.getByText(/listing/i).first()).toBeVisible({ timeout: 45_000 });
 
     const listings = await api(context, "/api/v1/seller/listings?pageSize=100");
@@ -572,7 +595,7 @@ test.describe.serial("TrustDrive live functional audit", () => {
     saveState();
     await shot(page, "buyer-dashboard-after-register");
 
-    await page.goto("/buyer/explore", { waitUntil: "domcontentloaded" });
+    await gotoReady(page,"/buyer/explore", { waitUntil: "domcontentloaded" });
     await expect(page.getByText(/explore/i).first()).toBeVisible({ timeout: 45_000 });
     await page.waitForTimeout(2500);
     await shot(page, "buyer-explore");
@@ -583,7 +606,7 @@ test.describe.serial("TrustDrive live functional audit", () => {
     expect(hits.some((h) => h.regNo === state.regNo)).toBeTruthy();
 
     // open the real vehicle detail page
-    await page.goto(`/vehicle/${state.vehicleId}`, { waitUntil: "domcontentloaded" });
+    await gotoReady(page,`/vehicle/${state.vehicleId}`, { waitUntil: "domcontentloaded" });
     await expect(page.getByText(/trust|report|baleno/i).first()).toBeVisible({ timeout: 45_000 });
     await page.waitForTimeout(2500);
     await shot(page, "buyer-vehicle-detail");
@@ -599,7 +622,7 @@ test.describe.serial("TrustDrive live functional audit", () => {
     expect(saved.status).toBe(200);
     expect(mentions(saved.body, state.vehicleId), "the saved vehicle must be persisted").toBeTruthy();
 
-    await page.goto("/buyer/saved", { waitUntil: "domcontentloaded" });
+    await gotoReady(page,"/buyer/saved", { waitUntil: "domcontentloaded" });
     await expect(page.getByText(/saved/i).first()).toBeVisible({ timeout: 45_000 });
     await page.waitForTimeout(1500);
     await shot(page, "buyer-saved");
@@ -618,7 +641,7 @@ test.describe.serial("TrustDrive live functional audit", () => {
     expect(typeof trust.body.data.band).toBe("string");
     expect(trust.body.data.breakdown).toBeTruthy();
 
-    await page.goto(`/vehicle/${state.vehicleId}`, { waitUntil: "domcontentloaded" });
+    await gotoReady(page,`/vehicle/${state.vehicleId}`, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2500);
     await shot(page, "buyer-vehicle-passport-trust");
   });
@@ -647,7 +670,7 @@ test.describe.serial("TrustDrive live functional audit", () => {
     expect(mine.buyerId).toBeTruthy();
     expect(mine.sellerId).toBeTruthy();
 
-    await page.goto("/buyer/inquiries", { waitUntil: "domcontentloaded" });
+    await gotoReady(page,"/buyer/inquiries", { waitUntil: "domcontentloaded" });
     await expect(page.getByText(/inquir/i).first()).toBeVisible({ timeout: 45_000 });
     await page.waitForTimeout(1500);
     await shot(page, "buyer-inquiries");
@@ -664,7 +687,7 @@ test.describe.serial("TrustDrive live functional audit", () => {
     });
     expect([200, 201]).toContain(reply.status);
 
-    await page.goto("/seller/inquiries", { waitUntil: "domcontentloaded" });
+    await gotoReady(page,"/seller/inquiries", { waitUntil: "domcontentloaded" });
     await expect(page.getByText(/inquir/i).first()).toBeVisible({ timeout: 45_000 });
     await page.waitForTimeout(1500);
     await shot(page, "seller-inquiries");
@@ -679,7 +702,7 @@ test.describe.serial("TrustDrive live functional audit", () => {
 
   test("S8. Buyer generates and downloads the verification report", async ({ page, context }) => {
     await loginViaUi(page, state.buyerEmail);
-    await page.goto("/buyer/reports", { waitUntil: "domcontentloaded" });
+    await gotoReady(page,"/buyer/reports", { waitUntil: "domcontentloaded" });
     await expect(page.getByText(/report/i).first()).toBeVisible({ timeout: 45_000 });
     await page.waitForTimeout(1500);
     await shot(page, "buyer-reports");
@@ -740,26 +763,29 @@ test.describe.serial("TrustDrive live functional audit", () => {
       saveState();
     }
 
-    // category-specific expectations: an EV never carries a combustion engine
+    // category-specific expectations: an EV never carries a combustion engine.
+    // GET /api/v1/vehicles/:id returns getVehicleReport(), whose vehicle fields
+    // are nested under `data.vehicle` (not at the top level of `data`).
+    const fuelOf = (body: any) => String(body?.data?.vehicle?.fuel ?? "").toLowerCase();
     const evCar = await api(context, `/api/v1/vehicles/${state.categories.electric_car}`);
     expect(evCar.status).toBe(200);
-    expect(String(evCar.body.data.fuel).toLowerCase()).toContain("electric");
+    expect(fuelOf(evCar.body)).toContain("electric");
 
     const evScooter = await api(context, `/api/v1/vehicles/${state.categories.electric_scooter}`);
     expect(evScooter.status).toBe(200);
-    expect(String(evScooter.body.data.fuel).toLowerCase()).toContain("electric");
+    expect(fuelOf(evScooter.body)).toContain("electric");
 
     const bike = await api(context, `/api/v1/vehicles/${state.categories.petrol_motorcycle}`);
     expect(bike.status).toBe(200);
-    expect(String(bike.body.data.fuel).toLowerCase()).toContain("petrol");
+    expect(fuelOf(bike.body)).toContain("petrol");
 
     const car = await api(context, `/api/v1/vehicles/${state.categories.passenger_car}`);
     expect(car.status).toBe(200);
-    expect(String(car.body.data.fuel).toLowerCase()).toContain("petrol");
+    expect(fuelOf(car.body)).toContain("petrol");
 
     // an EV must never be asked for a combustion engine number
     const evSpecs = await api(context, `/api/v1/vehicles/${state.categories.electric_scooter}`);
-    expect(String(evSpecs.body.data.engine_number ?? "")).toBe("");
+    expect(String(evSpecs.body?.data?.vehicle?.engine_number ?? "")).toBe("");
   });
 
   test("M2. 3D viewer uses a category-appropriate model (never a car for a two-wheeler)", async ({ page }) => {
@@ -787,7 +813,7 @@ test.describe.serial("TrustDrive live functional audit", () => {
     await loginViaUi(page, state.buyerEmail);
 
     // direct URL navigation
-    await page.goto("/seller/vehicles", { waitUntil: "domcontentloaded" });
+    await gotoReady(page,"/seller/vehicles", { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(2500);
     const onSellerPath = /\/seller/.test(new URL(page.url()).pathname);
     expect(onSellerPath, "a buyer must not stay on a seller route").toBeFalsy();
@@ -898,7 +924,7 @@ test.describe.serial("TrustDrive live functional audit", () => {
 
   test("E3. Edge cases — the UI shows a validation error for an empty required form", async ({ page }) => {
     await loginViaUi(page, state.sellerEmail);
-    await page.goto("/seller/add-vehicle", { waitUntil: "domcontentloaded" });
+    await gotoReady(page,"/seller/add-vehicle", { waitUntil: "domcontentloaded" });
     await page.getByRole("button", { name: /Save draft & continue/i }).click();
     await expect(page.getByText(/required/i).first()).toBeVisible({ timeout: 30_000 });
     await shot(page, "seller-add-vehicle-validation-error");
@@ -906,12 +932,12 @@ test.describe.serial("TrustDrive live functional audit", () => {
 
   test("E4. Edge cases — the UI rejects an invalid registration number", async ({ page }) => {
     await loginViaUi(page, state.sellerEmail);
-    await page.goto("/seller/add-vehicle", { waitUntil: "domcontentloaded" });
+    await gotoReady(page,"/seller/add-vehicle", { waitUntil: "domcontentloaded" });
     await page.getByLabel("Vehicle category").selectOption("passenger_car");
     await page.getByLabel("Registration number").fill("!!");
     await page.getByLabel(/VIN \(17 characters\)|Chassis \/ frame number/).fill("SHORT");
-    await page.getByLabel("Manufacturer").fill("Test");
-    await page.getByLabel("Model").fill("Invalid");
+    await page.getByRole("textbox", { name: /^Manufacturer/ }).fill("Test");
+    await page.getByRole("textbox", { name: /^Model\b/ }).fill("Invalid");
     await page.getByLabel("Manufacturing year").fill("2021");
     await page.getByRole("button", { name: /Save draft & continue/i }).click();
     await expect(page.getByText(/registration|identifier|required|invalid/i).first()).toBeVisible({
@@ -928,10 +954,10 @@ test.describe.serial("TrustDrive live functional audit", () => {
     page.on("pageerror", (e) => errors.push(String(e)));
 
     for (const p of ["/", "/marketplace", "/inspection", "/about", "/faq", "/technology"]) {
-      await page.goto(p, { waitUntil: "domcontentloaded" });
+      await gotoReady(page,p, { waitUntil: "domcontentloaded" });
       await page.waitForTimeout(1500);
     }
-    await page.goto("/inspection", { waitUntil: "domcontentloaded" });
+    await gotoReady(page,"/inspection", { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(3500);
     await shot(page, "public-inspection-3d");
 

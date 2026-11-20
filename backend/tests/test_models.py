@@ -1,6 +1,7 @@
 """Adapter tests: honest activation, demo labelling, storage safety, metrics."""
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -70,6 +71,51 @@ def test_damage_adapter_is_active_with_licensed_weights():
     assert missing["available"] is False
     assert missing["detections"] == []
     assert any("inspector" in x for x in missing["limitations"])
+
+
+def test_damage_adapter_distinguishes_present_weights_from_missing_runtime(monkeypatch):
+    present = yolo.MODEL_DIR / "car_damage.pt"
+    monkeypatch.setattr(yolo, "_weights", lambda ext: present if ext == ".pt" else None)
+    monkeypatch.setattr(yolo, "_has", lambda module: False)
+    st = yolo.status()
+    assert st["available"] is False
+    assert st["weights"] == "car_damage.pt"
+    assert "present" in st["reason"]
+    assert "ultralytics" in st["reason"]
+    assert "no licensed damage weights" not in st["reason"]
+
+
+def test_damage_adapter_reports_absent_weights_honestly(monkeypatch):
+    monkeypatch.setattr(yolo, "_weights", lambda ext: None)
+    monkeypatch.setattr(yolo, "_has", lambda module: False)
+    st = yolo.status()
+    assert st["available"] is False
+    assert st["weights"] is None
+    assert "no damage weights found" in st["reason"]
+
+
+def test_xgb_metadata_surfaces_real_metrics_and_dataset_label(monkeypatch, tmp_path: Path):
+    """The trainer stores metrics at the top level; status must not drop them."""
+    from types import SimpleNamespace
+    from services.ai import fraud_detection
+    from app.intelligence.fraud import get_model_metadata
+
+    (tmp_path / "mileage_xgb.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "mileage_xgb.meta.json").write_text(json.dumps({
+        "dataset_label": "synthetic-demo-600",
+        "precision": 0.91,
+        "recall": 0.88,
+        "f1": 0.89,
+        "version": "xgb-1.0.0",
+    }), encoding="utf-8")
+    monkeypatch.setattr(fraud_detection, "settings", SimpleNamespace(model_dir=tmp_path))
+
+    meta = get_model_metadata()
+    assert meta["available"] is True
+    assert meta["training_data"] == "synthetic-demo-600"
+    assert meta["metrics"] == {"precision": 0.91, "recall": 0.88, "f1": 0.89}
+    assert meta["version"] == "xgb-1.0.0"
+    assert meta["mode"] == "experimental"
 
 
 def test_damage_adapter_detects_on_a_real_sample():

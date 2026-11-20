@@ -192,9 +192,14 @@ export function HowItWorksSection() {
                 <span className="w-1.5 h-1.5 rounded-full bg-[#C5A46D] animate-ping" />
                 <span>PHASE {current.num} // {current.tag.toUpperCase()}</span>
               </div>
-              <span className="text-[#36B982] bg-[#36B982]/10 border border-[#36B982]/20 px-2 py-0.5 rounded">
-                {current.duration}
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-amber-300/90 bg-amber-400/10 border border-amber-500/25 px-2 py-0.5 rounded">
+                  ILLUSTRATIVE DEMO
+                </span>
+                <span className="text-[#36B982] bg-[#36B982]/10 border border-[#36B982]/20 px-2 py-0.5 rounded">
+                  {current.duration}
+                </span>
+              </div>
             </div>
 
             {/* Dynamic Stage Graphics */}

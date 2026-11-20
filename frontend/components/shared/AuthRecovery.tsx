@@ -39,6 +39,7 @@ export function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+  const [deliveryFailed, setDeliveryFailed] = useState(false);
   const [devLink, setDevLink] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -53,7 +54,7 @@ export function ForgotPasswordForm() {
         body: JSON.stringify({ email: email.trim() }),
       });
       const json = (await res.json().catch(() => ({}))) as {
-        data?: { sent?: boolean; resetLink?: string };
+        data?: { accepted?: boolean; sent?: boolean; emailDelivery?: { ok?: boolean } | null; resetLink?: string };
         error?: { message?: string };
       };
       if (!res.ok) {
@@ -61,6 +62,7 @@ export function ForgotPasswordForm() {
         return;
       }
       setSent(true);
+      setDeliveryFailed(json.data?.emailDelivery?.ok === false);
       setDevLink(json.data?.resetLink ?? null);
     } catch {
       setError("Network error — please try again.");
@@ -72,9 +74,15 @@ export function ForgotPasswordForm() {
   if (sent) {
     return (
       <div className="space-y-4">
-        <Notice tone="success">
-          If an account exists for <span className="font-bold">{email.trim()}</span>, a reset link is on its way. It expires in one hour.
-        </Notice>
+        {deliveryFailed ? (
+          <Notice tone="danger">
+            A reset was requested for <span className="font-bold">{email.trim()}</span>, but the email provider rejected the message. No reset link was delivered — try again later or contact support.
+          </Notice>
+        ) : (
+          <Notice tone="success">
+            If an account exists for <span className="font-bold">{email.trim()}</span>, a reset link has been requested. It expires in one hour.
+          </Notice>
+        )}
         {devLink && (
           <Notice tone="info">
             Development mode:{" "}

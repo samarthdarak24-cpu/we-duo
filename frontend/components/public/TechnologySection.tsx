@@ -23,7 +23,7 @@ export function TechnologySection() {
       subtitle: "Automotive Document Ingestion",
       tag: "Computer Vision",
       icon: "ScanSearch",
-      status: "99.2% Accuracy",
+      status: "Engine-Dependent",
       highlights: ["Sub-millimeter bounding box character extraction", "Cross-checks RC, Insurance & Workshop logs", "Detects font kerning tampering & doctored seals"],
       visualType: "ocr",
     },
@@ -150,7 +150,7 @@ export function TechnologySection() {
                       <div className="space-y-1.5">
                         <div className="flex items-center justify-between text-[#7A8089] text-[10px]">
                           <span>OCR CONFIDENCE</span>
-                          <span className="text-[#36B982]">99.2% MATCH</span>
+                          <span className="text-amber-300/90">ILLUSTRATIVE SAMPLE</span>
                         </div>
                         <div className="space-y-1">
                           <div className="flex justify-between text-[10px] p-1 rounded bg-[#111315]">
@@ -159,7 +159,7 @@ export function TechnologySection() {
                           </div>
                           <div className="flex justify-between text-[10px] p-1 rounded bg-[#111315]">
                             <span className="text-[#7A8089]">SEAL:</span>
-                            <span className="text-[#36B982]">AUTHENTIC RTO</span>
+                            <span className="text-amber-300/90">EXAMPLE VALUE</span>
                           </div>
                         </div>
                       </div>

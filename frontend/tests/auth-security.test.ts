@@ -180,17 +180,64 @@ describe("auth: cross-user ownership isolation", () => {
   });
 });
 
-describe("auth: TD_SEED_DEMO=0 blocks demo recreation", () => {
-  it("is set to a non-zero value in local dev (demo active)", () => {
-    // Local dev loads TD_SEED_DEMO=1 from .env; production must set TD_SEED_DEMO=0.
-    expect(process.env.TD_SEED_DEMO).toBe("1");
+describe("auth: session revocation", () => {
+  it("refuses a session-bound token after the session is revoked", async () => {
+    const { createSession, revokeSession } = await import("../lib/server/db");
+    const sid = `s-revoke-${process.pid}-${Date.now()}`;
+    const now = new Date().toISOString();
+    createSession({
+      id: sid, user_id: "u-seller", refresh_hash: "test-refresh",
+      user_agent: "", ip: "", created_at: now, last_seen_at: now, revoked_at: null,
+    });
+    const token = signToken({ sub: "u-seller", role: "seller", name: "Samarth Darak", sid });
+    expect(getAuth(reqWithCookie(token))).not.toBeNull();
+    revokeSession(sid, "u-seller");
+    expect(getAuth(reqWithCookie(token))).toBeNull();
   });
+});
 
-  it("validates that TD_SEED_DEMO=0 would skip demo seeding (logic check)", () => {
-    // When TD_SEED_DEMO === "0", the seed() function in db.ts returns early and
-    // never inserts demo accounts. This is enforced by validateProductionConfig
-    // which forces TD_SEED_DEMO = "0" when TD_ENV=production.
-    expect(process.env.TD_SEED_DEMO === "0" || process.env.TD_SEED_DEMO === "1").toBe(true);
+describe("auth: TD_SEED_DEMO=0 blocks demo recreation", () => {
+  // The old assertions checked the *value* of an untracked local .env variable,
+  // so they failed on a clean checkout/CI. Test the actual gate instead: with
+  // TD_SEED_DEMO=0 an empty database must not receive the published demo
+  // accounts (they all have known passwords).
+  it("does not seed published demo accounts into an empty database", () => {
+    const cacheKeys = [
+      "__tdDb", "__tdFkReport", "__tdDamageBackfill",
+      "__tdMultiCategory", "__tdMultiCategoryDemo",
+    ] as const;
+    const previousGlobals: Record<string, unknown> = {};
+    for (const key of cacheKeys) previousGlobals[key] = (globalThis as Record<string, unknown>)[key];
+    const previousDbFile = process.env.TD_DB_FILE;
+    const previousSeed = process.env.TD_SEED_DEMO;
+    const freshDb = path.join(os.tmpdir(), `trustdrive-nodemo-${process.pid}-${Date.now()}.db`);
+
+    try {
+      process.env.TD_SEED_DEMO = "0";
+      process.env.TD_DB_FILE = freshDb;
+      for (const key of cacheKeys) delete (globalThis as Record<string, unknown>)[key];
+
+      const conn = getDb();
+      const demo = conn.prepare(
+        "SELECT COUNT(*) AS c FROM users WHERE id IN ('u-buyer','u-seller','u-admin','u-buyer2','u-buyer3','u-buyer4','u-seller2')"
+      ).get() as { c: number };
+      const total = conn.prepare("SELECT COUNT(*) AS c FROM users").get() as { c: number };
+      expect(demo.c).toBe(0);
+      expect(total.c).toBe(0);
+      conn.close();
+    } finally {
+      for (const [key, value] of Object.entries(previousGlobals)) {
+        if (value === undefined) delete (globalThis as Record<string, unknown>)[key];
+        else (globalThis as Record<string, unknown>)[key] = value;
+      }
+      if (previousDbFile === undefined) delete process.env.TD_DB_FILE;
+      else process.env.TD_DB_FILE = previousDbFile;
+      if (previousSeed === undefined) delete process.env.TD_SEED_DEMO;
+      else process.env.TD_SEED_DEMO = previousSeed;
+      for (const suffix of ["", "-wal", "-shm"]) {
+        try { fs.rmSync(freshDb + suffix, { force: true }); } catch { /* best effort */ }
+      }
+    }
   });
 });
 

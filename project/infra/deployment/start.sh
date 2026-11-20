@@ -9,7 +9,15 @@ cd "$ROOT"
 
 # Portable paths: the sandbox is Linux, so the local Windows .env values must
 # never be used here. node:sqlite creates the directory on first open.
-export JWT_SECRET="${JWT_SECRET:-td-live-2026-11-08-8f41c2a6e0b}"
+# Never ship a repo-readable signing key: anyone who could read this script
+# would otherwise be able to forge an admin JWT. Require the operator to set
+# JWT_SECRET; fall back to a random per-boot value so the sandbox still starts,
+# with an explicit warning that sessions will not survive a restart.
+if [ -z "${JWT_SECRET:-}" ]; then
+  JWT_SECRET="$(node -e 'process.stdout.write(require("node:crypto").randomBytes(32).toString("hex"))')"
+  export JWT_SECRET
+  echo "[start] WARNING: JWT_SECRET was not set; generated an ephemeral secret. Sessions will be invalidated on restart. Set JWT_SECRET in the environment for stable sessions." >&2
+fi
 export TD_DATA_DIR="$ROOT/.data"
 export TD_DB_FILE="$ROOT/.data/trustdrive.db"
 export TD_UPLOAD_DIR="$ROOT/.data/uploads"
