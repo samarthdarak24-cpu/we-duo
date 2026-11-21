@@ -6,7 +6,7 @@
 > placeholder action remains · no fake result is presented as real · the related
 > Seller/Buyer workflow works.
 
-**Last updated:** 2026-11-20 (honesty, object-level RBAC, upload validation, local OCR/integration and E2E evidence pass) · **Current suite evidence:** frontend **404 passed / 19 skipped**, backend **201 passed / 2 skipped** (RapidOCR active), local SMTP/SMS/S3/ClamAV integrations **19/19**, typecheck 0 errors, `render:validate` 42/42, secret scan OK, isolated build PASS, browser E2E **25/25 PASS** (live-audit 18/18, deep 5/5 with real image OCR, supporting 2/2). · **Previous live evidence:** broad run `LIVE-MW6DOO1A` (272/272), focused run `MW5ATBQ1` (49/49), OCR negative 10/10, security 13/13 + 10/10, page sweep 40/40, responsive 44/44.
+**Last updated:** 2026-11-21 (Vehicle History Passport, explainable mileage analysis, deterministic assessment, passport RBAC and PDF corrections) · **Current suite evidence:** frontend **411 passed / 19 skipped**, backend **201 passed / 2 skipped** (RapidOCR active), local SMTP/SMS/S3/ClamAV integrations **19/19**, typecheck 0 errors, `render:validate` 42/42, secret scan OK, isolated build PASS, browser E2E **25/25 PASS** (live-audit 18/18, deep 5/5 with real image OCR, supporting 2/2). · **Previous live evidence:** broad run `LIVE-MW6DOO1A` (272/272), focused run `MW5ATBQ1` (49/49), OCR negative 10/10, security 13/13 + 10/10, page sweep 40/40, responsive 44/44.
 
 ## Governing decision
 
@@ -85,6 +85,22 @@ Legend: ✅ done & verified · 🟡 partial / honest gap · ⚙️ env-gated ada
 - **Agent nodes:** 15 nodes for combustion/commercial; 16 nodes (adds `EVBatteryAnalysisNode`) for every battery-pack profile including hybrid.
 - **Marketplace:** class filtering supports all four classes (`two_wheeler`, `three_wheeler`, `four_wheeler`, `commercial`) plus exact category id match.
 - **Preserved:** car functionality, QA22 GLB registry and the earlier feature baseline remain intact; legacy 69-car rows keep their behaviour via `vehicle_category_id` authority.
+
+## Vehicle History Passport (20 Nov 2026 pass)
+
+Read-only projection over the existing evidence tables — no new table, no
+destructive migration, no second source of truth.
+
+- **`vehiclePassport()`** (`frontend/lib/server/category-service.ts`) now returns three additional projections:
+  - `timeline` — documents, history events, distance readings, damage records, EV battery records, findings, verification runs and theft checks merged into one chronologically sorted list. Every entry carries one of `VERIFIED | PENDING | SUSPICIOUS | UNVERIFIED | NEEDS_REVIEW | UNAVAILABLE` and at least one evidence reference.
+  - `mileageAnalysis` — previous/current reading, date, source, signed difference, days between readings, severity, explanation, recommended action, method and rules version. A decrease is reported as a warning requiring investigation, never as proof of tampering.
+  - `assessment` — deterministic, versioned summary with positive indicators, risk indicators, missing information (required documents, insurance, distance history, damage coverage, theft coverage) and explicit limitations (no LLM sets the score; missing records are unverified coverage; SHA-256 proves file integrity, not authenticity).
+- **UI:** `frontend/components/shared/VehiclePassport.tsx` renders the timeline, mileage analysis and assessment. It is mounted on the public vehicle report (`/vehicle/[id]`, anchor `#passport`) and in the seller Verification Center.
+- **RBAC:** `GET /api/v1/vehicles/:id/passport` now returns the full passport only to the owner or an admin. Other authenticated users need a published listing and only receive consented documents; anonymous visitors get the redacted public summary. `restrictPassportToDocuments()` removes non-consented document rows, timeline entries and evidence references (including risk-indicator references) before a restricted view is returned. The public vehicle page reuses the report's document visibility so the server-rendered passport cannot leak private files.
+- **Status vocabulary:** `needs_review` added to `Status` and to `StatusBadge` / `InsightRow` so `NEEDS_REVIEW` is never silently rendered as "Unverified".
+- **PDF:** the generated report now prints the real trust-engine version and the vehicle category's trust weights instead of hardcoded car weights, and lists each decreasing odometer reading with its previous/current values and a review instruction.
+- **Tests:** `frontend/tests/vehicle-passport.test.ts` (7 tests) covers chronological ordering, status vocabulary, rollback explanation, deterministic assessment, EV battery vs distance separation, absent damage records as unverified coverage, unknown vehicle → `null`, and non-consented evidence filtering. The live-audit S6 journey asserts the real timeline/assessment payload and the rendered passport heading.
+- **Report:** `project/docs/ENHANCED_PROTOTYPE_IMPLEMENTATION_REPORT.md`.
 
 ## Honest gaps / blockers
 

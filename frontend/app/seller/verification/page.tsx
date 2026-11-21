@@ -4,9 +4,11 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { VehicleSelector } from "@/components/seller/VehicleSelector";
 import { VerificationCenter } from "@/components/seller/VerificationCenter";
+import { VehiclePassport } from "@/components/shared/VehiclePassport";
 import { portalUser } from "@/lib/server/page";
 import { getChainStatus, getSellerVehicles, getVerificationChecks } from "@/lib/server/data";
 import { getLatestRun, getTheft } from "@/lib/server/db";
+import { vehiclePassport } from "@/lib/server/category-service";
 
 export const metadata: Metadata = { title: "Verification Center — TrustDrive" };
 export const dynamic = "force-dynamic";
@@ -59,6 +61,11 @@ export default function SellerVerificationPage({ searchParams }: { searchParams:
               return t ? { status: t.status, source: t.source, checkedAt: t.checked_at } : null;
             })()}
           />
+
+          {(() => {
+            const passport = vehiclePassport(selected.id);
+            return passport ? <VehiclePassport data={passport} /> : null;
+          })()}
         </>
       )}
     </PortalShell>

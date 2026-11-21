@@ -368,7 +368,7 @@ export interface ReportPdfData {
     category?: string; color?: string; ownership?: number; askingPrice?: number; condition?: string;
   };
   seller?: { name: string; type: string | null; businessName: string | null; verified: boolean } | null;
-  trust: { trustScore: number; riskScore: number; bandLabel: string; evidenceCoverage: number; weights?: Record<string, number> };
+  trust: { trustScore: number; riskScore: number; bandLabel: string; evidenceCoverage: number; weights?: Record<string, number>; version?: string };
   insights: { label: string; detail: string; status: string }[];
   findings: { code?: string; severity: string; title: string; explanation: string; recommendation: string; status: string; points?: number }[];
   pricing?: { low: number; estimate: number; high: number; confidence: string } | null;
@@ -383,6 +383,35 @@ export interface ReportPdfData {
 function inr(n?: number | null) {
   if (n === undefined || n === null) return "-";
   return `INR ${n.toLocaleString("en-IN")}`;
+}
+
+function weightsText(data: ReportPdfData) {
+  const entries = Object.entries(data.trust.weights ?? {});
+  return entries.length
+    ? entries.map(([key, value]) => `${key.toUpperCase()} ${value}`).join(", ")
+    : "category-specific weights";
+}
+
+function mileageDrops(readings: ReportPdfData["mileage"]) {
+  const sorted = [...(readings ?? [])].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+  const drops: { from: string; fromKm: number; to: string; toKm: number; difference: number }[] = [];
+  for (let i = 1; i < sorted.length; i++) {
+    const previous = sorted[i - 1];
+    const current = sorted[i];
+    const difference = current.km - previous.km;
+    if (difference < 0) {
+      drops.push({
+        from: previous.date,
+        fromKm: previous.km,
+        to: current.date,
+        toKm: current.km,
+        difference,
+      });
+    }
+  }
+  return drops;
 }
 
 function dateShort(value?: string | null) {
@@ -548,6 +577,21 @@ function legacyReportPdf(data: ReportPdfData): Buffer {
         MARGIN,
         { color: MUTED, lineGap: 3 }
       );
+      const drops = mileageDrops(readings);
+      if (drops.length) {
+        doc.gap(3);
+        doc.text("Decreasing readings — review required, not proof of tampering", 8.5, MARGIN, { bold: true });
+        drops.forEach((drop) => {
+          doc.text(
+            `${dateShort(drop.from)} ${drop.fromKm.toLocaleString("en-IN")} km -> ` +
+              `${dateShort(drop.to)} ${drop.toKm.toLocaleString("en-IN")} km ` +
+              `(${drop.difference.toLocaleString("en-IN")} km). Obtain the service invoice or inspection sheet for both dates.`,
+            8,
+            MARGIN,
+            { color: MUTED, lineGap: 2.5 }
+          );
+        });
+      }
     },
   });
 
@@ -741,7 +785,7 @@ function legacyReportPdf(data: ReportPdfData): Buffer {
       doc.text("Methodology", 10, MARGIN, { bold: true });
       doc.gap(2);
       doc.text(
-        "Rules v1.0 - deterministic trust engine. Coverage weights: RC 30, PUC 22, service 20, ownership 10, inspection 10, insurance 8. Severity points: critical 40, high 25-30, medium 8-12, low 5-8. Bands: Strong 85+, Moderate 65-84, Caution 40-64, High risk below 40.",
+        `Rules: ${data.trust.version ?? "deterministic trust engine"} (versioned, deterministic). Trust component weights: ${weightsText(data)}. Severity points: critical 40, high 25-30, medium 8-12, low 5-8. Bands: Strong 85+, Moderate 65-84, Caution 40-64, High risk below 40. Missing records are unverified coverage, never proof of fraud.`,
         8.5,
         MARGIN,
         { lineGap: 3 }
@@ -1207,7 +1251,7 @@ export function reportPdf(data: ReportPdfData): Buffer {
   limits.forEach((l, i) => doc.text(`${i + 1}. ${l}`, 8.2, MARGIN, { lineGap: 2.5 }));
   doc.gap(4);
   doc.text(
-    "Method: rules v1.0, deterministic. Coverage weights: RC 30, PUC 22, service 20, ownership 10, inspection 10, insurance 8. Severity points: critical 40, high 25-30, medium 8-12, low 5-8. Bands: Strong 85+, Moderate 65-84, Caution 40-64, High risk below 40.",
+    `Method: ${data.trust.version ?? "deterministic trust engine"}, versioned. Trust component weights: ${weightsText(data)}. Severity points: critical 40, high 25-30, medium 8-12, low 5-8. Bands: Strong 85+, Moderate 65-84, Caution 40-64, High risk below 40. Missing records are unverified coverage, never proof of fraud.`,
     7.6,
     MARGIN,
     { color: MUTED, lineGap: 2.5 }

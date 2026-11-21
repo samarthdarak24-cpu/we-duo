@@ -913,8 +913,8 @@ export function getRiskAnalysis(vehicleId: string) {
       explanation: f.explanation,
     })),
     calculation: {
-      version: "rules-v1.0",
-      formula: "trust = evidence coverage points - sum(open finding points)",
+      version: TRUST_VERSION,
+      formula: "trust = verified evidence coverage points - sum(open finding points)",
       coveragePoints: Math.min(100, report.trust.trustScore + totalPenalty),
       penaltyPoints: totalPenalty,
       trustScore: report.trust.trustScore,
@@ -1817,7 +1817,11 @@ export function getReportData(reportId: string) {
     seller: seller
       ? { name: seller.name, type: seller.seller_type, businessName: seller.business_name, verified: seller.kyc_status === "verified" }
       : null,
-    trust: { ...trust, weights: DOC_WEIGHTS },
+    trust: {
+      ...trust,
+      weights: trustWeightsForCategory(categoryIdForVehicle(v.id)).weights,
+      version: TRUST_VERSION,
+    },
     insights: getInsights(v.id),
     findings: getFindings(v.id).filter((f) => f.status !== "cleared").map(findingView),
     chain: { ...chain, lastHash: chain.latestHash },
@@ -2601,22 +2605,44 @@ function analyzeMileageSeries(readings: ReturnType<typeof getMileage>, categoryI
     const delta = curr.km - prev.km;
     if (delta < 0) {
       const severe = Math.abs(delta) > rules.rollbackToleranceKm;
+      const fromKm = Number(prev.km);
+      const toKm = Number(curr.km);
       out.push({
         code: "ODOMETER_ROLLBACK",
         severity: severe ? "critical" : "high",
         title: `${odometerLabel} rollback detected`,
-        explanation: `Reading fell from ${prev.km.toLocaleString("en-IN")} km to ${curr.km.toLocaleString("en-IN")} km. This can indicate a rollback, an ${odometerLabel.toLowerCase()} replacement or a data-entry error; it is a warning, not proof of fraud.${electric ? " Battery State of Health is never used as a distance reading." : ""}`,
+        explanation: `Reading fell from ${fromKm.toLocaleString("en-IN")} km on ${prev.date.slice(0, 10)} to ${toKm.toLocaleString("en-IN")} km on ${curr.date.slice(0, 10)} — a decrease of ${Math.abs(delta).toLocaleString("en-IN")} km. This can indicate a rollback, an ${odometerLabel.toLowerCase()} replacement or a data-entry error; it is a warning, not proof of fraud.${electric ? " Battery State of Health is never used as a distance reading." : ""}`,
         points: severe ? 40 : 30,
-        evidence: { fromKm: prev.km, toKm: curr.km, fromDate: prev.date, toDate: curr.date, categoryId, rulesVersion: TRUST_VERSION },
+        evidence: {
+          fromKm,
+          toKm,
+          differenceKm: delta,
+          fromDate: prev.date,
+          toDate: curr.date,
+          previousReadingId: prev.id,
+          currentReadingId: curr.id,
+          previousSource: prev.source,
+          currentSource: curr.source,
+          recommendedAction: "Request the dated service invoice or inspection sheet for both readings and a photograph of the odometer. If the instrument cluster was replaced, upload the replacement invoice so the discontinuity can be reviewed.",
+          categoryId,
+          rulesVersion: TRUST_VERSION,
+        },
       });
     } else if (delta / days > rules.dailyMaxKm) {
       out.push({
         code: "MILEAGE_JUMP",
         severity: "medium",
         title: `${odometerLabel} inconsistency detected`,
-        explanation: `+${delta.toLocaleString("en-IN")} km in ${Math.round(days)} days exceeds the ${rules.dailyMaxKm} km/day ceiling for ${categoryLabel(categoryId)}.`,
+        explanation: `+${delta.toLocaleString("en-IN")} km in ${Math.round(days)} days exceeds the ${rules.dailyMaxKm} km/day ceiling for ${categoryLabel(categoryId)}. This is a plausibility warning, not proof of fraud.`,
         points: 12,
-        evidence: { deltaKm: delta, days: Math.round(days), categoryId, dailyMaxKm: rules.dailyMaxKm },
+        evidence: {
+          deltaKm: delta,
+          days: Math.round(days),
+          categoryId,
+          dailyMaxKm: rules.dailyMaxKm,
+          recommendedAction: "Confirm the reading against the dated service invoice and the vehicle's usage pattern.",
+          rulesVersion: TRUST_VERSION,
+        },
       });
     }
   }

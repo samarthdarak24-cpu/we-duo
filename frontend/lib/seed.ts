@@ -18,6 +18,7 @@ export type Status =
   | "processing"
   | "cleared"
   | "explained"
+  | "needs_review"
   | "open";
 
 export interface NavItem {

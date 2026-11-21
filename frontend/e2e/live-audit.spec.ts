@@ -633,6 +633,16 @@ test.describe.serial("TrustDrive live functional audit", () => {
     expect(passport.body.data.trust).toBeTruthy();
     // the passport states what it does and does not cover
     expect(passport.body.data.caveats ?? passport.body.data.visibility).toBeTruthy();
+    // the unified timeline, mileage analysis and deterministic assessment are
+    // real projections, not decorative placeholders
+    expect(Array.isArray(passport.body.data.timeline)).toBe(true);
+    expect(passport.body.data.timeline.length).toBeGreaterThan(0);
+    expect(passport.body.data.assessment.method).toBe("deterministic-evidence-assessment");
+    expect(["VERIFIED", "PENDING", "SUSPICIOUS", "UNVERIFIED", "NEEDS_REVIEW", "UNAVAILABLE"]).toContain(
+      passport.body.data.assessment.status
+    );
+    expect(Array.isArray(passport.body.data.mileageAnalysis.anomalies)).toBe(true);
+    expect(passport.body.data.assessment.limitations.join(" ")).toMatch(/no LLM/i);
 
     const trust = await api(context, `/api/v1/vehicles/${state.vehicleId}/trust`);
     expect(trust.status).toBe(200);
@@ -642,6 +652,7 @@ test.describe.serial("TrustDrive live functional audit", () => {
     expect(trust.body.data.breakdown).toBeTruthy();
 
     await gotoReady(page,`/vehicle/${state.vehicleId}`, { waitUntil: "domcontentloaded" });
+    await expect(page.getByText("Vehicle History Passport").first()).toBeVisible({ timeout: 45_000 });
     await page.waitForTimeout(2500);
     await shot(page, "buyer-vehicle-passport-trust");
   });

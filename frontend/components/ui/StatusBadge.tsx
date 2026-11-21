@@ -17,6 +17,7 @@ const statusConfig: Record<
   sold: { label: "Sold", color: "var(--muted)", bg: "var(--surface-tint)", icon: "Tag" },
   processing: { label: "Processing", color: "var(--warning)", bg: "var(--warning-bg)", icon: "Clock" },
   cleared: { label: "Cleared", color: "var(--success)", bg: "var(--success-bg)", icon: "ShieldCheck" },
+  needs_review: { label: "Needs review", color: "var(--warning)", bg: "var(--warning-bg)", icon: "ScanSearch" },
   explained: { label: "Explained", color: "var(--warning)", bg: "var(--warning-bg)", icon: "MessageSquare" },
   open: { label: "Open", color: "var(--danger)", bg: "var(--danger-bg)", icon: "CircleDot" },
 };

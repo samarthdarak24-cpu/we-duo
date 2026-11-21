@@ -13,6 +13,7 @@ const cfg: Record<Status, { icon: string; color: string; bg: string }> = {
   sold: { icon: "Tag", color: "var(--muted)", bg: "var(--surface-tint)" },
   processing: { icon: "Clock", color: "var(--warning)", bg: "var(--warning-bg)" },
   cleared: { icon: "ShieldCheck", color: "var(--success)", bg: "var(--success-bg)" },
+  needs_review: { icon: "ScanSearch", color: "var(--warning)", bg: "var(--warning-bg)" },
   explained: { icon: "MessageSquare", color: "var(--warning)", bg: "var(--warning-bg)" },
   open: { icon: "CircleDot", color: "var(--danger)", bg: "var(--danger-bg)" },
 };

@@ -12,6 +12,8 @@ import { getVehicleDetail, hotspotsFor } from "@/lib/server/data";
 import { EvidenceGraph } from "@/components/shared/EvidenceGraph";
 import { ProviderChecksPanel } from "@/components/seller/ProviderChecksPanel";
 import { buildEvidenceGraph, crossModalMileage } from "@/lib/server/evidence";
+import { restrictPassportToDocuments, vehiclePassport } from "@/lib/server/category-service";
+import { VehiclePassport } from "@/components/shared/VehiclePassport";
 import { formatINR, formatKm } from "@/lib/format";
 import { trustBand } from "@/lib/trust";
 import { cn } from "@/lib/cn";
@@ -82,6 +84,16 @@ export default function PublicVehiclePage({ params }: { params: { id: string } }
   const model3d = modelAssetForCategory(categoryId);
   const graph = buildEvidenceGraph(v.id, session ? { id: session.id, role: "buyer" } : undefined);
   const crossModal = crossModalMileage(v.id);
+  const passportSource = vehiclePassport(v.id);
+  // The public page may be viewed by an anonymous visitor or by a different
+  // buyer. Reuse the report's document visibility so non-consented evidence
+  // never reaches the passport timeline or assessment.
+  const passport = passportSource
+    ? restrictPassportToDocuments(
+        passportSource,
+        new Set(detail.documents.map((document) => document.id))
+      )
+    : null;
 
   const band = trustBand(detail.trust.trustScore);
   const openFindings = detail.findings.filter((f) => f.status !== "cleared");
@@ -458,6 +470,8 @@ export default function PublicVehiclePage({ params }: { params: { id: string } }
             <p className="mt-2 text-[10.5px] text-muted">Method: {crossModal.method} · rules {crossModal.version}</p>
           </section>
         )}
+
+        {passport && <VehiclePassport data={passport} />}
 
         <EvidenceGraph graph={graph} />
 

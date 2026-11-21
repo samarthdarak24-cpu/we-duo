@@ -65,8 +65,8 @@ export default function BuyerHistoryPage({ searchParams }: { searchParams: { veh
         title="Vehicle History"
         subtitle={`${v.make} ${v.model} · ${v.reg_no} — verified events from supported sources.`}
       >
-        <a href={`/vehicle/${v.id}`} className="td-btn td-btn-primary">
-          <Icon name="FileText" size={15} /> Full report
+        <a href={`/vehicle/${v.id}#passport`} className="td-btn td-btn-primary">
+          <Icon name="FileText" size={15} /> Open passport
         </a>
       </PageHeader>
 
