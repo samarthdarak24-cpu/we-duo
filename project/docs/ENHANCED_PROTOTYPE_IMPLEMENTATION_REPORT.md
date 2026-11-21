@@ -1,6 +1,6 @@
 # TrustDrive — Enhanced Prototype Implementation Report
 
-**Date:** 20 November 2026
+**Date:** 20–21 November 2026
 **Scope:** Upgrade the existing TrustDrive codebase (Next.js + shared SQLite + Python intelligence service) toward the enhanced vehicle-verification prototype described in the 14-phase brief.
 **Approach:** Inspect the existing implementation first, reuse working subsystems, and add only genuinely missing behaviour. No second database, no replacement marketplace, no fabricated demo results.
 
